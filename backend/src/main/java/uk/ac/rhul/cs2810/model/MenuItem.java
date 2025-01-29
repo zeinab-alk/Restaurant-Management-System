@@ -1,17 +1,19 @@
 package uk.ac.rhul.cs2810.model;
 
+import java.util.List;
+
 public class MenuItem {
-  private int itemId; // Unique ID for the menu item
-  private String name; // Name of the menu item
-  private double price; // Price of the menu item
-  private int caloricInfo; // Calorie count
-  private String dietaryRestrictions; // Dietary restrictions (e.g., vegetarian, vegan)
-  private String allergenInformation; // Allergen information
-  private int popularity; // Popularity rating (e.g., number of orders)
+  private int itemId;
+  private String name;
+  private double price;
+  private int caloricInfo;
+  private List<String> dietaryRestrictions; // Changed to List
+  private List<String> allergenInformation; // Changed to List
+  private int popularity;
 
   // Constructor
   public MenuItem(int itemId, String name, double price, int caloricInfo,
-      String dietaryRestrictions, String allergenInformation, int popularity) {
+      List<String> dietaryRestrictions, List<String> allergenInformation, int popularity) {
     this.itemId = itemId;
     this.name = name;
     this.price = price;
@@ -54,19 +56,19 @@ public class MenuItem {
     this.caloricInfo = caloricInfo;
   }
 
-  public String getDietaryRestrictions() {
+  public List<String> getDietaryRestrictions() {
     return dietaryRestrictions;
   }
 
-  public void setDietaryRestrictions(String dietaryRestrictions) {
+  public void setDietaryRestrictions(List<String> dietaryRestrictions) {
     this.dietaryRestrictions = dietaryRestrictions;
   }
 
-  public String getAllergenInformation() {
+  public List<String> getAllergenInformation() {
     return allergenInformation;
   }
 
-  public void setAllergenInformation(String allergenInformation) {
+  public void setAllergenInformation(List<String> allergenInformation) {
     this.allergenInformation = allergenInformation;
   }
 
@@ -76,13 +78,5 @@ public class MenuItem {
 
   public void setPopularity(int popularity) {
     this.popularity = popularity;
-  }
-
-  @Override
-  public String toString() {
-    return "MenuItem{" + "itemId=" + itemId + ", name='" + name + '\'' + ", price=" + price
-        + ", caloricInfo=" + caloricInfo + ", dietaryRestrictions='" + dietaryRestrictions + '\''
-        + ", allergenInformation='" + allergenInformation + '\'' + ", popularity=" + popularity
-        + '}';
   }
 }
