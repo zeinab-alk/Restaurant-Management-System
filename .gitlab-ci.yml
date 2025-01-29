@@ -12,30 +12,30 @@ cache:
 build:
   stage: build
   script:
-    - cd TeamProject23
+    - cd backend
     - mvn compile
 
 test:
   stage: test
   script:
-    - cd TeamProject23
+    - cd backend
     - mvn test
 
 jacoco:
   stage: jacoco
   script:
-    - cd TeamProject23
+    - cd backend
     - mvn verify
 
 checkstyle:
   stage: checkstyle
   script:
-    - cd TeamProject23
+    - cd backend
     - mvn checkstyle:check
 
 spotbugs:
   stage: spotbugs
   script:
-    - cd TeamProject23
+    - cd backend
     - mvn spotbugs:check
 
