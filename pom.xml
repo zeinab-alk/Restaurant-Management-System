@@ -9,12 +9,12 @@
 		<version>3.3.5</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>uk.ac.rhul.cs2810.TeamProject23</groupId>
+	<groupId>uk.ac.rhul.cs2810</groupId>
 	<artifactId>TeamProject23</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>TeamProject23</name>
 	<description>Demo project for Spring Boot</description>
-	<url />
+	<url/>
 	<licenses>
 		<license />
 	</licenses>
@@ -107,7 +107,7 @@
 				<version>0.8.12</version>
 				<configuration>
 					<excludes>
-						<exclude>**/Cw2Application*</exclude>
+						<exclude>**/TeamProject23Application*</exclude>
 					</excludes>
 				</configuration>
 				<executions>
@@ -188,7 +188,7 @@
 				<version>0.8.12</version>
 				<configuration>
 					<excludes>
-						<exclude>**/Cw2Application*</exclude>
+						<exclude>**/TeamProject23Application*</exclude>
 					</excludes>
 				</configuration>
 				<reportSets>
