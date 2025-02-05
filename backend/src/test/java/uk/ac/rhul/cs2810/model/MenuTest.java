@@ -17,11 +17,13 @@ public class MenuTest {
   }
 
   @Test
-  void customerTest() {
+  void menuTest() {
     //Test 1
 
+    menu.setId(001);
     menu.setName("Main Menu");
 
+    assertEquals(001, menu.getId());
     assertEquals("Main Menu", menu.getName());
   }
 
