@@ -1,19 +1,31 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This represents a menu given at an Oaxaca restaurant.
  */
+
+@Entity
 public class Menu {
 
-  private int id;
+  @Id
+  @GeneratedValue
+  private Integer id;
 
   private String name;
 
+  @OneToMany(mappedBy = "menu")
   private List<MenuItem> items;
 
+  /**
+   * Constructor to initialise menu items list.
+   */
   public Menu() {
     this.items = new ArrayList<>();
   }
@@ -26,12 +38,12 @@ public class Menu {
     this.name = name;
   }
 
-  public int getId() {
+  public Integer getId() {
     return id;
   }
 
-  public void setId(int i) {
-    this.id = i;
+  public void setId(Integer id) {
+    this.id = id;
   }
 
   public List<MenuItem> getItems() {

@@ -1,5 +1,9 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,45 +12,26 @@ import java.util.List;
  * This class holds essential information such as ID, name, price, calorie count, dietary
  * restrictions, allergen details, and popularity.
  */
+
+@Entity
 public class MenuItem {
 
-  /**
-   * The unique ID of this menu item.
-   */
-  private int itemId;
+  @ManyToOne
+  Menu menu;
 
-  /**
-   * The name of this menu item.
-   */
+  @Id
+  @GeneratedValue
+  private Integer itemId;
+
   private String name;
-
-  /**
-   * The price of this menu item.
-   */
   private double price;
-
-  /**
-   * The number of calories in this menu item.
-   */
   private int caloricInfo;
-
-  /**
-   * List of dietary restrictions (e.g., vegetarian, vegan).
-   */
   private List<String> dietaryRestrictions;
-
-  /**
-   * List of allergens (e.g., nuts, gluten).
-   */
   private List<String> allergenInformation;
-
-  /**
-   * Tracks how popular the item is among customers.
-   */
   private int popularity;
 
   /**
-   * Default constructor that initializes dietaryRestrictions and allergenInformation as empty
+   * Default constructor that initialises dietaryRestrictions and allergenInformation as empty
    * lists.
    */
   public MenuItem() {
@@ -54,13 +39,11 @@ public class MenuItem {
     this.allergenInformation = new ArrayList<>();
   }
 
-  // -- getters and setters below --
-
-  public int getItemId() {
+  public Integer getItemId() {
     return itemId;
   }
 
-  public void setItemId(int itemId) {
+  public void setItemId(Integer itemId) {
     this.itemId = itemId;
   }
 
