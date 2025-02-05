@@ -88,3 +88,31 @@ CREATE TABLE waiter (
     PRIMARY KEY (waiter_id)
 );
 
+CREATE TABLE kitchen_staff (
+    staff_id SERIAL int,
+    staff_name name NOT NULL,
+    role role,
+    PRIMARY KEY (staff_id)
+);
+
+CREATE TABLE "order" (
+    order_id SERIAL int,
+    customer_id int,
+    waiter_id int,
+    order_date TIMESTAMP,
+    total_price NUMERIC(10, 2),
+    status order_status,
+    PRIMARY KEY (order_id),
+    FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
+    FOREIGN KEY (waiter_id) REFERENCES waiter(waiter_id)
+);
+
+CREATE TABLE payment (
+    payment_id SERIAL int,
+    order_id INT,
+    amount NUMERIC(10, 2) NOT NULL,
+    payment_date TIMESTAMP,
+    payment_status payment_status,
+    PRIMARY KEY (payment_id),
+    FOREIGN KEY (order_id) REFERENCES "order"(order_id)
+);
