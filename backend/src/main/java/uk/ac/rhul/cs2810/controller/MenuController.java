@@ -17,7 +17,7 @@ public class MenuController {
   private final MenuRepository menuRepository;
 
   /**
-   * Constructor for repositories.
+   * Constructors for repositories.
    *
    * @param menuRepository class object
    */
@@ -38,6 +38,5 @@ public class MenuController {
 
     return ResponseEntity.ok(menu);
   }
-
 
 }
