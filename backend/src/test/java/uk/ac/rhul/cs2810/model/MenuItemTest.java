@@ -27,7 +27,7 @@ public class MenuItemTest {
     item.setItemId(101);
     item.setName("Taco Deluxe");
     item.setPrice(9.99);
-    item.setCaloricInfo(750);
+    item.setCaloricInfo("750 kcal");
 
     List<String> testDietary = Arrays.asList("Vegetarian", "Gluten-Free");
     item.setDietaryRestrictions(testDietary);
@@ -41,7 +41,7 @@ public class MenuItemTest {
     assertEquals(101, item.getItemId());
     assertEquals("Taco Deluxe", item.getName());
     assertEquals(9.99, item.getPrice());
-    assertEquals(750, item.getCaloricInfo());
+    assertEquals("750 kcal", item.getCaloricInfo());
     assertEquals(testDietary, item.getDietaryRestrictions());
     assertEquals(testAllergens, item.getAllergenInformation());
     assertEquals(5, item.getPopularity());
