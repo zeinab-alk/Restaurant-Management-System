@@ -50,3 +50,41 @@ CREATE TYPE role AS ENUM(
 	'Sous Chef', 
 	'Line Cook'
 );
+
+CREATE TABLE menu (
+    menu_id SERIAL int,
+    name VARCHAR(50) NOT NULL,
+    PRIMARY KEY (menu_id)
+);
+
+CREATE TABLE menu_item (
+    item_id SERIAL int, 
+    menu_id int,
+  	name VARCHAR(50) NOT NULL, 
+  	price NUMERIC(10, 2) NOT NULL, 
+  	caloricInfo VARCHAR(20), 
+  	dietary_restrictions dietary_restrictions[], 
+  	allergy_information allergy_information[], 
+  	popularity int CHECK (popularity >= 0.0 AND popularity <= 5.0) NOT NULL,
+  	PRIMARY KEY (item_id), 
+  	FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
+);
+
+CREATE TABLE customer (
+    customer_id SERIAL int,
+    customer_name name NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(15),
+    dietary_restrictions dietary_restrictions[], 
+  	allergy_information allergy_information[], 
+    PRIMARY KEY (customer_id)
+);
+
+
+CREATE TABLE waiter (
+    waiter_id SERIAL int,
+    waiter_name name NOT NULL,
+    email VARCHAR(100),
+    PRIMARY KEY (waiter_id)
+);
+
