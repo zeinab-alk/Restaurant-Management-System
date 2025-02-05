@@ -20,7 +20,7 @@ public class MenuTest {
   void customerTest() {
     //Test 1
 
-    menu.setName("Main Menu);
+    menu.setName("Main Menu");
 
     assertEquals("Main Menu", menu.getName());
   }
