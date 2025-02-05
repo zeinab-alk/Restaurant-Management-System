@@ -20,7 +20,7 @@ public class Menu {
 
   private String name;
 
-  @OneToMany(mappedBy = "menu")
+  @OneToMany
   private List<MenuItem> items;
 
   /**

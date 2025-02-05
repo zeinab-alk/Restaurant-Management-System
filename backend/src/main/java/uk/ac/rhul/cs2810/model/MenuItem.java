@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a single item on the restaurant's menu.
- * This class holds essential information such as ID, name, price, calorie count, dietary
- * restrictions, allergen details, and popularity.
+ * Represents a single item on the restaurant's menu. This class holds essential information such as
+ * ID, name, price, calorie count, dietary restrictions, allergen details, and popularity.
  */
 
 @Entity
@@ -25,7 +24,7 @@ public class MenuItem {
 
   private String name;
   private double price;
-  private int caloricInfo;
+  private String caloricInfo;
   private List<String> dietaryRestrictions;
   private List<String> allergenInformation;
   private int popularity;
@@ -63,11 +62,11 @@ public class MenuItem {
     this.price = price;
   }
 
-  public int getCaloricInfo() {
+  public String getCaloricInfo() {
     return caloricInfo;
   }
 
-  public void setCaloricInfo(int caloricInfo) {
+  public void setCaloricInfo(String caloricInfo) {
     this.caloricInfo = caloricInfo;
   }
 
@@ -93,6 +92,14 @@ public class MenuItem {
 
   public void setPopularity(int popularity) {
     this.popularity = popularity;
+  }
+  
+  public Menu getMenu() {
+    return menu;
+  }
+
+  public void setMenu(Menu menu) {
+    this.menu = menu;
   }
 }
 
