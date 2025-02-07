@@ -12,26 +12,34 @@ public class Waiter {
     @SuppressWarnings("unused") // Currently suppressed as they are not used
     private List<String> currentOrders;  // Assuming orders are represented as Strings
     
-    // We will need menu class to be completed before this runs
-    // private Menu menu;
+    private Menu menu;
     
-    // Constructor - This is also currently not in use until Menu is created separately
-    /*
-     * public Waiter(int id, String name, String status, Menu menu) { this.id = id; this.name =
-     * name; this.status = status; this.menu = menu; }
-     */
 
-    // Methods - Below is an example we can use once the menu class is implemented correctly
+    public Waiter(int id, String name, String status, Menu menu) {
+      this.id = id;
+      this.name = name;
+      this.status = status;
+      this.menu = menu;
+    }
+
+
     public void changeMenu(String itemName, boolean availability) {
-      // if (menu != null) {
-      // menu.updateItemAvailability(itemName, availability);
-      // System.out.println("Menu updated: " + itemName + " is now " + (availability ? "available" :
-      // "unavailable"));
-      // } else {
-      // System.out.println("No menu is associated with this waiter.");
-      // }
-      // }
-      // Apologies for the formatting, have fun fixing it!
+      // Check if the waiter has a menu associated
+      if (menu != null) {
+        // Find the menu item by name
+        MenuItem item = menu.getItemByName(itemName);
+
+        if (item != null) {
+          // Update the availability of the menu item
+          item.setAvailable(availability);
+          System.out.println("Menu updated: " + itemName + " is now "
+              + (availability ? "available" : "unavailable"));
+        } else {
+          System.out.println("Item " + itemName + " not found in the menu.");
+        }
+      } else {
+        System.out.println("No menu is associated with this waiter.");
+      }
     }
 
     public void confirmOrder() {
