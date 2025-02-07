@@ -1,0 +1,106 @@
+package uk.ac.rhul.cs2810.model;
+
+import java.util.List;
+
+/**
+ * Waiter class.
+ */
+public class Waiter {
+  // Attributes - Currently not all are going to be in use
+  private int id;
+  private String name;
+  @SuppressWarnings("unused") // Currently suppressed as they are not used
+  private List<Integer> assignedTables; // Assuming a list of table IDs
+  private String status;
+  @SuppressWarnings("unused") // Currently suppressed as they are not used
+  private List<String> currentOrders; // Assuming orders are represented as Strings
+
+  private Menu menu;
+
+
+  /**
+   * Waiter constructor.
+   *
+   * @param id as id.
+   * @param name as name
+   * @param status as status
+   * @param menu as the menu
+   */
+  public Waiter(int id, String name, String status, Menu menu) {
+    this.id = id;
+    this.name = name;
+    this.status = status;
+    this.menu = menu;
+  }
+
+
+  /**
+   * Change menu as in Sprint1.
+   *
+   * @param itemName as itemname
+   * @param availability as availability
+   */
+  public void changeMenu(String itemName, boolean availability) {
+    // Check if the waiter has a menu associated
+    if (menu != null) {
+      // Find the menu item by name
+      MenuItem item = menu.getItemByName(itemName);
+
+      if (item != null) {
+        // Update the availability of the menu item
+        item.setAvailable(availability);
+        System.out.println("Menu updated: " + itemName + " is now "
+            + (availability ? "available" : "unavailable"));
+      } else {
+        System.out.println("Item " + itemName + " not found in the menu.");
+      }
+    } else {
+      System.out.println("No menu is associated with this waiter.");
+    }
+  }
+
+  public void confirmOrder() {
+    // Method implementation goes here
+  }
+
+  public void trackOrder() {
+    // Method implementation goes here
+  }
+
+  public void updateOrderStatus() {
+    // Method implementation goes here
+  }
+
+  public void cancelOrder() {
+    // Method implementation goes here
+  }
+
+  public void notifyTeam() {
+    // Method implementation goes here
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  // Temporary getters and setters created, they may be used later.
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+}

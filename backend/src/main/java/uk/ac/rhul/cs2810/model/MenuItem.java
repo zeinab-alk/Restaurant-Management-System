@@ -45,6 +45,19 @@ public class MenuItem {
    */
   private int popularity;
 
+  // Added by Ben for Waiter class specifically.
+  private boolean availability;
+
+  // getter and setter for availability
+  public boolean isAvailable() {
+    return availability;
+  }
+
+  public void setAvailable(boolean availability) {
+    this.availability = availability;
+  }
+
+
   /**
    * Default constructor that initializes dietaryRestrictions and allergenInformation as empty
    * lists.
