@@ -1,8 +1,11 @@
 package uk.ac.rhul.cs2810.model;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,12 +15,16 @@ public class WaiterTest {
   private Menu mockMenu;
   private MenuItem mockMenuItem;
 
+  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  private final PrintStream originalSystemOut = System.out;
+
   @BeforeEach
   public void setUp() {
     // Mock the Menu and MenuItem to isolate the Waiter class logic
     mockMenu = mock(Menu.class);
     mockMenuItem = mock(MenuItem.class);
     waiter = new Waiter(1, "John", "Active", mockMenu);
+    System.setOut(new PrintStream(outContent));
   }
 
   @Test
@@ -29,18 +36,33 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemFound() {
-    // Mock behavior: when getItemByName is called, return the mock menu item
+  public void testChangeMenu_ItemFound_TrueAvailability() {
+    // Mock behaviour: when getItemByName is called, return the mock menu item
     when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
 
-    // Test the changeMenu method
+    // Test the changeMenu method with availability = true
     waiter.changeMenu("Pizza", true);
 
     // Verify the setAvailable method was called on the menu item
     verify(mockMenuItem).setAvailable(true);
 
-    // Check the output (would require capturing system output in a real test)
-    // No assert here, but you could capture the output if necessary
+    // Assert the output is correct for "available"
+    assertTrue(outContent.toString().contains("Pizza is now available"));
+  }
+
+  @Test
+  public void testChangeMenu_ItemFound_FalseAvailability() {
+    // Mock behaviour: when getItemByName is called, return the mock menu item
+    when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
+
+    // Test the changeMenu method with availability = false
+    waiter.changeMenu("Pizza", false);
+
+    // Verify the setAvailable method was called on the menu item
+    verify(mockMenuItem).setAvailable(false);
+
+    // Assert the output is correct for "unavailable"
+    assertTrue(outContent.toString().contains("Pizza is now unavailable"));
   }
 
   @Test
@@ -53,6 +75,9 @@ public class WaiterTest {
 
     // Verify that the item was not updated (no call to setAvailable)
     verify(mockMenuItem, never()).setAvailable(anyBoolean());
+
+    // Assert the correct message is printed when item is not found
+    assertTrue(outContent.toString().contains("Item Burger not found in the menu."));
   }
 
   @Test
@@ -65,6 +90,9 @@ public class WaiterTest {
 
     // Verify that nothing happened (no menu to change)
     verify(mockMenu, never()).getItemByName(anyString());
+
+    // Assert the correct message is printed when no menu is associated
+    assertTrue(outContent.toString().contains("No menu is associated with this waiter."));
   }
 
   @Test
@@ -109,6 +137,12 @@ public class WaiterTest {
   public void testNotifyTeam() {
     // Here you would check the behavior of notifyTeam
     assertDoesNotThrow(() -> waiter.notifyTeam());
+  }
+
+  // Reset System.out after the test
+  @AfterEach
+  public void restoreSystemOut() {
+    System.setOut(originalSystemOut);
   }
 }
 

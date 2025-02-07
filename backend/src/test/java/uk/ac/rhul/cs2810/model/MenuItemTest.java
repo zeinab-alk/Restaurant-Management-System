@@ -1,6 +1,8 @@
 package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,5 +43,21 @@ public class MenuItemTest {
     assertEquals(testDietary, item.getDietaryRestrictions());
     assertEquals(testAllergens, item.getAllergenInformation());
     assertEquals(5, item.getPopularity());
+  }
+
+  @Test
+  void testSetAvailable() {
+    // Set availability to true
+    item.setAvailable(true);
+    // Verify that the availability is true
+    assertTrue(item.isAvailable(), "The availability should be true.");
+  }
+
+  @Test
+  void testIsAvailable() {
+    // Set availability to false
+    item.setAvailable(false);
+    // Verify that the availability is false
+    assertFalse(item.isAvailable(), "The availability should be false.");
   }
 }
