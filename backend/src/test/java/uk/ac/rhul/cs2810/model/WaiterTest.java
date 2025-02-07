@@ -1,14 +1,26 @@
 package uk.ac.rhul.cs2810.model;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
-import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Waiter class.
+ */
 public class WaiterTest {
 
   private Waiter waiter;
@@ -18,6 +30,9 @@ public class WaiterTest {
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final PrintStream originalSystemOut = System.out;
 
+  /**
+   * Will run first always.
+   */
   @BeforeEach
   public void setUp() {
     // Mock the Menu and MenuItem to isolate the Waiter class logic
