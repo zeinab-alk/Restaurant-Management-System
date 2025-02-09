@@ -1,5 +1,10 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ElementCollection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,11 +13,14 @@ import java.util.List;
  * This class holds essential information such as ID, name, price, calorie count, dietary
  * restrictions, allergen details, and popularity.
  */
+@Entity  // Marks this class as a JPA entity
 public class MenuItem {
 
   /**
    * The unique ID of this menu item.
    */
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int itemId;
 
   /**
@@ -33,11 +41,13 @@ public class MenuItem {
   /**
    * List of dietary restrictions (e.g., vegetarian, vegan).
    */
+  @ElementCollection  // For collections of simple types
   private List<String> dietaryRestrictions;
 
   /**
    * List of allergens (e.g., nuts, gluten).
    */
+  @ElementCollection  // For collections of simple types
   private List<String> allergenInformation;
 
   /**
@@ -84,6 +94,7 @@ public class MenuItem {
   public void setName(String name) {
     this.name = name;
   }
+
 
   public double getPrice() {
     return price;
