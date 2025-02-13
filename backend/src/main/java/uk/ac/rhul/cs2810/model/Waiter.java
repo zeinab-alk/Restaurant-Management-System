@@ -66,18 +66,17 @@ public class Waiter {
    */
   public void markOrderAsDelivered(Order order) {
     if (order == null) {
-      System.out.println("Invalid order / Does not exist. Cannot mark as delivered.");
+      System.out.println("Order is null.");
       return;
     }
 
-    if ("Delivered".equalsIgnoreCase(order.getStatus())) {
-      System.out.println("Order " + order.getOrderNumber() + " has already been delivered.");
-      return;
+    String orderStatus = order.getStatus();
+    if (orderStatus != null && !orderStatus.equalsIgnoreCase("Delivered")) {
+      order.setStatus("Delivered");
+      System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
+    } else {
+      System.out.println("Order is already delivered or invalid.");
     }
-
-    order.setStatus("Delivered");
-    System.out.println("Order " + order.getOrderNumber()
-        + " has been successfully updated to status of Delivered.");
   }
 
   public void confirmOrder() {
