@@ -66,20 +66,25 @@ public class Waiter {
    */
   public void markOrderAsDelivered(Order order) {
     if (order == null) {
-      System.out.println("Order is null.");
+      System.out.println("Order is null."); // Matches expected test output
       return;
     }
 
     String orderStatus = order.getStatus();
 
-    // Check for null, empty, or already delivered status
-    if (orderStatus == null || orderStatus.isEmpty() || orderStatus.equalsIgnoreCase("Delivered")) {
+    if (orderStatus == null) { // Separate check for null status
+      System.out.println("Order status is null.");
+      return;
+    }
+
+    if (orderStatus.trim().isEmpty() || "Delivered".equalsIgnoreCase(orderStatus)) {
       System.out.println("Order is already delivered or invalid.");
     } else {
       order.setStatus("Delivered");
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
+
 
 
   public void confirmOrder() {
