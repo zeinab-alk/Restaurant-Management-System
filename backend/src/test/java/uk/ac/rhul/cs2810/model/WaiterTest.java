@@ -205,6 +205,18 @@ public class WaiterTest {
     verify(mockOrder).setStatus("Delivered");
   }
 
+  @Test
+  public void testMarkOrderAsDeliveredMethodOutputVerification() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Pending");
+    when(mockOrder.getOrderNumber()).thenReturn(222);
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    String output = outContent.toString();
+    assertTrue(output.contains("Order 222 has been marked as Delivered."));
+  }
+
 
   // Reset System.out after the test
   @AfterEach
