@@ -14,11 +14,13 @@ import {
   TableRow,
   Chip,
   useTheme,
-  Alert
+  Alert,
+  Tooltip
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import { API_ENDPOINT } from '../config';
+import { dietarySymbols } from '../utils/foodInfoSymbols';
 
 const ChangeMenuItem = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -108,15 +110,19 @@ const ChangeMenuItem = () => {
                   <TableCell>£{item.price.toFixed(2)}</TableCell>
                   <TableCell>{item.caloricInfo} kcal</TableCell>
                   <TableCell>
-                    <Stack direction="row" spacing={1}>
-                      {item.dietaryRestrictions.map((restriction, index) => (
-                        <Chip 
-                          key={index} 
-                          label={restriction} 
-                          size="small" 
-                          color="primary" 
-                          variant="outlined"
-                        />
+                    <Stack direction="row" spacing={0.5}>
+                      {item.dietaryRestrictions?.map((restriction, index) => (
+                        <Tooltip key={index} title={restriction} arrow>
+                          <span style={{ 
+                            fontSize: '1.2rem',
+                            padding: '0 2px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,0,0,0.05)',
+                            margin: '0 2px'
+                          }}>
+                            {dietarySymbols[restriction]}
+                          </span>
+                        </Tooltip>
                       ))}
                     </Stack>
                   </TableCell>
