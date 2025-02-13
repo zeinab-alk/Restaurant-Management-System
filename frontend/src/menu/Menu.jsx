@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { 
   Typography, 
@@ -27,38 +27,12 @@ function Menu() {
   const [menuItems, setMenuItems] = React.useState([]);
   const [error, setError] = React.useState();
   const theme = useTheme();
-  const [selectedDietary, setSelectedDietary] = React.useState([]);
-  const [selectedAllergens, setSelectedAllergens] = React.useState([]);
-  const [minPrice, setMinPrice] = React.useState('');
-  const [maxPrice, setMaxPrice] = React.useState('');
-  const [sortBy, setSortBy] = React.useState('');
 
-  const dietaryOptions = [
-    'Vegetarian',
-    'Vegan', 
-    'Gluten-Free',
-    'Dairy-Free',
-    'Halal',
-    'Kosher'
-  ];
-
-  const allergenOptions = [
-    'Milk',
-    'Eggs',
-    'Fish',
-    'Shellfish',
-    'Tree Nuts',
-    'Peanuts',
-    'Wheat',
-    'Soy',
-    'Sesame'
-  ];
+  // Cart State
+  const [cart, setCart] = useState([]);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   React.useEffect(() => {
-    updateMenu();
-  }, []);
-
-  function updateMenu() {
     axios
       .get(`${API_ENDPOINT}/api/menuItems`)
       .then((response) => {
@@ -67,17 +41,45 @@ function Menu() {
       .catch((response) => {
         setError(response.message);
       });
-  }
+  }, []);
+
+  // Add item to cart
+  const addToCart = (item) => {
+    setCart([...cart, item]);
+  };
+
+  // Remove item from cart
+  const removeFromCart = (index) => {
+    const updatedCart = cart.filter((_, i) => i !== index);
+    setCart(updatedCart);
+  };
+
+  // Place order
+  const placeOrder = async () => {
+    if (cart.length === 0) {
+      alert("Your order is empty!");
+      return;
+    }
+
+    const orderData = {
+      customerName: "Guest",
+      menuItemIds: cart.map(item => item.itemId),
+    };
+
+    try {
+      await axios.post(`${API_ENDPOINT}/api/orders`, orderData);
+      setOrderSuccess(true);
+      setCart([]);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Failed to place order.");
+    }
+  };
 
   return (
     <Container>
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button
-          component={RouterLink}
-          to="/"
-          variant="contained"
-          color="success"
-        >
+        <Button component={RouterLink} to="/" variant="contained" color="success">
           Back to Home
         </Button>
       </Stack>
@@ -85,48 +87,6 @@ function Menu() {
       <Typography variant="h3" component="h1" gutterBottom>
         Our Menu
       </Typography>
-
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <TextField
-          label="Min Price"
-          type="number"
-          value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)}
-          sx={{ width: 120 }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-        <TextField
-          label="Max Price"
-          type="number"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
-          sx={{ width: 120 }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-        <Autocomplete
-          options={['Price (Low-High)', 'Price (High-Low)', 'Popularity', 'Calories']}
-          value={sortBy}
-          onChange={(_, newValue) => setSortBy(newValue)}
-          renderInput={(params) => <TextField {...params} label="Sort By" />}
-          sx={{ width: 200 }}
-        />
-        <Autocomplete
-          multiple
-          options={dietaryOptions}
-          value={selectedDietary}
-          onChange={(_, newValue) => setSelectedDietary(newValue)}
-          renderInput={(params) => <TextField {...params} label="Filter by Dietary" />}
-          sx={{ width: 300 }}
-        />
-        <Autocomplete
-          multiple
-          options={allergenOptions}
-          value={selectedAllergens}
-          onChange={(_, newValue) => setSelectedAllergens(newValue)}
-          renderInput={(params) => <TextField {...params} label="Exclude Allergens" />}
-          sx={{ width: 300 }}
-        />
-      </Stack>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!error && menuItems.length < 1 && (
@@ -138,103 +98,103 @@ function Menu() {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Name</TableCell>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Price</TableCell>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Calories</TableCell>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Dietary Info</TableCell>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Allergens</TableCell>
-                <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
-                  fontWeight: 'bold' 
-                }}>Status</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Name</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Price</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Calories</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Dietary Info</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Allergens</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Status</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {menuItems
-                .filter(item => {
-                  const price = item.price;
-                  const meetsPrice = (!minPrice || price >= minPrice) && 
-                                    (!maxPrice || price <= maxPrice);
-                  const hasDietary = selectedDietary.every(d => item.dietaryRestrictions.includes(d));
-                  const excludesAllergens = selectedAllergens.length === 0 || 
-                                            !selectedAllergens.some(a => item.allergenInformation.includes(a));
-                  return hasDietary && excludesAllergens && meetsPrice;
-                })
-                .sort((a, b) => {
-                  if(sortBy === 'Price (Low-High)') return a.price - b.price;
-                  if(sortBy === 'Price (High-Low)') return b.price - a.price;
-                  if(sortBy === 'Popularity') return b.popularity - a.popularity;
-                  if(sortBy === 'Calories') return a.caloricInfo - b.caloricInfo;
-                  return 0;
-                })
-                .map((item) => (
-                  <TableRow 
-                    key={item.itemId}
-                    sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      <Typography variant="subtitle1">{item.name}</Typography>
-                    </TableCell>
-                    <TableCell>£{item.price.toFixed(2)}</TableCell>
-                    <TableCell>{item.caloricInfo} kcal</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={0.5}>
-                        {item.dietaryRestrictions.map((restriction, index) => (
-                          <Tooltip key={index} title={restriction} arrow>
-                            <span style={{ 
-                              fontSize: '1.2rem',
-                              padding: '0 2px',
-                              borderRadius: '50%',
-                              backgroundColor: 'rgba(0,0,0,0.05)',
-                              margin: '0 2px'
-                            }}>
-                              {dietarySymbols[restriction]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={0.5}>
-                        {item.allergenInformation.map((allergen, index) => (
-                          <Tooltip key={index} title={allergen} arrow>
-                            <span style={{ fontSize: '1.2rem' }}>
-                              {allergenSymbols[allergen]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={item.available ? "Available" : "Unavailable"}
-                        color={item.available ? "success" : "error"}
-                        size="small"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {menuItems.map((item) => (
+                <TableRow key={item.itemId}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>£{item.price.toFixed(2)}</TableCell>
+                  <TableCell>{item.caloricInfo} kcal</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={0.5}>
+                      {item.dietaryRestrictions.map((restriction, index) => (
+                        <Tooltip key={index} title={restriction} arrow>
+                          <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[restriction]}</span>
+                        </Tooltip>
+                      ))}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={0.5}>
+                      {item.allergenInformation.map((allergen, index) => (
+                        <Tooltip key={index} title={allergen} arrow>
+                          <span style={{ fontSize: '1.2rem' }}>{allergenSymbols[allergen]}</span>
+                        </Tooltip>
+                      ))}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={item.available ? "Available" : "Unavailable"}
+                      color={item.available ? "success" : "error"}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {item.available && (
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        onClick={() => addToCart(item)}
+                      >
+                        Add to Order
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {/* Cart Summary */}
+      <Typography variant="h4" sx={{ mt: 4 }}>Your Order</Typography>
+      {cart.length === 0 ? (
+        <Typography>No items in cart</Typography>
+      ) : (
+        <Paper sx={{ p: 2, mt: 2 }}>
+          <Typography variant="h6">Items: {cart.length}</Typography>
+          <Typography variant="h6">
+            Total: £{cart.reduce((total, item) => total + item.price, 0).toFixed(2)}
+          </Typography>
+          {cart.map((item, index) => (
+            <Stack key={index} direction="row" justifyContent="space-between">
+              <Typography>{item.name} - £{item.price.toFixed(2)}</Typography>
+              <Button 
+                variant="contained" 
+                color="error" 
+                size="small" 
+                onClick={() => removeFromCart(index)}
+              >
+                Remove
+              </Button>
+            </Stack>
+          ))}
+          <Button variant="contained" color="success" sx={{ mt: 2 }} onClick={placeOrder}>
+            Place Order
+          </Button>
+        </Paper>
+      )}
+
+      {/* Order Confirmation Message */}
+      {orderSuccess && (
+        <Alert severity="success" sx={{ mt: 2 }}>
+          Order placed successfully!
+        </Alert>
       )}
     </Container>
   );
 }
 
 export default Menu;
+
+
