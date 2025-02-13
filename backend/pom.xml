@@ -14,7 +14,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>TeamProject23</name>
   <description>Demo project for Spring Boot</description>
-  <url/>
+  <url />
   <licenses>
     <license />
   </licenses>
@@ -22,7 +22,7 @@
     <developer />
   </developers>
   <scm>
-  <connection />
+    <connection />
     <developerConnection />
     <tag />
     <url />
@@ -75,7 +75,8 @@
       <version>2.0.2</version>
     </dependency>
   </dependencies>
-<build>
+
+  <build>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -108,6 +109,18 @@
           <excludes>
             <exclude>**/TeamProject23Application*</exclude>
           </excludes>
+          <rules>
+            <rule>
+              <element>PACKAGE</element>
+              <limits>
+                <limit>
+                  <counter>LINE</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.90</minimum>
+                </limit>
+              </limits>
+            </rule>
+          </rules>
         </configuration>
         <executions>
           <execution>
@@ -124,29 +137,16 @@
           </execution>
           <execution>
             <id>jacoco-check</id>
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
-            <configuration>
-              <rules>
-                <rule>
-                  <element>PACKAGE</element>
-                  <limits>
-                    <limit>
-                      <counter>LINE</counter>
-                      <value>COVEREDRATIO</value>
-                      <minimum>0.9</minimum>
-                    </limit>
-                  </limits>
-                </rule>
-              </rules>
-            </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
-  
+
   <reporting>
     <plugins>
       <plugin>
@@ -210,6 +210,3 @@
   </reporting>
 
 </project>
-
-
-    
