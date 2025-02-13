@@ -223,6 +223,16 @@ public class WaiterTest {
     assertTrue(output.contains("has been marked as Delivered"));
   }
 
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfEmptyStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(""); // Empty status
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+  }
+
 
 
   // Reset System.out after the test
