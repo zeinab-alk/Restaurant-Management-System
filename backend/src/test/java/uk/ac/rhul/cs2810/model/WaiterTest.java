@@ -184,6 +184,28 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order has already been delivered or is invalid."));
   }
 
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfCaseInsensitiveStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("delivered"); // Lower case "delivered"
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder, never()).setStatus(anyString());
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfUnexpectedStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Processing");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder).setStatus("Delivered");
+  }
+
+
   // Reset System.out after the test
   @AfterEach
   public void restoreSystemOut() {
