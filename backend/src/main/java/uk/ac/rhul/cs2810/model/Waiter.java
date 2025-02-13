@@ -59,6 +59,27 @@ public class Waiter {
     }
   }
 
+  /**
+   * Updates the status of the given order to "Delivered" if it hasn't been delivered yet.
+   *
+   * @param order The order to update.
+   */
+  public void markOrderAsDelivered(Order order) {
+    if (order == null) {
+      System.out.println("Invalid order / Does not exist. Cannot mark as delivered.");
+      return;
+    }
+
+    if ("Delivered".equalsIgnoreCase(order.getStatus())) {
+      System.out.println("Order " + order.getOrderNumber() + " has already been delivered.");
+      return;
+    }
+
+    order.setStatus("Delivered");
+    System.out.println("Order " + order.getOrderNumber()
+        + " has been successfully updated to status of Delivered.");
+  }
+
   public void confirmOrder() {
     // Method implementation goes here
   }
@@ -103,4 +124,5 @@ public class Waiter {
   public void setStatus(String status) {
     this.status = status;
   }
+
 }
