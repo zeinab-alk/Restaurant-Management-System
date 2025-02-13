@@ -154,6 +154,36 @@ public class WaiterTest {
     assertDoesNotThrow(() -> waiter.notifyTeam());
   }
 
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfSuccessfulDelivery() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Pending");
+    when(mockOrder.getOrderNumber()).thenReturn(123);
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder).setStatus("Delivered");
+    assertTrue(
+        outContent.toString().contains("Order 123 has been successfully marked as Delivered."));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfAlreadyDelivered() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Delivered");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder, never()).setStatus(anyString());
+    assertTrue(outContent.toString().contains("Order has already been delivered or is invalid."));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfNullOrder() {
+    waiter.markOrderAsDelivered(null);
+    assertTrue(outContent.toString().contains("Order has already been delivered or is invalid."));
+  }
+
   // Reset System.out after the test
   @AfterEach
   public void restoreSystemOut() {
