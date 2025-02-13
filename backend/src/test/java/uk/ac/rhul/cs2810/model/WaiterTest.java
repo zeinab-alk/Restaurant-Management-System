@@ -222,16 +222,30 @@ public class WaiterTest {
     String output = outContent.toString();
     assertTrue(output.contains("has been marked as Delivered"));
   }
-
+  
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyStatus() {
+      Order mockOrder = mock(Order.class);
+      when(mockOrder.getStatus()).thenReturn(""); // Empty status
+
+      waiter.markOrderAsDelivered(mockOrder);
+
+      // This should now contain the expected message
+      assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfInProgressStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn(""); // Empty status
+    when(mockOrder.getStatus()).thenReturn("in-progress");
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+    verify(mockOrder).setStatus("Delivered");
+    assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
+
+
 
 
 
