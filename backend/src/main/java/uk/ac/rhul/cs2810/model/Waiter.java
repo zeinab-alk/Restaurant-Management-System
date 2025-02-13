@@ -71,13 +71,16 @@ public class Waiter {
     }
 
     String orderStatus = order.getStatus();
-    if (orderStatus != null && !orderStatus.equalsIgnoreCase("Delivered")) {
+
+    // Check for null, empty, or already delivered status
+    if (orderStatus == null || orderStatus.isEmpty() || orderStatus.equalsIgnoreCase("Delivered")) {
+      System.out.println("Order is already delivered or invalid.");
+    } else {
       order.setStatus("Delivered");
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
-    } else {
-      System.out.println("Order is already delivered or invalid.");
     }
   }
+
 
   public void confirmOrder() {
     // Method implementation goes here
