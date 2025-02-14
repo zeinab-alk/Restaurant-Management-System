@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/java,vim,eclipse,maven,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,vim,eclipse,maven,macos,windows
 
+# Ignore node_modules
+node_modules/
+
 ### Eclipse ###
 .metadata
 bin/
