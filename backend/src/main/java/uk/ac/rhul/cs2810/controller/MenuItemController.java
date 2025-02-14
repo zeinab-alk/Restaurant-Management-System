@@ -33,7 +33,6 @@ public class MenuItemController {
     @PostMapping("/menuItems")
     public ResponseEntity<?> addMenuItem(@RequestBody MenuItem menuItem) {
         try {
-            menuItem.setItemId(0);
             MenuItem savedMenuItem = menuItemRepository.save(menuItem);
             return ResponseEntity.ok(savedMenuItem);
         } catch (Exception e) {

@@ -21,7 +21,7 @@ public class MenuItem {
    */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int itemId;
+  private Integer itemId;
 
   /**
    * The name of this menu item.
