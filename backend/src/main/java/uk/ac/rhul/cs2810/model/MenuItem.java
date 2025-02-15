@@ -1,10 +1,10 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,49 +16,23 @@ import java.util.List;
 @Entity  // Marks this class as a JPA entity
 public class MenuItem {
 
-  /**
-   * The unique ID of this menu item.
-   */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer itemId;
 
-  /**
-   * The name of this menu item.
-   */
   private String name;
-
-  /**
-   * The price of this menu item.
-   */
   private double price;
-
-  /**
-   * The number of calories in this menu item.
-   */
   private int caloricInfo;
 
-  /**
-   * List of dietary restrictions (e.g., vegetarian, vegan).
-   */
   @ElementCollection  // For collections of simple types
   private List<String> dietaryRestrictions;
 
-  /**
-   * List of allergens (e.g., nuts, gluten).
-   */
   @ElementCollection  // For collections of simple types
   private List<String> allergenInformation;
 
-  /**
-   * Tracks how popular the item is among customers.
-   */
   private int popularity;
-
-  // Added by Ben for Waiter class specifically.
   private boolean availability;
 
-  // getter and setter for availability
   public boolean isAvailable() {
     return availability;
   }
@@ -66,7 +40,6 @@ public class MenuItem {
   public void setAvailable(boolean availability) {
     this.availability = availability;
   }
-
 
   /**
    * Default constructor that initializes dietaryRestrictions and allergenInformation as empty
@@ -76,8 +49,6 @@ public class MenuItem {
     this.dietaryRestrictions = new ArrayList<>();
     this.allergenInformation = new ArrayList<>();
   }
-
-  // -- getters and setters below --
 
   public int getItemId() {
     return itemId;
@@ -94,7 +65,6 @@ public class MenuItem {
   public void setName(String name) {
     this.name = name;
   }
-
 
   public double getPrice() {
     return price;
