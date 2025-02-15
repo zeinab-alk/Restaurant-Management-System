@@ -2,6 +2,8 @@ package uk.ac.rhul.cs2810.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,10 +20,12 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "orders") // Ensures the table name is properly created
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Order {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @JsonProperty("orderNumber")
   private int orderNumber;
 
   @ManyToOne
@@ -35,6 +39,8 @@ public class Order {
 
   private String orderTime;
   private int waitingTime;
+
+  @JsonProperty("status")
   private String status;
 
   /**
@@ -53,119 +59,60 @@ public class Order {
     this.orderTime = orderTime;
     this.waitingTime = waitingTime;
     this.status = status;
+    this.items = new ArrayList<>();
   }
 
-  // Default constructor (needed for JPA)
+  // Default constructor (needed for JPA & JSON serialization)
   public Order() {
     this.items = new ArrayList<>();
   }
 
   // Getter and Setter methods
 
-  /**
-   * Gets the order number.
-   *
-   * @return The order number.
-   */
   public int getOrderNumber() {
     return orderNumber;
   }
 
-  /**
-   * Sets the order number.
-   *
-   * @param orderNumber The order number to set.
-   */
   public void setOrderNumber(int orderNumber) {
     this.orderNumber = orderNumber;
   }
 
-  /**
-   * Gets the customer who placed the order.
-   *
-   * @return The customer.
-   */
   public Customer getCustomer() {
     return customer;
   }
 
-  /**
-   * Sets the customer for the order.
-   *
-   * @param customer The customer to set.
-   */
   public void setCustomer(Customer customer) {
     this.customer = customer;
   }
 
-  /**
-   * Gets the list of items in the order.
-   *
-   * @return A list of menu items.
-   */
   public List<MenuItem> getItems() {
     return items;
   }
 
-  /**
-   * Sets the list of items in the order.
-   *
-   * @param items The list of menu items to set.
-   */
   public void setItems(List<MenuItem> items) {
-    this.items = items;
+    this.items = (items != null) ? items : new ArrayList<>();
   }
 
-  /**
-   * Gets the time the order was placed.
-   *
-   * @return The order time as a string.
-   */
   public String getOrderTime() {
     return orderTime;
   }
 
-  /**
-   * Sets the order time.
-   *
-   * @param orderTime The order time to set.
-   */
   public void setOrderTime(String orderTime) {
     this.orderTime = orderTime;
   }
 
-  /**
-   * Gets the estimated waiting time for the order.
-   *
-   * @return The waiting time in minutes.
-   */
   public int getWaitingTime() {
     return waitingTime;
   }
 
-  /**
-   * Sets the estimated waiting time for the order.
-   *
-   * @param waitingTime The waiting time in minutes.
-   */
   public void setWaitingTime(int waitingTime) {
     this.waitingTime = waitingTime;
   }
 
-  /**
-   * Gets the current status of the order.
-   *
-   * @return The order status.
-   */
   public String getStatus() {
     return status;
   }
 
-  /**
-   * Sets the order status.
-   *
-   * @param status The status to set.
-   */
   public void setStatus(String status) {
     this.status = status;
   }
@@ -178,6 +125,9 @@ public class Order {
    * @param menuItem The menu item to add.
    */
   public void addItem(MenuItem menuItem) {
+    if (this.items == null) {
+      this.items = new ArrayList<>();
+    }
     items.add(menuItem);
   }
 
@@ -187,7 +137,9 @@ public class Order {
    * @param menuItem The menu item to remove.
    */
   public void removeItem(MenuItem menuItem) {
-    items.remove(menuItem);
+    if (this.items != null) {
+      items.remove(menuItem);
+    }
   }
 
   /**
@@ -212,6 +164,13 @@ public class Order {
     this.status = newStatus;
   }
 
+
+  /*
+   * public String getOrderDetails() { // Some optional debug output }
+   */
+
+
+
   /*
    * public String getOrderDetails() { StringBuilder details = new StringBuilder();
    * details.append("Order Number: ").append(orderNumber).append("\n");
@@ -229,5 +188,6 @@ public class Order {
    * 
    * return details.toString(); }
    */
+
 
 }
