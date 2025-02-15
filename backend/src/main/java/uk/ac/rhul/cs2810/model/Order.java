@@ -1,7 +1,5 @@
 package uk.ac.rhul.cs2810.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
@@ -13,10 +11,12 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Represents an order placed by a customer at a restaurant. This class contains details about the
- * order, including the customer, items, order time, waiting time, and status.
+ * Represents an order placed by a customer at a restaurant. Contains details about the order,
+ * including the customer, items, order time, waiting time, and status.
  */
 @Entity
 @Table(name = "orders") // Ensures the table name is properly created
@@ -33,8 +33,11 @@ public class Order {
   private Customer customer;
 
   @ManyToMany
-  @JoinTable(name = "order_menu_items", joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "menu_item_id"))
+  @JoinTable(
+      name = "order_menu_items",
+      joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "menu_item_id")
+  )
   private List<MenuItem> items = new ArrayList<>();
 
   private String orderTime;
@@ -62,12 +65,12 @@ public class Order {
     this.items = new ArrayList<>();
   }
 
-  // Default constructor (needed for JPA & JSON serialization)
+  /**
+   * Default constructor (needed for JPA & JSON serialization).
+   */
   public Order() {
     this.items = new ArrayList<>();
   }
-
-  // Getter and Setter methods
 
   public int getOrderNumber() {
     return orderNumber;
@@ -117,8 +120,6 @@ public class Order {
     this.status = status;
   }
 
-  // Methods
-
   /**
    * Adds a menu item to the order.
    *
@@ -148,11 +149,7 @@ public class Order {
    * @return The total price of the order.
    */
   public double getOrderSum() {
-    double total = 0;
-    for (MenuItem item : items) {
-      total += item.getPrice();
-    }
-    return total;
+    return items.stream().mapToDouble(MenuItem::getPrice).sum();
   }
 
   /**
@@ -164,30 +161,29 @@ public class Order {
     this.status = newStatus;
   }
 
-
   /*
    * public String getOrderDetails() { // Some optional debug output }
    */
 
-
-
   /*
-   * public String getOrderDetails() { StringBuilder details = new StringBuilder();
-   * details.append("Order Number: ").append(orderNumber).append("\n");
-   * //details.append("Customer: ").append(customer.getName()).append("\n");
-   * details.append("Items:\n");
-   * 
-   * for (MenuItem item : items) {
-   * details.append("- ").append(item.getName()).append(": $").append(item.getPrice())
-   * .append("\n"); }
-   * 
-   * details.append("Total Price: $").append(getOrderSum()).append("\n");
-   * details.append("Order Time: ").append(orderTime).append("\n");
-   * details.append("Waiting Time: ").append(waitingTime).append(" minutes\n");
-   * details.append("Status: ").append(status).append("\n");
-   * 
-   * return details.toString(); }
+   * public String getOrderDetails() {
+   *   StringBuilder details = new StringBuilder();
+   *   details.append("Order Number: ").append(orderNumber).append("\n");
+   *   //details.append("Customer: ").append(customer.getName()).append("\n");
+   *   details.append("Items:\n");
+   *
+   *   for (MenuItem item : items) {
+   *     details.append("- ").append(item.getName()).append(": $").append(item.getPrice())
+   *            .append("\n");
+   *   }
+   *
+   *   details.append("Total Price: $").append(getOrderSum()).append("\n");
+   *   details.append("Order Time: ").append(orderTime).append("\n");
+   *   details.append("Waiting Time: ").append(waitingTime).append(" minutes\n");
+   *   details.append("Status: ").append(status).append("\n");
+   *
+   *   return details.toString();
+   * }
    */
-
-
 }
+
