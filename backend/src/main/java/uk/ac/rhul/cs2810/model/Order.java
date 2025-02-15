@@ -2,21 +2,41 @@ package uk.ac.rhul.cs2810.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * Represents an order placed by a customer at a restaurant. This class contains details about the
  * order, including the customer, items, order time, waiting time, and status.
  */
+@Entity
+@Table(name = "orders") // Ensures the table name is properly created
 public class Order {
- 
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int orderNumber;
+
+  @ManyToOne
+  @JoinColumn(name = "customer_id")
   private Customer customer;
-  private List<MenuItem> items;
+
+  @ManyToMany
+  @JoinTable(name = "order_menu_items", joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "menu_item_id"))
+  private List<MenuItem> items = new ArrayList<>();
+
   private String orderTime;
   private int waitingTime;
   private String status;
-  
-  
+
   /**
    * Constructs an Order with the given parameters.
    *
@@ -30,13 +50,15 @@ public class Order {
       String status) {
     this.orderNumber = orderNumber;
     this.customer = customer;
-    this.items = new ArrayList<>();
     this.orderTime = orderTime;
     this.waitingTime = waitingTime;
     this.status = status;
   }
 
-
+  // Default constructor (needed for JPA)
+  public Order() {
+    this.items = new ArrayList<>();
+  }
 
   // Getter and Setter methods
 
