@@ -154,10 +154,153 @@ public class WaiterTest {
     assertDoesNotThrow(() -> waiter.notifyTeam());
   }
 
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfSuccessfulDelivery() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Pending"); // Ensure status is "Pending"
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    // Verify that setStatus was called with the correct argument ("Delivered")
+    verify(mockOrder).setStatus("Delivered");
+
+    // Check if the correct message was printed
+    String output = outContent.toString();
+    assertTrue(output.contains("has been marked as Delivered"));
+  }
+
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfAlreadyDelivered() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Delivered");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder, never()).setStatus("Delivered");
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+  }
+
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfCaseInsensitiveStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("delivered");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder, never()).setStatus("Delivered");
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+  }
+
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfUnexpectedStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Processing");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder).setStatus("Delivered");
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodOutputVerification() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Pending");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    String output = outContent.toString();
+    assertTrue(output.contains("has been marked as Delivered"));
+  }
+  
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfEmptyOrderStatus() {
+      Order mockOrder = mock(Order.class);
+      when(mockOrder.getStatus()).thenReturn(""); // Empty status
+
+      waiter.markOrderAsDelivered(mockOrder);
+
+      // This should trigger the "Order is already delivered or invalid" message.
+      assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfInProgressStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("in-progress");
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    verify(mockOrder).setStatus("Delivered");
+    assertTrue(outContent.toString().contains("has been marked as Delivered"));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfCompletedStatus() {
+    // Mock an order with the status "Completed"
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Completed");
+
+    // Call the markOrderAsDelivered method
+    waiter.markOrderAsDelivered(mockOrder);
+
+    // Verify that the status is changed to "Delivered"
+    verify(mockOrder).setStatus("Delivered");
+
+    // Check that the correct output is printed
+    assertTrue(outContent.toString().contains("has been marked as Delivered"));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfCancelledStatus() {
+    // Mock an order with the status "Cancelled"
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("Cancelled");
+
+    // Call the markOrderAsDelivered method
+    waiter.markOrderAsDelivered(mockOrder);
+
+    // Verify that the status is changed to "Delivered"
+    verify(mockOrder).setStatus("Delivered");
+
+    // Check that the correct output is printed
+    assertTrue(outContent.toString().contains("has been marked as Delivered"));
+  }
   // Reset System.out after the test
   @AfterEach
   public void restoreSystemOut() {
     System.setOut(originalSystemOut);
   }
+
+  @Test
+  public void testOrderNull() {
+    waiter.markOrderAsDelivered(null);
+    assertTrue(outContent.toString().contains("Order is null"));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfWhitespaceOrderStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn("   "); // Order status is only whitespace
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
+  }
+
+  @Test
+  public void testMarkOrderAsDeliveredMethodIfEmptyStringOrderStatus() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(""); // Empty string
+
+    waiter.markOrderAsDelivered(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
+  }
+
+
+
 }
 
