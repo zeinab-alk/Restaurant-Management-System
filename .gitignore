@@ -1,9 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/java,vim,eclipse,maven,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,vim,eclipse,maven,macos,windows
 
-# Ignore node_modules
-node_modules/
-
 ### Eclipse ###
 .metadata
 bin/
@@ -196,3 +193,41 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/java,vim,eclipse,maven,macos,windows
+
+### Frontend ###
+# Dependency directories
+node_modules/
+jspm_packages/
+.bower-cache/
+.bower-registry/
+.bower-tmp/
+
+# Build files
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Editor directories
+.idea/
+.vscode/
+
+# Package lock files
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+.pnp.*
