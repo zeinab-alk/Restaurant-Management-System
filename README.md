@@ -12,7 +12,7 @@ mvn spring-boot:run
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 ## Application Structure
