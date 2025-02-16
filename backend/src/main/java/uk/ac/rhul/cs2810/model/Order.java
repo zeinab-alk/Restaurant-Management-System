@@ -66,7 +66,7 @@ public class Order {
   }
 
   /**
-   * Default constructor (needed for JPA & JSON serialization).
+   * Default constructor (needed for JPA and JSON serialization).
    */
   public Order() {
     this.items = new ArrayList<>();
@@ -186,4 +186,5 @@ public class Order {
    * }
    */
 }
+
 
