@@ -1,5 +1,21 @@
-# Team Project
+# Restaurant Management System - Frontend
 
-This repository has been created to store your Team Project.
+## Development Setup
 
-You may edit it as you like, but please do not remove the default topics or the project members list. These need to stay as currently defined in order for your lecturer to be able to find and mark your work.
+### Backend Service
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+### Frontend Application
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Application Structure
+- Frontend runs on `http://localhost:5173`
+- Requires backend service running on `http://localhost:8080`
+- Uses Material-UI components with custom theme configuration
