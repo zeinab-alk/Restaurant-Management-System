@@ -27,6 +27,7 @@ function Menu() {
   const [menuItems, setMenuItems] = React.useState([]);
   const [error, setError] = React.useState();
   const theme = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Cart State
   const [cart, setCart] = useState([]);
@@ -94,6 +95,16 @@ function Menu() {
       )}
 
       {menuItems.length > 0 && (
+        <>
+          <TextField
+          label="Search Menu"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for a menu item..."
+        />
         <TableContainer component={Paper} elevation={3}>
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
@@ -108,7 +119,11 @@ function Menu() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {menuItems.map((item) => (
+              {menuItems
+              .filter((item) => 
+                item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item) => (
                 <TableRow key={item.itemId}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>£{item.price.toFixed(2)}</TableCell>
@@ -154,6 +169,7 @@ function Menu() {
             </TableBody>
           </Table>
         </TableContainer>
+        </>
       )}
 
       {/* Cart Summary */}
