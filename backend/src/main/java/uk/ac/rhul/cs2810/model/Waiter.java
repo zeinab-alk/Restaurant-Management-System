@@ -88,7 +88,7 @@ public class Waiter {
   /**
    * Allows waiter to confirm order placed by customer.
    */
-  public boolean confirmOrder() {
+  public boolean confirmOrder(Order order) {
     if (order == null) {
       return false;
     }
