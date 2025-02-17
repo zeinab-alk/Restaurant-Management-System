@@ -26,6 +26,7 @@ public class WaiterTest {
   private Waiter waiter;
   private Menu mockMenu;
   private MenuItem mockMenuItem;
+  Order order;
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final PrintStream originalSystemOut = System.out;
@@ -39,6 +40,8 @@ public class WaiterTest {
     mockMenu = mock(Menu.class);
     mockMenuItem = mock(MenuItem.class);
     waiter = new Waiter(1, "John", "Active", mockMenu);
+    Order order = new Order();
+    order.setStatus("Pending");
     System.setOut(new PrintStream(outContent));
   }
 
@@ -120,14 +123,6 @@ public class WaiterTest {
     assertEquals(2, waiter.getId());
     assertEquals("Mike", waiter.getName());
     assertEquals("Inactive", waiter.getStatus());
-  }
-
-  // Optionally add more tests for other methods, for example, confirmOrder, trackOrder, etc.
-  @Test
-  public void testConfirmOrder() {
-    // Here you would check the behavior of confirmOrder
-    // For now, it's just a placeholder method with no functionality
-    assertDoesNotThrow(() -> waiter.confirmOrder());
   }
 
   @Test
@@ -268,7 +263,7 @@ public class WaiterTest {
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
-  
+
   /**
    * Reset System.out after the test.
    */
@@ -302,8 +297,6 @@ public class WaiterTest {
 
     assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
   }
-
-
 
 }
 
