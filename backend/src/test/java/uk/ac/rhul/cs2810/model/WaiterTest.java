@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -40,7 +41,7 @@ public class WaiterTest {
     mockMenu = mock(Menu.class);
     mockMenuItem = mock(MenuItem.class);
     waiter = new Waiter(1, "John", "Active", mockMenu);
-    Order order = new Order();
+    order = new Order();
     order.setStatus("Pending");
     System.setOut(new PrintStream(outContent));
   }
@@ -297,6 +298,21 @@ public class WaiterTest {
 
     assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
   }
+  
+  @Test
+  public void testConfirmOrder() {
+    boolean result = waiter.confirmOrder(order);
+
+    assertTrue(result);
+    assertEquals("Confirmed", order.getStatus());
+  }
+
+  @Test
+  public void testConfirmOrderWithoutOrder() {
+    
+    boolean result = waiter.confirmOrder(null);
+    assertFalse(result);
+  }
+
 
 }
-
