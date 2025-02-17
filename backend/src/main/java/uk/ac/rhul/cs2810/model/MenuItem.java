@@ -1,5 +1,10 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,47 +13,26 @@ import java.util.List;
  * This class holds essential information such as ID, name, price, calorie count, dietary
  * restrictions, allergen details, and popularity.
  */
+@Entity  // Marks this class as a JPA entity
 public class MenuItem {
 
-  /**
-   * The unique ID of this menu item.
-   */
-  private int itemId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer itemId;
 
-  /**
-   * The name of this menu item.
-   */
   private String name;
-
-  /**
-   * The price of this menu item.
-   */
   private double price;
-
-  /**
-   * The number of calories in this menu item.
-   */
   private int caloricInfo;
 
-  /**
-   * List of dietary restrictions (e.g., vegetarian, vegan).
-   */
+  @ElementCollection  // For collections of simple types
   private List<String> dietaryRestrictions;
 
-  /**
-   * List of allergens (e.g., nuts, gluten).
-   */
+  @ElementCollection  // For collections of simple types
   private List<String> allergenInformation;
 
-  /**
-   * Tracks how popular the item is among customers.
-   */
   private int popularity;
-
-  // Added by Ben for Waiter class specifically.
   private boolean availability;
 
-  // getter and setter for availability
   public boolean isAvailable() {
     return availability;
   }
@@ -56,7 +40,6 @@ public class MenuItem {
   public void setAvailable(boolean availability) {
     this.availability = availability;
   }
-
 
   /**
    * Default constructor that initializes dietaryRestrictions and allergenInformation as empty
@@ -67,7 +50,19 @@ public class MenuItem {
     this.allergenInformation = new ArrayList<>();
   }
 
-  // -- getters and setters below --
+  /**
+   * Constructor for creating a MenuItem with basic details.
+   *
+   * @param itemId The unique ID of the menu item.
+   * @param name The name of the menu item.
+   * @param price The price of the menu item.
+   */
+  public MenuItem(int itemId, String name, double price) {
+    this();
+    this.itemId = itemId;
+    this.name = name;
+    this.price = price;
+  }
 
   public int getItemId() {
     return itemId;
@@ -125,4 +120,5 @@ public class MenuItem {
     this.popularity = popularity;
   }
 }
+
 
