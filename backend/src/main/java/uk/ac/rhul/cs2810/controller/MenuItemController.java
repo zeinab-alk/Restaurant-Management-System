@@ -24,6 +24,11 @@ public class MenuItemController {
 
   private final MenuItemRepository menuItemRepository;
 
+  /**
+   * Constructor to initialise the menu repository.
+   *
+   * @param menuItemRepository repository for menu class.
+   */
   public MenuItemController(MenuItemRepository menuItemRepository) {
     this.menuItemRepository = menuItemRepository;
   }

@@ -51,7 +51,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemFound_TrueAvailability() {
+  public void testChangeMenuItemFoundTrueAvailability() {
     // Mock behaviour: when getItemByName is called, return the mock menu item
     when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
 
@@ -66,7 +66,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemFound_FalseAvailability() {
+  public void testChangeMenuItemFoundFalseAvailability() {
     // Mock behaviour: when getItemByName is called, return the mock menu item
     when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
 
@@ -81,7 +81,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemNotFound() {
+  public void testChangeMenuItemNotFound() {
     // Mock behaviour: when getItemByName is called, return null (item not found)
     when(mockMenu.getItemByName("Burger")).thenReturn(null);
 
@@ -96,7 +96,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_NoMenu() {
+  public void testChangeMenuNoMenu() {
     // Create a waiter with no menu (null)
     Waiter waiterWithoutMenu = new Waiter(1, "John", "Active", null);
 
@@ -214,16 +214,16 @@ public class WaiterTest {
     String output = outContent.toString();
     assertTrue(output.contains("has been marked as Delivered"));
   }
-  
+
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyOrderStatus() {
-      Order mockOrder = mock(Order.class);
-      when(mockOrder.getStatus()).thenReturn(""); // Empty status
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(""); // Empty status
 
-      waiter.markOrderAsDelivered(mockOrder);
+    waiter.markOrderAsDelivered(mockOrder);
 
-      // This should trigger the "Order is already delivered or invalid" message.
-      assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+    // This should trigger the "Order is already delivered or invalid" message.
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
   @Test
@@ -268,7 +268,10 @@ public class WaiterTest {
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
-  // Reset System.out after the test
+  
+  /**
+   * Reset System.out after the test.
+   */
   @AfterEach
   public void restoreSystemOut() {
     System.setOut(originalSystemOut);

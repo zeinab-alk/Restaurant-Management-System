@@ -85,24 +85,37 @@ public class Waiter {
     }
   }
 
-
-
+  /**
+   * Allows waiter to confirm order placed by customer.
+   */
   public void confirmOrder() {
     // Method implementation goes here
   }
 
+  /**
+   * Allows waiter to track order placed by customer.
+   */
   public void trackOrder() {
     // Method implementation goes here
   }
 
+  /**
+   * Allows waiter to update order status.
+   */
   public void updateOrderStatus() {
     // Method implementation goes here
   }
 
+  /**
+   * Allows waiter to cancel order placed by customer.
+   */
   public void cancelOrder() {
     // Method implementation goes here
   }
 
+  /**
+   * Allows waiter to notify team about order placed by customer.
+   */
   public void notifyTeam() {
     // Method implementation goes here
   }

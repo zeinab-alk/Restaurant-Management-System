@@ -51,7 +51,7 @@ public class MenuTest {
   }
 
   @Test
-  void testGetItemByName_ItemFound() {
+  void testGetItemByNameItemFound() {
     // Add both items to the menu
     menu.addMenuItem(item1);
     menu.addMenuItem(item2);
@@ -63,7 +63,7 @@ public class MenuTest {
   }
 
   @Test
-  void testGetItemByName_ItemNotFound() {
+  void testGetItemByNameItemNotFound() {
     // Add item1 to the menu, but not item2
     menu.addMenuItem(item1);
 
