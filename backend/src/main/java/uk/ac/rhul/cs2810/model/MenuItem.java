@@ -50,6 +50,20 @@ public class MenuItem {
     this.allergenInformation = new ArrayList<>();
   }
 
+  /**
+   * Constructor for creating a MenuItem with basic details.
+   *
+   * @param itemId The unique ID of the menu item.
+   * @param name The name of the menu item.
+   * @param price The price of the menu item.
+   */
+  public MenuItem(int itemId, String name, double price) {
+    this();
+    this.itemId = itemId;
+    this.name = name;
+    this.price = price;
+  }
+
   public int getItemId() {
     return itemId;
   }
@@ -106,4 +120,5 @@ public class MenuItem {
     this.popularity = popularity;
   }
 }
+
 

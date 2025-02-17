@@ -60,12 +60,18 @@ public class MenuItemController {
    *
    * @param id The ID of the menu item to update.
    * @param menuItem The updated menu item details.
-   * @return The updated menu item.
+   * @return The updated menu item or a 404 response if not found.
    */
   @PutMapping("/menuItems/{id}")
   public ResponseEntity<MenuItem> updateMenuItem(@PathVariable int id,
       @RequestBody MenuItem menuItem) {
-    menuItem.setItemId(id);
+    Optional<MenuItem> existingItem = menuItemRepository.findById(id);
+      
+    if (existingItem.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    menuItem.setItemId(id); // Ensure correct ID assignment
     MenuItem updatedMenuItem = menuItemRepository.save(menuItem);
     return ResponseEntity.ok(updatedMenuItem);
   }
@@ -91,3 +97,4 @@ public class MenuItemController {
     }
   }
 }
+
