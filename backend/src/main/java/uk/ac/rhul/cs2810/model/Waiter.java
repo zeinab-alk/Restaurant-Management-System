@@ -16,7 +16,7 @@ public class Waiter {
   private List<String> currentOrders; // Assuming orders are represented as Strings
 
   private Menu menu;
-
+  Order order;
 
   /**
    * Waiter constructor.
@@ -88,8 +88,13 @@ public class Waiter {
   /**
    * Allows waiter to confirm order placed by customer.
    */
-  public void confirmOrder() {
-    // Method implementation goes here
+  public boolean confirmOrder() {
+    if (order == null) {
+      return false;
+    }
+
+    order.setStatus("Confirmed");
+    return true;
   }
 
   /**
