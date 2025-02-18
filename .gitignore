@@ -192,6 +192,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# Node.js dependencies
+#  Ignore node_modules directory
 node_modules/
 # End of https://www.toptal.com/developers/gitignore/api/java,vim,eclipse,maven,macos,windows
