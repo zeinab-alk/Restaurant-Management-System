@@ -1,6 +1,5 @@
 package uk.ac.rhul.cs2810.model;
 
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -10,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.List;
 
 /**
  * Waiter entity class.
@@ -26,10 +26,10 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTables; // Assuming a list of table IDs
+  private List<Integer> assignedTables;
 
   @ElementCollection
-  private List<String> currentOrders; // Assuming orders are represented as Strings
+  private List<String> currentOrders;
 
   @ManyToOne
   @JoinColumn(name = "menu_id") // Foreign key reference to the Menu table
@@ -41,29 +41,30 @@ public class Waiter {
   /**
    * Default constructor required by JPA.
    */
-  public Waiter() {}
+  public Waiter() {
+  }
 
   /**
    * Waiter constructor.
    *
-   * @param id as id.
-   * @param name as name.
+   * @param id     as id.
+   * @param name   as name.
    * @param status as status.
-   * @param menu as the menu.
+   * @param menu   as the menu.
    */
   public Waiter(int id, String name, String status, Menu menu) {
     this.id = id;
     this.name = name;
     this.status = status;
     this.menu = menu;
-    this.busy = false; // Waiters start as not busy
+    this.busy = false;
   }
 
   /**
-   * Change menu as in Sprint1.
+   * Changes menu availability.
    *
-   * @param itemName as itemname
-   * @param availability as availability.
+   * @param itemName     as item name.
+   * @param availability as availability status.
    */
   public void changeMenu(String itemName, boolean availability) {
     if (menu != null) {
@@ -81,7 +82,7 @@ public class Waiter {
   }
 
   /**
-   * Updates the status of the given order to "Delivered" if it hasn't been delivered yet.
+   * Marks order as delivered if not already.
    *
    * @param order The order to update.
    */
@@ -99,41 +100,88 @@ public class Waiter {
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
+
+  /**
+   * Checks if the waiter is busy.
+   *
+   * @return true if busy, false otherwise.
+   */
   public boolean isBusy() {
     return busy;
   }
 
+  /**
+   * Sets the busy status of the waiter.
+   *
+   * @param busy as busy status.
+   */
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
 
-  public void confirmOrder() {}
+  public void confirmOrder() {
+  }
 
-  public void trackOrder() {}
+  public void trackOrder() {
+  }
 
-  public void updateOrderStatus() {}
+  public void updateOrderStatus() {
+  }
 
-  public void cancelOrder() {}
+  public void cancelOrder() {
+  }
 
-  public void notifyTeam() {}
+  public void notifyTeam() {
+  }
 
   // Getters and Setters
-  public int getId() { return id; }
-  public void setId(int id) { this.id = id; }
 
-  public String getName() { return name; }
-  public void setName(String name) { this.name = name; }
+  public int getId() {
+    return id;
+  }
 
-  public String getStatus() { return status; }
-  public void setStatus(String status) { this.status = status; }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-  public Menu getMenu() { return menu; }
-  public void setMenu(Menu menu) { this.menu = menu; }
+  public String getName() {
+    return name;
+  }
 
-  public List<Integer> getAssignedTables() { return assignedTables; }
-  public void setAssignedTables(List<Integer> assignedTables) { this.assignedTables = assignedTables; }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-  public List<String> getCurrentOrders() { return currentOrders; }
-  public void setCurrentOrders(List<String> currentOrders) { this.currentOrders = currentOrders; }
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public Menu getMenu() {
+    return menu;
+  }
+
+  public void setMenu(Menu menu) {
+    this.menu = menu;
+  }
+
+  public List<Integer> getAssignedTables() {
+    return assignedTables;
+  }
+
+  public void setAssignedTables(List<Integer> assignedTables) {
+    this.assignedTables = assignedTables;
+  }
+
+  public List<String> getCurrentOrders() {
+    return currentOrders;
+  }
+
+  public void setCurrentOrders(List<String> currentOrders) {
+    this.currentOrders = currentOrders;
+  }
 }
 
