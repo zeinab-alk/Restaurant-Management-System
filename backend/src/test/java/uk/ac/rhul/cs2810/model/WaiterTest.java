@@ -3,6 +3,7 @@ package uk.ac.rhul.cs2810.model;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -13,6 +14,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -298,6 +301,28 @@ public class WaiterTest {
     waiter.markOrderAsDelivered(mockOrder);
 
     assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
+  }
+
+  @Test
+  public void testSetAndGetMenu() {
+    waiter.setMenu(mockMenu);
+    assertSame(mockMenu, waiter.getMenu(), "The menu returned was not the one set.");
+  }
+
+  @Test
+  public void testSetAndGetAssignedTables() {
+    List<Integer> assignedTables = Arrays.asList(1, 2, 3);
+    waiter.setAssignedTables(assignedTables);
+    assertEquals(assignedTables, waiter.getAssignedTables(),
+        "The assigned tables returned did not match the ones set.");
+  }
+
+  @Test
+  public void testSetAndGetCurrentOrders() {
+    List<String> currentOrders = Arrays.asList("Order1", "Order2");
+    waiter.setCurrentOrders(currentOrders);
+    assertEquals(currentOrders, waiter.getCurrentOrders(),
+        "The current orders returned did not match the ones set.");
   }
 
 
