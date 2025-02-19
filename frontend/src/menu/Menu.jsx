@@ -16,22 +16,25 @@ import {
   Button,
   useTheme,
   Tooltip,
-  Autocomplete,
-  TextField
+  Box
 } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 
 function Menu() {
-  const [menuItems, setMenuItems] = React.useState([]);
-  const [error, setError] = React.useState();
+  const [menuItems, setMenuItems] = useState([]);
+  const [error, setError] = useState();
   const theme = useTheme();
 
-  // Cart State
   const [cart, setCart] = useState([]);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
+  const [showWaiterButton, setShowWaiterButton] = useState(true);
+  const [waiterMessage, setWaiterMessage] = useState(null);
+  const [waiterError, setWaiterError] = useState(null);
+
+  
   React.useEffect(() => {
     axios
       .get(`${API_ENDPOINT}/api/menuItems`)
@@ -43,18 +46,16 @@ function Menu() {
       });
   }, []);
 
-  // Add item to cart
   const addToCart = (item) => {
-    setCart([...cart, item]);
+    setCart((prevCart) => [...prevCart, item]); 
   };
 
-  // Remove item from cart
+
   const removeFromCart = (index) => {
-    const updatedCart = cart.filter((_, i) => i !== index);
-    setCart(updatedCart);
+    setCart((prevCart) => prevCart.filter((_, i) => i !== index)); 
   };
 
-  // Place order
+
   const placeOrder = async () => {
     if (cart.length === 0) {
       alert("Your order is empty!");
@@ -69,20 +70,46 @@ function Menu() {
     try {
       await axios.post(`${API_ENDPOINT}/api/orders`, orderData);
       setOrderSuccess(true);
-      setCart([]);
+      setCart([]); // Clear cart after successful order
     } catch (error) {
       console.error("Error placing order:", error);
       alert("Failed to place order.");
     }
   };
 
+  const callWaiter = async () => {
+    try {
+      const response = await axios.post(`${API_ENDPOINT}/api/waiters/call-waiter?tableNumber=5`);
+      setWaiterMessage(response.data);
+      setWaiterError(null);
+      setTimeout(() => setShowWaiterButton(false), 1000);
+    } catch (err) {
+      setWaiterMessage(null);
+      setWaiterError("No available waiters at the moment. Please try again later.");
+    }
+  };
+
   return (
     <Container>
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+      {/* Back to Home Button */}
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
         <Button component={RouterLink} to="/" variant="contained" color="success">
           Back to Home
         </Button>
       </Stack>
+
+      {/* Request Waiter Button - Directly Under Back to Home */}
+      {showWaiterButton && (
+        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+          <Button variant="contained" color="primary" onClick={callWaiter}>
+            Request Waiter
+          </Button>
+        </Stack>
+      )}
+
+      {/* Success/Error Messages */}
+      {waiterMessage && <Alert severity="success" sx={{ mb: 2 }}>{waiterMessage}</Alert>}
+      {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
 
       <Typography variant="h3" component="h1" gutterBottom>
         Our Menu
@@ -132,19 +159,11 @@ function Menu() {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <Chip 
-                      label={item.available ? "Available" : "Unavailable"}
-                      color={item.available ? "success" : "error"}
-                      size="small"
-                    />
+                    <Chip label={item.available ? "Available" : "Unavailable"} color={item.available ? "success" : "error"} size="small"/>
                   </TableCell>
                   <TableCell>
                     {item.available && (
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={() => addToCart(item)}
-                      >
+                      <Button variant="contained" color="primary" onClick={() => addToCart(item)}>
                         Add to Order
                       </Button>
                     )}
@@ -156,25 +175,17 @@ function Menu() {
         </TableContainer>
       )}
 
-      {/* Cart Summary */}
+      
       <Typography variant="h4" sx={{ mt: 4 }}>Your Order</Typography>
       {cart.length === 0 ? (
         <Typography>No items in cart</Typography>
       ) : (
         <Paper sx={{ p: 2, mt: 2 }}>
           <Typography variant="h6">Items: {cart.length}</Typography>
-          <Typography variant="h6">
-            Total: £{cart.reduce((total, item) => total + item.price, 0).toFixed(2)}
-          </Typography>
           {cart.map((item, index) => (
             <Stack key={index} direction="row" justifyContent="space-between">
               <Typography>{item.name} - £{item.price.toFixed(2)}</Typography>
-              <Button 
-                variant="contained" 
-                color="error" 
-                size="small" 
-                onClick={() => removeFromCart(index)}
-              >
+              <Button variant="contained" color="error" size="small" onClick={() => removeFromCart(index)}>
                 Remove
               </Button>
             </Stack>
@@ -185,16 +196,9 @@ function Menu() {
         </Paper>
       )}
 
-      {/* Order Confirmation Message */}
-      {orderSuccess && (
-        <Alert severity="success" sx={{ mt: 2 }}>
-          Order placed successfully!
-        </Alert>
-      )}
+      {orderSuccess && <Alert severity="success" sx={{ mt: 2 }}>Order placed successfully!</Alert>}
     </Container>
   );
 }
 
 export default Menu;
-
-
