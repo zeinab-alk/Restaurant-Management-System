@@ -16,7 +16,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-
+import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
@@ -68,6 +68,43 @@ public class WaiterControllerTest {
         response.getBody());
     verify(waiterRepository, never()).save(any(Waiter.class));
   }
+
+  @Test
+  public void notifyWaiterNewOrder_WhenWaiterExists_ShouldNotifyWaiter() {
+    // Arrange
+    int waiterId = 1;
+    Order order = new Order(); // Initialise your Order object
+    order.setOrderNumber(123); // Set necessary properties for the order
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John Doe");
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+    // Act
+    ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
+
+    // Assert
+    assertEquals("Waiter John Doe has been notified of new order: 123", response.getBody());
+    assertTrue(waiter.getCurrentOrders().contains("123"));
+    verify(waiterRepository, times(1)).save(waiter); // Verify save is called
+  }
+
+  @Test
+  public void notifyWaiterNewOrder_WhenWaiterNotFound_ShouldReturnNotFound() {
+    // Arrange
+    int waiterId = 1;
+    Order order = new Order(); // Initialise your Order object
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+
+    // Act
+    ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
+
+    // Assert
+    assertEquals("Waiter with ID 1 not found.", response.getBody());
+    verify(waiterRepository, never()).save(any(Waiter.class)); // Ensure save is not called
+  }
+
 
 
 }

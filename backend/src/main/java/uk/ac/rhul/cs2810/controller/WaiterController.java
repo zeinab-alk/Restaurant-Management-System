@@ -4,10 +4,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody; // Move this above RestController
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.rhul.cs2810.model.Order; // Move this above Waiter
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
@@ -45,5 +48,28 @@ public class WaiterController {
           .ok("No waiters available. Please call " + CONTACT_NUMBER + " for assistance.");
     }
   }
-}
 
+  /**
+   * Notifies the waiter of a new order.
+   *
+   * @param waiterId The ID of the waiter to notify.
+   * @param order The order that has been placed.
+   * @return Response message indicating the notification status.
+   */
+  @PostMapping("/{waiterId}/notify-new-order")
+  public ResponseEntity<String> notifyWaiterNewOrder(@PathVariable int waiterId,
+      @RequestBody Order order) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isPresent()) {
+      Waiter waiter = optionalWaiter.get();
+      waiter.notifyNewOrder(order); // Notify the waiter of the new order
+      waiterRepository.save(waiter); // Save the updated waiter state if needed
+
+      return ResponseEntity.ok("Waiter " + waiter.getName() + " has been notified of new order: "
+          + order.getOrderNumber());
+    } else {
+      return ResponseEntity.status(404).body("Waiter with ID " + waiterId + " not found.");
+    }
+  }
+}
