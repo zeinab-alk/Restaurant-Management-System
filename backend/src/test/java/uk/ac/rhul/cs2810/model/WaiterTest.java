@@ -325,6 +325,37 @@ public class WaiterTest {
         "The current orders returned did not match the ones set.");
   }
 
+  @Test
+  public void testNotifyNewOrder_AddsOrderToList() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getOrderNumber()).thenReturn(101);
+
+    waiter.notifyNewOrder(mockOrder);
+
+    assertNotNull(waiter.getCurrentOrders(), "Current orders list should not be null");
+    assertTrue(waiter.getCurrentOrders().contains("101"),
+        "Order number should be added to the list");
+  }
+
+  @Test
+  public void testNotifyNewOrder_PrintsNotificationMessage() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getOrderNumber()).thenReturn(202);
+
+    waiter.notifyNewOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Waiter John has been notified of new order: 202"),
+        "Notification message should be printed");
+  }
+
+  @Test
+  public void testNotifyNewOrder_WithNullOrder() {
+    waiter.notifyNewOrder(null);
+
+    assertTrue(waiter.getCurrentOrders() == null || waiter.getCurrentOrders().isEmpty(),
+        "Current orders list should remain null or empty when null order is passed");
+  }
+
 
 
 }

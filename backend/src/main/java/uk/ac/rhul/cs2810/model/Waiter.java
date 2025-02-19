@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -100,6 +101,23 @@ public class Waiter {
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
+
+  /**
+   * Notifies the waiter when a new order is placed.
+   *
+   * @param order The order that has been placed.
+   */
+  public void notifyNewOrder(Order order) {
+    if (order != null) {
+      if (this.currentOrders == null) {
+        this.currentOrders = new ArrayList<>();
+      }
+      this.currentOrders.add(String.valueOf(order.getOrderNumber()));
+      System.out.println(
+          "Waiter " + this.name + " has been notified of new order: " + order.getOrderNumber());
+    }
+  }
+
 
   /**
    * Checks if the waiter is busy.
