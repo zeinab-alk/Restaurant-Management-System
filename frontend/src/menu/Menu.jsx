@@ -22,6 +22,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
+import { Box } from "@mui/material";
 
 function Menu() {
   const [menuItems, setMenuItems] = React.useState([]);
@@ -32,12 +33,19 @@ function Menu() {
   // Cart State
   const [cart, setCart] = useState([]);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const clearCart = () => {
+    setCart([]);  // Simply clears the cart by setting it to an empty array
+  };
 
   React.useEffect(() => {
     axios
       .get(`${API_ENDPOINT}/api/menuItems`)
       .then((response) => {
-        setMenuItems(response.data);
+        const itemsWithCategories = response.data.map(item => ({
+          ...item,
+          category: item.category || (item.caloricInfo > 500 ? 'Mains' : 'Drinks')  // Use API category if available
+        }));
+        setMenuItems(itemsWithCategories);
       })
       .catch((response) => {
         setError(response.message);
@@ -46,13 +54,26 @@ function Menu() {
 
   // Add item to cart
   const addToCart = (item) => {
-    setCart([...cart, item]);
+    const existingItemIndex = cart.findIndex(cartItem => cartItem.itemId === item.itemId);
+    if (existingItemIndex >= 0) {
+      const updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += 1;
+      setCart(updatedCart);
+    } else {
+      setCart([...cart, { ...item, quantity: 1 }]);
+    }
   };
 
   // Remove item from cart
-  const removeFromCart = (index) => {
-    const updatedCart = cart.filter((_, i) => i !== index);
-    setCart(updatedCart);
+  const removeFromCart = (itemId) => {
+    setCart(cart.filter(item => item.itemId !== itemId));
+  };
+
+  // New function to update quantities
+  const updateQuantity = (itemId, change) => {
+    setCart(cart.map(item => 
+      item.itemId === itemId ? { ...item, quantity: Math.max(item.quantity + change, 1) } : item
+    ));
   };
 
   // Place order
@@ -109,6 +130,7 @@ function Menu() {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Category</TableCell>
                 <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Name</TableCell>
                 <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Price</TableCell>
                 <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Calories</TableCell>
@@ -119,88 +141,108 @@ function Menu() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {menuItems
-              .filter((item) => 
-                item.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((item) => (
-                <TableRow key={item.itemId}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>£{item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.caloricInfo} kcal</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.dietaryRestrictions.map((restriction, index) => (
-                        <Tooltip key={index} title={restriction} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[restriction]}</span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.allergenInformation.map((allergen, index) => (
-                        <Tooltip key={index} title={allergen} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>{allergenSymbols[allergen]}</span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={item.available ? "Available" : "Unavailable"}
-                      color={item.available ? "success" : "error"}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {item.available && (
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={() => addToCart(item)}
-                      >
-                        Add to Order
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+  {menuItems
+    .filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .map((item) => (
+      <TableRow key={item.itemId}>
+        <TableCell>{item.category}</TableCell>  {/* Category is now correctly placed */}
+        <TableCell>{item.name}</TableCell>
+        <TableCell>£{item.price.toFixed(2)}</TableCell>
+        <TableCell>{item.caloricInfo} kcal</TableCell>
+        <TableCell>
+          <Stack direction="row" spacing={0.5}>
+            {item.dietaryRestrictions.map((restriction, index) => (
+              <Tooltip key={index} title={restriction} arrow>
+                <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[restriction]}</span>
+              </Tooltip>
+            ))}
+          </Stack>
+        </TableCell>
+        <TableCell>
+          <Stack direction="row" spacing={0.5}>
+            {item.allergenInformation.map((allergen, index) => (
+              <Tooltip key={index} title={allergen} arrow>
+                <span style={{ fontSize: '1.2rem' }}>{allergenSymbols[allergen]}</span>
+              </Tooltip>
+            ))}
+          </Stack>
+        </TableCell>
+        <TableCell>
+          <Chip 
+            label={item.available ? "Available" : "Unavailable"}
+            color={item.available ? "success" : "error"}
+            size="small"
+          />
+        </TableCell>
+        <TableCell>
+          {item.available && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => addToCart(item)}
+            >
+              Add to Order
+            </Button>
+          )}
+        </TableCell>
+      </TableRow>
+    ))}
+</TableBody>
+
           </Table>
         </TableContainer>
         </>
       )}
 
       {/* Cart Summary */}
-      <Typography variant="h4" sx={{ mt: 4 }}>Your Order</Typography>
-      {cart.length === 0 ? (
-        <Typography>No items in cart</Typography>
-      ) : (
-        <Paper sx={{ p: 2, mt: 2 }}>
-          <Typography variant="h6">Items: {cart.length}</Typography>
-          <Typography variant="h6">
-            Total: £{cart.reduce((total, item) => total + item.price, 0).toFixed(2)}
-          </Typography>
-          {cart.map((item, index) => (
-            <Stack key={index} direction="row" justifyContent="space-between">
-              <Typography>{item.name} - £{item.price.toFixed(2)}</Typography>
-              <Button 
-                variant="contained" 
-                color="error" 
-                size="small" 
-                onClick={() => removeFromCart(index)}
-              >
-                Remove
-              </Button>
-            </Stack>
-          ))}
-          <Button variant="contained" color="success" sx={{ mt: 2 }} onClick={placeOrder}>
-            Place Order
-          </Button>
-        </Paper>
-      )}
+      <Box sx={{
+        position: 'sticky',
+        top: '80px', // Adjust based on your header height
+        height: '100vh',
+        overflowY: 'auto',
+        backgroundColor: 'background.paper',
+        p: 2,
+        boxShadow: 3,
+        borderRadius: 2
+        }}>
+  <Typography variant="h5" gutterBottom>
+    Cart Summary
+  </Typography>
+  <Typography variant="subtitle1">
+    Items: {cart.reduce((count, item) => count + item.quantity, 0)}
+  </Typography>
+  <Typography variant="subtitle1">
+    Total: £{cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+  </Typography>
+  
+  {/* Cart Items List */}
+  {cart.map((item) => (
+    <Stack key={item.itemId} direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+      <Typography>{item.name} ({item.quantity})</Typography>
+      <Typography>£{(item.price * item.quantity).toFixed(2)}</Typography>
+    </Stack>
+  ))}
 
+  {/* Clear Cart and Place Order Buttons */}
+  <Button 
+    variant="contained" 
+    color="secondary" 
+    sx={{ mt: 2, mr: 2 }} 
+    onClick={clearCart}
+  >
+    Clear Cart
+  </Button>
+  <Button 
+    variant="contained" 
+    color="success" 
+    sx={{ mt: 2 }} 
+    onClick={placeOrder}
+  >
+    Place Order
+  </Button>
+</Box>
       {/* Order Confirmation Message */}
       {orderSuccess && (
         <Alert severity="success" sx={{ mt: 2 }}>
