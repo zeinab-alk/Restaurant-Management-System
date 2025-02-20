@@ -72,4 +72,31 @@ public class WaiterController {
       return ResponseEntity.status(404).body("Waiter with ID " + waiterId + " not found.");
     }
   }
+
+  /**
+   * Marks an order as delivered.
+   *
+   * @param orderId The ID of the order to update.
+   * @return Response message indicating success or failure.
+   */
+  @PostMapping("/orders/{orderId}/mark-delivered")
+  public ResponseEntity<String> markOrderAsDelivered(@PathVariable int orderId) {
+    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+    if (optionalOrder.isPresent()) {
+      Order order = optionalOrder.get();
+      if ("Delivered".equalsIgnoreCase(order.getStatus())) {
+        return ResponseEntity.ok("Order " + order.getOrderNumber() + " is already delivered.");
+      }
+
+      order.setStatus("Delivered");
+      orderRepository.save(order); // Save the updated order
+
+      return ResponseEntity
+          .ok("Order " + order.getOrderNumber() + " has been marked as Delivered.");
+    } else {
+      return ResponseEntity.status(404).body("Order with ID " + orderId + " not found.");
+    }
+  }
+
 }
