@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order; // Move this above Waiter
 import uk.ac.rhul.cs2810.model.Waiter;
+import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
 /**
@@ -24,6 +25,9 @@ public class WaiterController {
 
   @Autowired
   private WaiterRepository waiterRepository;
+
+  @Autowired
+  private OrderRepository orderRepository; // Inject order repo
 
   private static final String CONTACT_NUMBER = "+44 123 456 789";
 
