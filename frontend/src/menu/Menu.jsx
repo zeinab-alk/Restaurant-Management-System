@@ -72,12 +72,12 @@ function Menu() {
 
   // Remove item from cart
   const removeFromCart = (itemId) => {
-    setCart(cart.filter(item => item.itemId !== itemId));
+    setCart((prevCart) => prevCart.filter(item => item.itemId !== itemId));
   };
 
   // New function to update quantities
   const updateQuantity = (itemId, change) => {
-    setCart(cart.map(item => 
+    setCart((prevCart) => prevCart.map(item => 
       item.itemId === itemId ? { ...item, quantity: Math.max(item.quantity + change, 1) } : item
     ));
   };
@@ -265,11 +265,18 @@ function Menu() {
                 </Typography>
       {/* Cart Items List */}
       {cart.map((item) => (
-       <Stack key={item.itemId} direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-       <Typography tabIndex={0} aria-label={`${item.name}, quantity ${item.quantity}`}>
+  <Stack key={item.itemId} direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+    <Typography tabIndex={0} aria-label={`${item.name}, quantity ${item.quantity}`}>
       {item.name} ({item.quantity})
     </Typography>
     <Typography>£{(item.price * item.quantity).toFixed(2)}</Typography>
+    
+    {/* Quantity Controls */}
+    <Stack direction="row" spacing={1}>
+      <Button size="small" onClick={() => updateQuantity(item.itemId, -1)}>-</Button>
+      <Button size="small" onClick={() => updateQuantity(item.itemId, 1)}>+</Button>
+      <Button size="small" color="error" onClick={() => removeFromCart(item.itemId)}>Remove</Button>
+    </Stack>
   </Stack>
 ))}
 
