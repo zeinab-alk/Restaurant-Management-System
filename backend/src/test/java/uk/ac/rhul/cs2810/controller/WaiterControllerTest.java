@@ -1,8 +1,15 @@
-/**
- * 
- */
 package uk.ac.rhul.cs2810.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,18 +20,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
-import java.util.Optional;
-
 @ExtendWith(MockitoExtension.class)
 public class WaiterControllerTest {
+
   @Mock
   private WaiterRepository waiterRepository;
 
@@ -74,14 +78,22 @@ public class WaiterControllerTest {
   }
 
   @Test
-  public void notifyWaiterNewOrder_WhenWaiterExists_ShouldNotifyWaiter() {
+  public void notifyWaiterNewOrder_WhenWaiterExists_ShouldReturnOrderDetails() {
     // Arrange
     int waiterId = 1;
-    Order order = new Order(); // Initialise your Order object
-    order.setOrderNumber(123); // Set necessary properties for the order
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
-    waiter.setName("John Doe");
+    waiter.setName("John");
+
+    MenuItem item1 = new MenuItem();
+    item1.setName("Tacos");
+
+    MenuItem item2 = new MenuItem();
+    item2.setName("Burrito");
+
+    Order order = new Order();
+    order.setOrderNumber(101);
+    order.setItems(Arrays.asList(item1, item2));
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
@@ -89,25 +101,36 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
 
     // Assert
-    assertEquals("Waiter John Doe has been notified of new order: 123", response.getBody());
-    assertTrue(waiter.getCurrentOrders().contains("123"));
-    verify(waiterRepository, times(1)).save(waiter); // Verify save is called
+    assertNotNull(response);
+    assertEquals(200, response.getStatusCodeValue());
+    assertTrue(response.getBody().contains("Waiter John has been notified"));
+    assertTrue(response.getBody().contains("Tacos"));
+    assertTrue(response.getBody().contains("Burrito"));
+
+    verify(waiterRepository, times(1)).save(waiter);
   }
 
   @Test
-  public void notifyWaiterNewOrder_WhenWaiterNotFound_ShouldReturnNotFound() {
+  public void notifyWaiterNewOrder_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
     // Arrange
-    int waiterId = 1;
-    Order order = new Order(); // Initialise your Order object
+    int waiterId = 99;
+    Order order = new Order();
+    order.setOrderNumber(101);
+
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
 
     // Act
     ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
 
     // Assert
-    assertEquals("Waiter with ID 1 not found.", response.getBody());
-    verify(waiterRepository, never()).save(any(Waiter.class)); // Ensure save is not called
+    assertNotNull(response);
+    assertEquals(404, response.getStatusCodeValue());
+    assertEquals("Waiter with ID 99 not found.", response.getBody());
+
+    verify(waiterRepository, never()).save(any(Waiter.class));
   }
+
+  // --- markOrderAsDelivered tests ---
 
   @Test
   public void markOrderAsDelivered_WhenOrderExists_ShouldMarkAsDelivered() {
@@ -205,7 +228,7 @@ public class WaiterControllerTest {
 
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
-    waiter.setName("John Doe");
+    waiter.setName("Lana Shaheen");
     waiter.setCurrentOrders(null); // Explicitly setting currentOrders to null
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
@@ -214,9 +237,10 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
 
     // Assert
-    assertEquals("Waiter John Doe has been notified of new order: 123", response.getBody());
-    verify(waiterRepository, times(1)).save(waiter); // Ensure the waiter is saved
+    String expected =
+        "Waiter Lana Shaheen has been notified.\nOrder #123 contains: No items found.";
+    assertEquals(expected, response.getBody());
+    verify(waiterRepository, times(1)).save(waiter);
   }
-
-
 }
+

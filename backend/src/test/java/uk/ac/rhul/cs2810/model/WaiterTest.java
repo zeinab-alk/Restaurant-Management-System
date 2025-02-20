@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -338,15 +337,30 @@ public class WaiterTest {
   }
 
   @Test
-  public void testNotifyNewOrder_PrintsNotificationMessage() {
-    Order mockOrder = mock(Order.class);
-    when(mockOrder.getOrderNumber()).thenReturn(202);
+  void testNotifyNewOrder_PrintsNotificationMessage() {
+    // Arrange
+    Waiter waiter = new Waiter(1, "John", "Available", new Menu());
+    Order order = new Order();
+    order.setOrderNumber(123); // Ensure order has a valid number
 
-    waiter.notifyNewOrder(mockOrder);
+    // Capture console output
+    ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(outContent));
 
-    assertTrue(outContent.toString().contains("Waiter John has been notified of new order: 202"),
-        "Notification message should be printed");
+    // Act
+    waiter.notifyNewOrder(order);
+
+    // Reset System.out
+    System.setOut(System.out);
+
+    // Expected output
+    String expectedMessage = "Waiter John has been notified of new order: 123";
+    String actualOutput = outContent.toString().trim();
+
+    // Assert
+    assertTrue(actualOutput.contains(expectedMessage), "Notification message should be printed");
   }
+
 
   @Test
   public void testNotifyNewOrder_WithNullOrder() {

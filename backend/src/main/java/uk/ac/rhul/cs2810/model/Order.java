@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Represents an order placed by a customer at a restaurant. Contains details about the order,
  * including the customer, items, order time, waiting time, and status.
@@ -39,6 +40,12 @@ public class Order {
       inverseJoinColumns = @JoinColumn(name = "menu_item_id")
   )
   private List<MenuItem> items = new ArrayList<>();
+
+  @JsonProperty("menuItems")
+  public List<MenuItem> getItems() {
+    return (this.items != null) ? this.items : new ArrayList<>();
+  }
+
 
   private String orderTime;
   private int waitingTime;
@@ -86,10 +93,6 @@ public class Order {
 
   public void setCustomer(Customer customer) {
     this.customer = customer;
-  }
-
-  public List<MenuItem> getItems() {
-    return items;
   }
 
   public void setItems(List<MenuItem> items) {
@@ -161,30 +164,30 @@ public class Order {
     this.status = newStatus;
   }
 
+  public List<MenuItem> getMenuItems() {
+    return this.getItems(); // Ensure menuItems is a field in Order
+  }
+
+
   /*
    * public String getOrderDetails() { // Some optional debug output }
    */
 
   /*
-   * public String getOrderDetails() {
-   *   StringBuilder details = new StringBuilder();
-   *   details.append("Order Number: ").append(orderNumber).append("\n");
-   *   //details.append("Customer: ").append(customer.getName()).append("\n");
-   *   details.append("Items:\n");
+   * public String getOrderDetails() { StringBuilder details = new StringBuilder();
+   * details.append("Order Number: ").append(orderNumber).append("\n");
+   * //details.append("Customer: ").append(customer.getName()).append("\n");
+   * details.append("Items:\n");
    *
-   *   for (MenuItem item : items) {
-   *     details.append("- ").append(item.getName()).append(": $").append(item.getPrice())
-   *            .append("\n");
-   *   }
+   * for (MenuItem item : items) {
+   * details.append("- ").append(item.getName()).append(": $").append(item.getPrice())
+   * .append("\n"); }
    *
-   *   details.append("Total Price: $").append(getOrderSum()).append("\n");
-   *   details.append("Order Time: ").append(orderTime).append("\n");
-   *   details.append("Waiting Time: ").append(waitingTime).append(" minutes\n");
-   *   details.append("Status: ").append(status).append("\n");
+   * details.append("Total Price: $").append(getOrderSum()).append("\n");
+   * details.append("Order Time: ").append(orderTime).append("\n");
+   * details.append("Waiting Time: ").append(waitingTime).append(" minutes\n");
+   * details.append("Status: ").append(status).append("\n");
    *
-   *   return details.toString();
-   * }
+   * return details.toString(); }
    */
 }
-
-

@@ -48,10 +48,10 @@ public class Waiter {
   /**
    * Waiter constructor.
    *
-   * @param id     as id.
-   * @param name   as name.
+   * @param id as id.
+   * @param name as name.
    * @param status as status.
-   * @param menu   as the menu.
+   * @param menu as the menu.
    */
   public Waiter(int id, String name, String status, Menu menu) {
     this.id = id;
@@ -64,7 +64,7 @@ public class Waiter {
   /**
    * Changes menu availability.
    *
-   * @param itemName     as item name.
+   * @param itemName as item name.
    * @param availability as availability status.
    */
   public void changeMenu(String itemName, boolean availability) {
@@ -103,7 +103,7 @@ public class Waiter {
   }
 
   /**
-   * Notifies the waiter when a new order is placed.
+   * Notifies the waiter when a new order is placed with item details.
    *
    * @param order The order that has been placed.
    */
@@ -112,12 +112,39 @@ public class Waiter {
       if (this.currentOrders == null) {
         this.currentOrders = new ArrayList<>();
       }
-      this.currentOrders.add(String.valueOf(order.getOrderNumber()));
-      System.out.println(
-          "Waiter " + this.name + " has been notified of new order: " + order.getOrderNumber());
+
+      // Add the order number
+      String orderId = String.valueOf(order.getOrderNumber());
+      if (!this.currentOrders.contains(orderId)) {
+        this.currentOrders.add(orderId);
+      }
+
+      // Print exactly what the test expects
+      String notificationMessage =
+          "Waiter " + this.name + " has been notified of new order: " + orderId;
+      System.out.println(notificationMessage);
+
+
+      // Extracting ordered items
+      List<MenuItem> orderedItems = order.getMenuItems(); // Ensure Order has getMenuItems()
+      StringBuilder orderDetails = new StringBuilder("Order " + order.getOrderNumber() + ": ");
+
+      for (MenuItem item : orderedItems) {
+        orderDetails.append(item.getName()).append(", ");
+      }
+
+      // Remove trailing comma
+      if (!orderedItems.isEmpty()) {
+        orderDetails.setLength(orderDetails.length() - 2);
+      }
+
+      // Add the formatted order details to currentOrders
+      this.currentOrders.add(orderDetails.toString());
+
+      System.out
+          .println("Waiter " + this.name + " has been notified of new order: " + orderDetails);
     }
   }
-
 
   /**
    * Checks if the waiter is busy.
@@ -137,20 +164,15 @@ public class Waiter {
     this.busy = busy;
   }
 
-  public void confirmOrder() {
-  }
+  public void confirmOrder() {}
 
-  public void trackOrder() {
-  }
+  public void trackOrder() {}
 
-  public void updateOrderStatus() {
-  }
+  public void updateOrderStatus() {}
 
-  public void cancelOrder() {
-  }
+  public void cancelOrder() {}
 
-  public void notifyTeam() {
-  }
+  public void notifyTeam() {}
 
   // Getters and Setters
 

@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -66,6 +67,27 @@ public class OrderController {
   public ResponseEntity<List<Order>> getAllOrders() {
     List<Order> orders = orderRepository.findAll();
     return ResponseEntity.ok(orders);
+  }
+
+  /**
+   * Retrieves the latest order by order time.
+   *
+   * @return ResponseEntity with the latest order.
+   */
+  @GetMapping("/latest")
+  public ResponseEntity<Order> getLatestOrder() {
+    List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime"));
+
+    if (!orders.isEmpty()) {
+      Order latestOrder = orders.get(0);
+
+      // Debugging: Log retrieved items
+      System.out.println("Latest Order Found: " + latestOrder.getOrderNumber());
+      System.out.println("Menu Items in Order: " + latestOrder.getItems());
+
+      return ResponseEntity.ok(latestOrder);
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
   }
 }
 
