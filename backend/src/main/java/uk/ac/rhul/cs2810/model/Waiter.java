@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs2810.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -9,8 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Waiter entity class.
@@ -101,9 +101,9 @@ public class Waiter {
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
-
+  
   /**
-   * Notifies the waiter when a new order is placed.
+   * Notifies the waiter when a new order is placed with item details.
    *
    * @param order The order that has been placed.
    */
@@ -112,12 +112,39 @@ public class Waiter {
       if (this.currentOrders == null) {
         this.currentOrders = new ArrayList<>();
       }
-      this.currentOrders.add(String.valueOf(order.getOrderNumber()));
-      System.out.println(
-          "Waiter " + this.name + " has been notified of new order: " + order.getOrderNumber());
+
+      // Add the order number
+      String orderId = String.valueOf(order.getOrderNumber());
+      if (!this.currentOrders.contains(orderId)) {
+        this.currentOrders.add(orderId);
+      }
+
+      // Print exactly what the test expects
+      String notificationMessage =
+          "Waiter " + this.name + " has been notified of new order: " + orderId;
+      System.out.println(notificationMessage);
+
+
+      // Extracting ordered items
+      List<MenuItem> orderedItems = order.getMenuItems(); // Ensure Order has getMenuItems()
+      StringBuilder orderDetails = new StringBuilder("Order " + order.getOrderNumber() + ": ");
+
+      for (MenuItem item : orderedItems) {
+        orderDetails.append(item.getName()).append(", ");
+      }
+
+      // Remove trailing comma
+      if (!orderedItems.isEmpty()) {
+        orderDetails.setLength(orderDetails.length() - 2);
+      }
+
+      // Add the formatted order details to currentOrders
+      this.currentOrders.add(orderDetails.toString());
+
+      System.out
+          .println("Waiter " + this.name + " has been notified of new order: " + orderDetails);
     }
   }
-
 
   /**
    * Checks if the waiter is busy.

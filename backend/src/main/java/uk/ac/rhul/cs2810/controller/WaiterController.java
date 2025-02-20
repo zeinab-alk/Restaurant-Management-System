@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.controller;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody; // Move this above R
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order; // Move this above Waiter
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -63,13 +65,29 @@ public class WaiterController {
 
     if (optionalWaiter.isPresent()) {
       Waiter waiter = optionalWaiter.get();
-      waiter.notifyNewOrder(order); // Notify the waiter of the new order
-      waiterRepository.save(waiter); // Save the updated waiter state if needed
+      waiter.notifyNewOrder(order);
+      waiterRepository.save(waiter);
 
-      return ResponseEntity.ok("Waiter " + waiter.getName() + " has been notified of new order: "
-          + order.getOrderNumber());
+      // Fetch ordered items
+      List<MenuItem> orderedItems = order.getMenuItems();
+      StringBuilder orderDetails =
+          new StringBuilder("Order #" + order.getOrderNumber() + " contains: ");
+
+      for (MenuItem item : orderedItems) {
+        orderDetails.append(item.getName()).append(", ");
+      }
+
+      if (!orderedItems.isEmpty()) {
+        orderDetails.setLength(orderDetails.length() - 2); // Remove last comma
+      } else {
+        orderDetails.append("No items found.");
+      }
+
+      return ResponseEntity
+          .ok("Waiter " + waiter.getName() + " has been notified.\n" + orderDetails);
     } else {
       return ResponseEntity.status(404).body("Waiter with ID " + waiterId + " not found.");
-    }
+      }
   }
+
 }
