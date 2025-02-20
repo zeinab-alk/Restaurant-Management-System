@@ -1,7 +1,5 @@
 package uk.ac.rhul.cs2810.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -11,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Waiter entity class.
@@ -48,10 +48,10 @@ public class Waiter {
   /**
    * Waiter constructor.
    *
-   * @param id     as id.
-   * @param name   as name.
+   * @param id as id.
+   * @param name as name.
    * @param status as status.
-   * @param menu   as the menu.
+   * @param menu as the menu.
    */
   public Waiter(int id, String name, String status, Menu menu) {
     this.id = id;
@@ -64,7 +64,7 @@ public class Waiter {
   /**
    * Changes menu availability.
    *
-   * @param itemName     as item name.
+   * @param itemName as item name.
    * @param availability as availability status.
    */
   public void changeMenu(String itemName, boolean availability) {
@@ -101,7 +101,7 @@ public class Waiter {
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
-  
+
   /**
    * Notifies the waiter when a new order is placed with item details.
    *
@@ -164,20 +164,15 @@ public class Waiter {
     this.busy = busy;
   }
 
-  public void confirmOrder() {
-  }
+  public void confirmOrder() {}
 
-  public void trackOrder() {
-  }
+  public void trackOrder() {}
 
-  public void updateOrderStatus() {
-  }
+  public void updateOrderStatus() {}
 
-  public void cancelOrder() {
-  }
+  public void cancelOrder() {}
 
-  public void notifyTeam() {
-  }
+  public void notifyTeam() {}
 
   // Getters and Setters
 

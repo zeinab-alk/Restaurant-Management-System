@@ -69,6 +69,11 @@ public class OrderController {
     return ResponseEntity.ok(orders);
   }
 
+  /**
+   * Retrieves the latest order by order time.
+   *
+   * @return ResponseEntity with the latest order.
+   */
   @GetMapping("/latest")
   public ResponseEntity<Order> getLatestOrder() {
     List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime"));
@@ -81,13 +86,9 @@ public class OrderController {
       System.out.println("Menu Items in Order: " + latestOrder.getItems());
 
       return ResponseEntity.ok(latestOrder);
-    } else {
-      return ResponseEntity.status(404).body(null);
-      }
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
   }
-
-
-
 }
 
 
