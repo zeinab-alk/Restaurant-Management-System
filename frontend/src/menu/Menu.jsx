@@ -23,12 +23,18 @@ import { Link as RouterLink } from 'react-router-dom';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { Box } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from "@mui/material";
+
 
 function Menu() {
   const [menuItems, setMenuItems] = React.useState([]);
   const [error, setError] = React.useState();
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [orderError, setOrderError] = useState(null);
+
 
   // Cart State
   const [cart, setCart] = useState([]);
@@ -77,26 +83,34 @@ function Menu() {
   };
 
   // Place order
-  const placeOrder = async () => {
+  const handleConfirmOrder = async () => {
+    setOpenConfirmDialog(false);  // Close the dialog
+    setIsLoading(true);  // Show loading spinner
+    setOrderError(null); // Reset errors
+  
     if (cart.length === 0) {
       alert("Your order is empty!");
+      setIsLoading(false);
       return;
     }
-
+  
     const orderData = {
       customerName: "Guest",
       menuItemIds: cart.map(item => item.itemId),
     };
-
+  
     try {
       await axios.post(`${API_ENDPOINT}/api/orders`, orderData);
       setOrderSuccess(true);
       setCart([]);
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Failed to place order.");
+      setOrderError("Failed to place order. Please try again.");
+    } finally {
+      setIsLoading(false);  // Hide loading spinner
     }
   };
+  
 
   return (
     <Container>
@@ -154,18 +168,26 @@ function Menu() {
         <TableCell>
           <Stack direction="row" spacing={0.5}>
             {item.dietaryRestrictions.map((restriction, index) => (
-              <Tooltip key={index} title={restriction} arrow>
-                <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[restriction]}</span>
-              </Tooltip>
+              <Tooltip key={index} title={`Dietary Restriction: ${restriction}`} arrow>
+              <span style={{ fontSize: '1.2rem' }} aria-label={`Dietary Restriction: ${restriction}`}>
+                {dietarySymbols[restriction]}
+              </span>
+            </Tooltip>
+            
+
             ))}
           </Stack>
         </TableCell>
         <TableCell>
           <Stack direction="row" spacing={0.5}>
             {item.allergenInformation.map((allergen, index) => (
-              <Tooltip key={index} title={allergen} arrow>
-                <span style={{ fontSize: '1.2rem' }}>{allergenSymbols[allergen]}</span>
-              </Tooltip>
+              <Tooltip key={index} title={`Allergen: ${allergen}`} arrow>
+              <span style={{ fontSize: '1.2rem' }} aria-label={`Allergen: ${allergen}`}>
+                {allergenSymbols[allergen]}
+              </span>
+            </Tooltip>
+            
+
             ))}
           </Stack>
         </TableCell>
@@ -178,13 +200,18 @@ function Menu() {
         </TableCell>
         <TableCell>
           {item.available && (
+            <Tooltip title={`Add ${item.name} to order`} arrow>
             <Button 
               variant="contained" 
               color="primary" 
               onClick={() => addToCart(item)}
+              aria-label={`Add ${item.name} to order`}
             >
               Add to Order
             </Button>
+          </Tooltip>
+          
+
           )}
         </TableCell>
       </TableRow>
@@ -195,6 +222,26 @@ function Menu() {
         </TableContainer>
         </>
       )}
+  <Dialog
+  open={openConfirmDialog}
+  onClose={() => setOpenConfirmDialog(false)}
+>
+  <DialogTitle>Confirm Your Order</DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Are you sure you want to place this order?
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenConfirmDialog(false)} color="secondary">
+      Cancel
+    </Button>
+    <Button onClick={handleConfirmOrder} color="primary">
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       {/* Cart Summary */}
       <Box sx={{
@@ -207,48 +254,71 @@ function Menu() {
         boxShadow: 3,
         borderRadius: 2
         }}>
-  <Typography variant="h5" gutterBottom>
-    Cart Summary
-  </Typography>
-  <Typography variant="subtitle1">
-    Items: {cart.reduce((count, item) => count + item.quantity, 0)}
-  </Typography>
-  <Typography variant="subtitle1">
-    Total: £{cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
-  </Typography>
-  
-  {/* Cart Items List */}
-  {cart.map((item) => (
-    <Stack key={item.itemId} direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-      <Typography>{item.name} ({item.quantity})</Typography>
-      <Typography>£{(item.price * item.quantity).toFixed(2)}</Typography>
-    </Stack>
-  ))}
+          <Typography variant="h5" gutterBottom>
+            Cart Summary
+            </Typography>
+            <Typography variant="subtitle1">
+              Items: {cart.reduce((count, item) => count + item.quantity, 0)}
+              </Typography>
+              <Typography variant="subtitle1">
+                Total: £{cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+                </Typography>
+      {/* Cart Items List */}
+      {cart.map((item) => (
+       <Stack key={item.itemId} direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+       <Typography tabIndex={0} aria-label={`${item.name}, quantity ${item.quantity}`}>
+      {item.name} ({item.quantity})
+    </Typography>
+    <Typography>£{(item.price * item.quantity).toFixed(2)}</Typography>
+  </Stack>
+))}
 
-  {/* Clear Cart and Place Order Buttons */}
+      {/* Clear Cart and Place Order Buttons */}
+
+      <Tooltip title="Remove all items from the cart" arrow>
   <Button 
     variant="contained" 
     color="secondary" 
     sx={{ mt: 2, mr: 2 }} 
     onClick={clearCart}
+    aria-label="Remove all items from the cart"
   >
     Clear Cart
   </Button>
+</Tooltip>
+
+<Tooltip title="Confirm and place your order" arrow>
   <Button 
     variant="contained" 
     color="success" 
     sx={{ mt: 2 }} 
-    onClick={placeOrder}
+    onClick={() => setOpenConfirmDialog(true)}
+    disabled={isLoading}
+    aria-label="Confirm and place your order"
   >
-    Place Order
+    {isLoading ? <CircularProgress size={24} /> : "Place Order"}
   </Button>
-</Box>
+</Tooltip>
+
+
+
+
+
+
+     </Box>
+      
       {/* Order Confirmation Message */}
       {orderSuccess && (
         <Alert severity="success" sx={{ mt: 2 }}>
           Order placed successfully!
         </Alert>
       )}
+      {orderError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {orderError}
+        </Alert>
+)}
+
     </Container>
   );
 }
