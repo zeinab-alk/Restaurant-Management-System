@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
+import org.springframework.data.domain.Sort;
 
 @WebMvcTest(OrderController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable security filters for test
@@ -125,6 +126,43 @@ public class OrderControllerTest {
         .andExpect(jsonPath("$[0].status").value("Pending"))
         .andExpect(jsonPath("$[1].orderNumber").value(2))
         .andExpect(jsonPath("$[1].status").value("Completed"));
+  }
+  
+  
+  /**
+   * Test retrieving the latest order successfully.
+   */
+  @Test
+  public void testGetLatestOrder_Success() throws Exception {
+    // Arrange
+    Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, "Completed");
+
+    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime")))
+        .thenReturn(Arrays.asList(latestOrder));
+
+    // Act & Assert
+    mockMvc
+        .perform(get("/api/orders/latest"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.orderNumber").value(3))
+        .andExpect(jsonPath("$.status").value("Completed"));
+  }
+
+  /**
+   * Test retrieving the latest order when no orders exist.
+   */
+  @Test
+  public void testGetLatestOrder_NotFound() throws Exception {
+    // Arrange
+    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime")))
+        .thenReturn(List.of());
+
+    // Act & Assert
+    mockMvc
+        .perform(get("/api/orders/latest"))
+        .andDo(print())
+        .andExpect(status().isNotFound());
   }
 }
 

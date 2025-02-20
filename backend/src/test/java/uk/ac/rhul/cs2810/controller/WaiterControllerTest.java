@@ -1,4 +1,3 @@
-
 package uk.ac.rhul.cs2810.controller;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -12,16 +11,20 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Arrays;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import uk.ac.rhul.cs2810.model.MenuItem;
+import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
-import java.util.Optional;
-
 @ExtendWith(MockitoExtension.class)
 public class WaiterControllerTest {
+
   @Mock
   private WaiterRepository waiterRepository;
 
@@ -67,5 +70,57 @@ public class WaiterControllerTest {
     verify(waiterRepository, never()).save(any(Waiter.class));
   }
 
+  @Test
+  public void notifyWaiterNewOrder_WhenWaiterExists_ShouldReturnOrderDetails() {
+    // Arrange
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
 
+    MenuItem item1 = new MenuItem();
+    item1.setName("Tacos");
+
+    MenuItem item2 = new MenuItem();
+    item2.setName("Burrito");
+
+    Order order = new Order();
+    order.setOrderNumber(101);
+    order.setItems(Arrays.asList(item1, item2));
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+    // Act
+    ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
+
+    // Assert
+    assertNotNull(response);
+    assertEquals(200, response.getStatusCodeValue());
+    assertTrue(response.getBody().contains("Waiter John has been notified"));
+    assertTrue(response.getBody().contains("Tacos"));
+    assertTrue(response.getBody().contains("Burrito"));
+
+    verify(waiterRepository, times(1)).save(waiter);
+  }
+
+  @Test
+  public void notifyWaiterNewOrder_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
+    // Arrange
+    int waiterId = 99;
+    Order order = new Order();
+    order.setOrderNumber(101);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+
+    // Act
+    ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
+
+    // Assert
+    assertNotNull(response);
+    assertEquals(404, response.getStatusCodeValue());
+    assertEquals("Waiter with ID 99 not found.", response.getBody());
+
+    verify(waiterRepository, never()).save(any(Waiter.class));
+  }
 }
+
