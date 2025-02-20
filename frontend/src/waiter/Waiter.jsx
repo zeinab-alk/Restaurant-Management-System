@@ -7,17 +7,14 @@ import { API_ENDPOINT } from "../config";
 const WaiterPage = () => {
   const [orderNotification, setOrderNotification] = useState(null);
 
-  // Polling mechanism to listen for new orders (every 5 seconds)
+  // Poll for latest order every 5 seconds
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get(`${API_ENDPOINT}/api/orders/latest`); // Fetch latest order
+        const response = await axios.get(`${API_ENDPOINT}/api/orders/latest`);
         if (response.data) {
           const { orderNumber, menuItems } = response.data;
-
-          // Construct order details message
           const orderDetails = menuItems.map(item => item.name).join(", ");
-
           setOrderNotification(`New Order #${orderNumber}: ${orderDetails}`);
         }
       } catch (error) {
@@ -25,7 +22,7 @@ const WaiterPage = () => {
       }
     }, 5000);
 
-    return () => clearInterval(interval); // Cleanup interval
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -53,7 +50,11 @@ const WaiterPage = () => {
       </Stack>
 
       {/* Order Notification */}
-      {orderNotification && <Alert severity="info" sx={{ mt: 2 }}>{orderNotification}</Alert>}
+      {orderNotification && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          {orderNotification}
+        </Alert>
+      )}
     </Container>
   );
 };
