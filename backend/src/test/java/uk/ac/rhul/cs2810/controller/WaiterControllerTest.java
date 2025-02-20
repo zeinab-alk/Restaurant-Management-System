@@ -18,6 +18,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
+import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
 import java.util.Optional;
@@ -26,6 +27,9 @@ import java.util.Optional;
 public class WaiterControllerTest {
   @Mock
   private WaiterRepository waiterRepository;
+
+  @Mock
+  private OrderRepository orderRepository;
 
   @InjectMocks
   private WaiterController waiterController;
@@ -103,6 +107,57 @@ public class WaiterControllerTest {
     // Assert
     assertEquals("Waiter with ID 1 not found.", response.getBody());
     verify(waiterRepository, never()).save(any(Waiter.class)); // Ensure save is not called
+  }
+
+  @Test
+  public void markOrderAsDelivered_WhenOrderExists_ShouldMarkAsDelivered() {
+    // Arrange
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus("Pending"); // Initial status is not "Delivered"
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
+
+    // Assert
+    assertEquals("Order 123 has been marked as Delivered.", response.getBody());
+    assertEquals("Delivered", order.getStatus()); // Ensure the status was updated
+    verify(orderRepository, times(1)).save(order); // Verify save was called
+  }
+
+  @Test
+  public void markOrderAsDelivered_WhenOrderAlreadyDelivered_ShouldReturnAlreadyDeliveredMessage() {
+    // Arrange
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus("Delivered"); // Status is already "Delivered"
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
+
+    // Assert
+    assertEquals("Order 123 is already delivered.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
+  }
+
+  @Test
+  public void markOrderAsDelivered_WhenOrderNotFound_ShouldReturnNotFoundMessage() {
+    // Arrange
+    int orderId = 1;
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+    // Act
+    ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
+
+    // Assert
+    assertEquals("Order with ID 1 not found.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 
 
