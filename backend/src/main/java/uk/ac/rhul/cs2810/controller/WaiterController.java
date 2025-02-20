@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
+import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
 /**
@@ -29,6 +30,9 @@ public class WaiterController {
 
   @Autowired
   private WaiterRepository waiterRepository;
+
+  @Autowired
+  private OrderRepository orderRepository; // Inject order repo
 
   /**
    * Calls a waiter for a specific table.
@@ -88,4 +92,34 @@ public class WaiterController {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body("Waiter with ID " + waiterId + " not found.");
   }
+
+  /**
+   * Marks an order as delivered.
+   *
+   * @param orderId The ID of the order to update.
+   * @return Response message indicating success or failure.
+   */
+  @PostMapping("/orders/{orderId}/mark-delivered")
+  public ResponseEntity<String> markOrderAsDelivered(@PathVariable int orderId) {
+    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+    if (optionalOrder.isPresent()) {
+      Order order = optionalOrder.get();
+      if (order.getStatus() == null || order.getStatus().trim().isEmpty()) {
+        return ResponseEntity.status(400).body("Order status is invalid.");
+      }
+      if ("Delivered".equalsIgnoreCase(order.getStatus())) {
+        return ResponseEntity.ok("Order " + order.getOrderNumber() + " is already delivered.");
+      }
+
+      order.setStatus("Delivered");
+      orderRepository.save(order); // Save the updated order
+
+      return ResponseEntity
+          .ok("Order " + order.getOrderNumber() + " has been marked as Delivered.");
+    } else {
+      return ResponseEntity.status(404).body("Order with ID " + orderId + " not found.");
+    }
+  }
+
 }
