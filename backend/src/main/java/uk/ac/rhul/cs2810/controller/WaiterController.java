@@ -89,6 +89,9 @@ public class WaiterController {
 
     if (optionalOrder.isPresent()) {
       Order order = optionalOrder.get();
+      if (order.getStatus() == null || order.getStatus().trim().isEmpty()) {
+        return ResponseEntity.status(400).body("Order status is invalid.");
+      }
       if ("Delivered".equalsIgnoreCase(order.getStatus())) {
         return ResponseEntity.ok("Order " + order.getOrderNumber() + " is already delivered.");
       }

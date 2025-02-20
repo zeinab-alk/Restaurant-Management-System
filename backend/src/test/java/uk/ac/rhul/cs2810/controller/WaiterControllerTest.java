@@ -160,6 +160,63 @@ public class WaiterControllerTest {
     verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 
+  @Test
+  public void markOrderAsDelivered_WhenOrderStatusIsNull_ShouldReturnErrorMessage() {
+    // Arrange
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(null); // Simulating a null status
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
+
+    // Assert
+    assertEquals("Order status is invalid.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class)); // Ensure order is NOT saved
+  }
+
+  @Test
+  public void markOrderAsDelivered_WhenOrderStatusIsEmpty_ShouldReturnErrorMessage() {
+    // Arrange
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(""); // Simulating an empty string
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
+
+    // Assert
+    assertEquals("Order status is invalid.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class)); // Ensure order is NOT saved
+  }
+
+  @Test
+  public void notifyWaiterNewOrder_WhenCurrentOrdersIsNull_ShouldHandleGracefully() {
+    // Arrange
+    int waiterId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John Doe");
+    waiter.setCurrentOrders(null); // Explicitly setting currentOrders to null
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+    // Act
+    ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
+
+    // Assert
+    assertEquals("Waiter John Doe has been notified of new order: 123", response.getBody());
+    verify(waiterRepository, times(1)).save(waiter); // Ensure the waiter is saved
+  }
 
 
 }
