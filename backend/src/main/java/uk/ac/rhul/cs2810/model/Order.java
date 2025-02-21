@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.FetchType;
 
 
 /**
@@ -33,17 +34,17 @@ public class Order {
   @JoinColumn(name = "customer_id")
   private Customer customer;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      name = "order_menu_items",
+      name = "order_menu_item",
       joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "menu_item_id")
+      inverseJoinColumns = @JoinColumn(name = "item_id")
   )
-  private List<MenuItem> items = new ArrayList<>();
+  private List<MenuItem> menuItems;
 
   @JsonProperty("menuItems")
   public List<MenuItem> getItems() {
-    return (this.items != null) ? this.items : new ArrayList<>();
+    return (this.menuItems != null) ? this.menuItems : new ArrayList<>();
   }
 
 
@@ -69,14 +70,14 @@ public class Order {
     this.orderTime = orderTime;
     this.waitingTime = waitingTime;
     this.status = status;
-    this.items = new ArrayList<>();
+    this.menuItems = new ArrayList<>();
   }
 
   /**
    * Default constructor (needed for JPA and JSON serialization).
    */
   public Order() {
-    this.items = new ArrayList<>();
+    this.menuItems = new ArrayList<>();
   }
 
   public int getOrderNumber() {
@@ -96,7 +97,7 @@ public class Order {
   }
 
   public void setItems(List<MenuItem> items) {
-    this.items = (items != null) ? items : new ArrayList<>();
+    this.menuItems = (items != null) ? items : new ArrayList<>();
   }
 
   public String getOrderTime() {
@@ -129,10 +130,10 @@ public class Order {
    * @param menuItem The menu item to add.
    */
   public void addItem(MenuItem menuItem) {
-    if (this.items == null) {
-      this.items = new ArrayList<>();
+    if (this.menuItems == null) {
+      this.menuItems = new ArrayList<>();
     }
-    items.add(menuItem);
+    menuItems.add(menuItem);
   }
 
   /**
@@ -141,8 +142,8 @@ public class Order {
    * @param menuItem The menu item to remove.
    */
   public void removeItem(MenuItem menuItem) {
-    if (this.items != null) {
-      items.remove(menuItem);
+    if (this.menuItems != null) {
+      menuItems.remove(menuItem);
     }
   }
 
@@ -152,7 +153,7 @@ public class Order {
    * @return The total price of the order.
    */
   public double getOrderSum() {
-    return items.stream().mapToDouble(MenuItem::getPrice).sum();
+    return menuItems.stream().mapToDouble(MenuItem::getPrice).sum();
   }
 
   /**
@@ -179,7 +180,7 @@ public class Order {
    * //details.append("Customer: ").append(customer.getName()).append("\n");
    * details.append("Items:\n");
    *
-   * for (MenuItem item : items) {
+   * for (MenuItem item : menuItems) {
    * details.append("- ").append(item.getName()).append(": $").append(item.getPrice())
    * .append("\n"); }
    *

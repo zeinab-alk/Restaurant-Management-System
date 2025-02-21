@@ -61,11 +61,12 @@ function Menu() {
 
     // Build an order object that your Spring Boot Order entity can parse
     const orderData = {
-      orderTime: new Date().toISOString(),   // or any string you like
-      status: "Pending",                    // match your Order’s 'status' field
-      // "menuItems" must be an array of objects with at least { "itemId": ... }
+      orderTime: new Date().toISOString(),
+      status: "Pending",
       menuItems: cart.map(item => ({
-        itemId: item.itemId 
+        itemId: item.itemId,
+        name: item.name,
+        price: item.price
       }))
     };
 
