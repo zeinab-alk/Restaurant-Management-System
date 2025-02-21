@@ -14,13 +14,11 @@ import java.util.List;
  */
 @Entity  // Marks this class as a JPA entity to be managed by the persistence provider
 public class Menu {
-  /**
-   * The unique identifier for this menu.
-   * Generated automatically by the database.
-   */
+
   @Id  // Marks this field as the primary key
   @GeneratedValue(strategy = GenerationType.IDENTITY)  // Configures auto-generation of IDs
   private Integer id;
+  private Integer menuId;
 
   /**
    * List of menu items associated with this menu.
@@ -29,11 +27,24 @@ public class Menu {
   @OneToMany  // Establishes one-to-many relationship with MenuItem entities
   private List<MenuItem> menuItems;
 
+  private String name;
+
   /**
    * Default constructor that initializes an empty list of menu items.
    */
   public Menu() {
     this.menuItems = new ArrayList<>();
+  }
+
+  /**
+   * Constructor for creating a menu with an ID and name.
+   *
+   * @param menuId The unique ID of the menu.
+   * @param name The name of the menu.
+   */
+  public Menu(int menuId, String name) {
+    this.id = menuId;
+    this.name = name;
   }
 
   /**
@@ -75,7 +86,7 @@ public class Menu {
   /**
    * Finding the item by its name.
    *
-   * @param name as the itemname
+   * @param name as the item name
    * @return the menu item
    */
   public MenuItem getItemByName(String name) {

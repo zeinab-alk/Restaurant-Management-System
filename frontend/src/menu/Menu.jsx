@@ -15,22 +15,23 @@ import {
   Stack,
   Button,
   useTheme,
-  Tooltip,
-  Autocomplete,
-  TextField
+  Tooltip
 } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 
 function Menu() {
-  const [menuItems, setMenuItems] = React.useState([]);
-  const [error, setError] = React.useState();
+  const [menuItems, setMenuItems] = useState([]);
+  const [error, setError] = useState();
   const theme = useTheme();
 
-  // Cart State
   const [cart, setCart] = useState([]);
   const [orderSuccess, setOrderSuccess] = useState(false);
+
+  const [showWaiterButton, setShowWaiterButton] = useState(true);
+  const [waiterMessage, setWaiterMessage] = useState(null);
+  const [waiterError, setWaiterError] = useState(null);
 
   React.useEffect(() => {
     axios
@@ -43,46 +44,74 @@ function Menu() {
       });
   }, []);
 
-  // Add item to cart
   const addToCart = (item) => {
-    setCart([...cart, item]);
+    setCart((prevCart) => [...prevCart, item]); 
   };
 
-  // Remove item from cart
   const removeFromCart = (index) => {
-    const updatedCart = cart.filter((_, i) => i !== index);
-    setCart(updatedCart);
+    setCart((prevCart) => prevCart.filter((_, i) => i !== index)); 
   };
 
-  // Place order
+  // ---- FIXED placeOrder() ----
   const placeOrder = async () => {
     if (cart.length === 0) {
       alert("Your order is empty!");
       return;
     }
 
+    // Build an order object that your Spring Boot Order entity can parse
     const orderData = {
-      customerName: "Guest",
-      menuItemIds: cart.map(item => item.itemId),
+      orderTime: new Date().toISOString(),   // or any string you like
+      status: "Pending",                    // match your Order’s 'status' field
+      // "menuItems" must be an array of objects with at least { "itemId": ... }
+      menuItems: cart.map(item => ({
+        itemId: item.itemId 
+      }))
     };
 
     try {
       await axios.post(`${API_ENDPOINT}/api/orders`, orderData);
       setOrderSuccess(true);
-      setCart([]);
+      setCart([]); // Clear cart after successful order
     } catch (error) {
       console.error("Error placing order:", error);
       alert("Failed to place order.");
     }
   };
 
+  const callWaiter = async () => {
+    try {
+      const response = await axios.post(`${API_ENDPOINT}/api/waiters/call-waiter?tableNumber=5`);
+      setWaiterMessage(response.data);
+      setWaiterError(null);
+      setTimeout(() => setShowWaiterButton(false), 1000);
+    } catch (err) {
+      setWaiterMessage(null);
+      setWaiterError("No available waiters at the moment. Please try again later.");
+    }
+  };
+
   return (
     <Container>
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+      {/* Back to Home Button */}
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
         <Button component={RouterLink} to="/" variant="contained" color="success">
           Back to Home
         </Button>
       </Stack>
+
+      {/* Request Waiter Button */}
+      {showWaiterButton && (
+        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+          <Button variant="contained" color="primary" onClick={callWaiter}>
+            Request Waiter
+          </Button>
+        </Stack>
+      )}
+
+      {/* Success/Error Messages */}
+      {waiterMessage && <Alert severity="success" sx={{ mb: 2 }}>{waiterMessage}</Alert>}
+      {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
 
       <Typography variant="h3" component="h1" gutterBottom>
         Our Menu
@@ -98,13 +127,27 @@ function Menu() {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Name</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Price</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Calories</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Dietary Info</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Allergens</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Status</TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Name
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Price
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Calories
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Dietary Info
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Allergens
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Status
+                </TableCell>
+                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -117,7 +160,9 @@ function Menu() {
                     <Stack direction="row" spacing={0.5}>
                       {item.dietaryRestrictions.map((restriction, index) => (
                         <Tooltip key={index} title={restriction} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[restriction]}</span>
+                          <span style={{ fontSize: '1.2rem' }}>
+                            {dietarySymbols[restriction]}
+                          </span>
                         </Tooltip>
                       ))}
                     </Stack>
@@ -126,15 +171,17 @@ function Menu() {
                     <Stack direction="row" spacing={0.5}>
                       {item.allergenInformation.map((allergen, index) => (
                         <Tooltip key={index} title={allergen} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>{allergenSymbols[allergen]}</span>
+                          <span style={{ fontSize: '1.2rem' }}>
+                            {allergenSymbols[allergen]}
+                          </span>
                         </Tooltip>
                       ))}
                     </Stack>
                   </TableCell>
                   <TableCell>
                     <Chip 
-                      label={item.available ? "Available" : "Unavailable"}
-                      color={item.available ? "success" : "error"}
+                      label={item.available ? "Available" : "Unavailable"} 
+                      color={item.available ? "success" : "error"} 
                       size="small"
                     />
                   </TableCell>
@@ -143,8 +190,7 @@ function Menu() {
                       <Button 
                         variant="contained" 
                         color="primary" 
-                        onClick={() => addToCart(item)}
-                      >
+                        onClick={() => addToCart(item)}>
                         Add to Order
                       </Button>
                     )}
@@ -156,15 +202,13 @@ function Menu() {
         </TableContainer>
       )}
 
-      {/* Cart Summary */}
       <Typography variant="h4" sx={{ mt: 4 }}>Your Order</Typography>
       {cart.length === 0 ? (
         <Typography>No items in cart</Typography>
       ) : (
         <Paper sx={{ p: 2, mt: 2 }}>
-          <Typography variant="h6">Items: {cart.length}</Typography>
           <Typography variant="h6">
-            Total: £{cart.reduce((total, item) => total + item.price, 0).toFixed(2)}
+            Items: {cart.length}
           </Typography>
           {cart.map((item, index) => (
             <Stack key={index} direction="row" justifyContent="space-between">
@@ -173,28 +217,24 @@ function Menu() {
                 variant="contained" 
                 color="error" 
                 size="small" 
-                onClick={() => removeFromCart(index)}
-              >
+                onClick={() => removeFromCart(index)}>
                 Remove
               </Button>
             </Stack>
           ))}
-          <Button variant="contained" color="success" sx={{ mt: 2 }} onClick={placeOrder}>
+          <Button 
+            variant="contained" 
+            color="success" 
+            sx={{ mt: 2 }} 
+            onClick={placeOrder}>
             Place Order
           </Button>
         </Paper>
       )}
 
-      {/* Order Confirmation Message */}
-      {orderSuccess && (
-        <Alert severity="success" sx={{ mt: 2 }}>
-          Order placed successfully!
-        </Alert>
-      )}
+      {orderSuccess && <Alert severity="success" sx={{ mt: 2 }}>Order placed successfully!</Alert>}
     </Container>
   );
 }
 
 export default Menu;
-
-

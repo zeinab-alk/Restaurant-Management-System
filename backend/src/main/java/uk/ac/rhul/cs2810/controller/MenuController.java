@@ -9,7 +9,7 @@ import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.repository.MenuRepository;
 
 /**
- * A rest controller handles menu instances.
+ * A REST controller that handles menu instances.
  */
 @RestController
 public class MenuController {
@@ -17,7 +17,7 @@ public class MenuController {
   private final MenuRepository menuRepository;
 
   /**
-   * Constructors for repositories.
+   * Constructor for repositories.
    *
    * @param menuRepository class object
    */
@@ -33,10 +33,9 @@ public class MenuController {
    */
   @GetMapping(value = "/menu/getMenu")
   public ResponseEntity<Menu> getMenu(@RequestParam Map<String, String> params) {
-
-    Menu menu = menuRepository.findById(Integer.valueOf(params.get("menu_id"))).orElseThrow();
-
-    return ResponseEntity.ok(menu);
+    int menuId = Integer.parseInt(params.get("menu_id"));
+    return menuRepository.findById(menuId)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.status(404).body(null)); // Return 404 if menu is not found
   }
-
 }
