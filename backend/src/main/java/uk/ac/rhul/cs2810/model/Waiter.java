@@ -159,6 +159,12 @@ public class Waiter {
     }
 
     List<MenuItem> orderedItems = order.getMenuItems();
+
+    if (orderedItems == null || orderedItems.isEmpty()) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
     for (MenuItem item : orderedItems) {
       MenuItem menuItem = menu.getItemByName(item.getName());
       if (menuItem == null || !menuItem.isAvailable()) {

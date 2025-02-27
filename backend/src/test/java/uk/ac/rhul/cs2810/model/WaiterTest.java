@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -376,20 +377,31 @@ public class WaiterTest {
     MenuItem item1 = mock(MenuItem.class);
     MenuItem item2 = mock(MenuItem.class);
 
+    // Set up the mock items
     when(item1.getName()).thenReturn("Pizza");
     when(item2.getName()).thenReturn("Burger");
+
+    // Ensure both items are available
     when(item1.isAvailable()).thenReturn(true);
     when(item2.isAvailable()).thenReturn(true);
 
+    // Mock the order to return the items
     when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1, item2));
+
+    // Set up the menu mock
     when(mockMenu.getItemByName("Pizza")).thenReturn(item1);
     when(mockMenu.getItemByName("Burger")).thenReturn(item2);
 
+    // Call the method
     boolean result = waiter.confirmOrder(mockOrder);
 
-    assertTrue(result, "Order should be confirmed when all items are available");
-    assertTrue(outContent.toString().contains("Order confirmed"));
+    // Check assertions
+    assertTrue(result, "Order should be confirmed if all items are available");
+    assertTrue(
+        outContent.toString().contains("Order " + mockOrder.getOrderNumber() + " confirmed."));
   }
+
+
 
   @Test
   public void testConfirmOrder_ItemUnavailable() {
@@ -431,13 +443,15 @@ public class WaiterTest {
   @Test
   public void testConfirmOrder_EmptyOrder() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getMenuItems()).thenReturn(null);
+    when(mockOrder.getMenuItems()).thenReturn(null); // Simulating an empty order
 
     boolean result = waiter.confirmOrder(mockOrder);
 
-    assertTrue(outContent.toString().contains("Order or menu is not available."));
-    assertTrue(!result, "Order should not be confirmed if the order is empty");
+    assertTrue(outContent.toString().contains("Order or menu is not available."),
+        "Should print a warning when order is empty");
+    assertFalse(result, "Order should not be confirmed if it contains no items");
   }
+
 
   @Test
   public void testConfirmOrder_NullOrder() {
