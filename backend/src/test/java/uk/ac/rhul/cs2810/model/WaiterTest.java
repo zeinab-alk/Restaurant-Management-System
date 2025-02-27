@@ -370,6 +370,27 @@ public class WaiterTest {
         "Current orders list should remain null or empty when null order is passed");
   }
 
+  @Test
+  public void testConfirmOrder_AllItemsAvailable() {
+    Order mockOrder = mock(Order.class);
+    MenuItem item1 = mock(MenuItem.class);
+    MenuItem item2 = mock(MenuItem.class);
+
+    when(item1.getName()).thenReturn("Pizza");
+    when(item2.getName()).thenReturn("Burger");
+    when(item1.isAvailable()).thenReturn(true);
+    when(item2.isAvailable()).thenReturn(true);
+
+    when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1, item2));
+    when(mockMenu.getItemByName("Pizza")).thenReturn(item1);
+    when(mockMenu.getItemByName("Burger")).thenReturn(item2);
+
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    assertTrue(result, "Order should be confirmed when all items are available");
+    assertTrue(outContent.toString().contains("Order confirmed"));
+  }
+
 
 
 }
