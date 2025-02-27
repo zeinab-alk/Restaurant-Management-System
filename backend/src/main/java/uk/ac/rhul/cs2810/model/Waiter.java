@@ -147,6 +147,32 @@ public class Waiter {
   }
 
   /**
+   * Confirms a customer order by checking if all items are available.
+   *
+   * @param order The order to confirm.
+   * @return true if all items are available, false otherwise.
+   */
+  public boolean confirmOrder(Order order) {
+    if (order == null || menu == null) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
+    List<MenuItem> orderedItems = order.getMenuItems();
+    for (MenuItem item : orderedItems) {
+      MenuItem menuItem = menu.getItemByName(item.getName());
+      if (menuItem == null || !menuItem.isAvailable()) {
+        System.out.println("Item unavailable: " + item.getName());
+        return false;
+      }
+    }
+
+    System.out.println("Order " + order.getOrderNumber() + " confirmed.");
+    return true;
+  }
+
+
+  /**
    * Checks if the waiter is busy.
    *
    * @return true if busy, false otherwise.
