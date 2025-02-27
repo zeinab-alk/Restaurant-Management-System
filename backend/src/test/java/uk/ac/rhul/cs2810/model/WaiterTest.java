@@ -461,7 +461,16 @@ public class WaiterTest {
     assertTrue(!result, "Order should not be confirmed if it is null");
   }
 
+  @Test
+  public void testConfirmOrder_NullMenu() {
+    Waiter waiterWithoutMenu = new Waiter(1, "John", "Active", null);
+    Order mockOrder = mock(Order.class);
 
+    boolean result = waiterWithoutMenu.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order or menu is not available."));
+    assertTrue(!result, "Order should not be confirmed if there is no menu");
+  }
 
 }
 
