@@ -391,6 +391,27 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order confirmed"));
   }
 
+  @Test
+  public void testConfirmOrder_ItemUnavailable() {
+    Order mockOrder = mock(Order.class);
+    MenuItem item1 = mock(MenuItem.class);
+    MenuItem item2 = mock(MenuItem.class);
+
+    when(item1.getName()).thenReturn("Pizza");
+    when(item2.getName()).thenReturn("Burger");
+    when(item1.isAvailable()).thenReturn(true);
+    when(item2.isAvailable()).thenReturn(false); // One item is unavailable
+
+    when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1, item2));
+    when(mockMenu.getItemByName("Pizza")).thenReturn(item1);
+    when(mockMenu.getItemByName("Burger")).thenReturn(item2);
+
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Item unavailable: Burger"));
+    assertTrue(!result, "Order should not be confirmed if any item is unavailable");
+  }
+
 
 
 }
