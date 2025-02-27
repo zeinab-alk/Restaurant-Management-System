@@ -42,8 +42,7 @@ public class Waiter {
   /**
    * Default constructor required by JPA.
    */
-  public Waiter() {
-  }
+  public Waiter() {}
 
   /**
    * Waiter constructor.
@@ -177,6 +176,8 @@ public class Waiter {
     return true;
   }
 
+  // Overloaded confirmOrder without parameters
+  public void confirmOrder() {}
 
   /**
    * Checks if the waiter is busy.
@@ -195,8 +196,6 @@ public class Waiter {
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
-
-  public void confirmOrder() {}
 
   public void trackOrder() {}
 
@@ -256,4 +255,3 @@ public class Waiter {
     this.currentOrders = currentOrders;
   }
 }
-
