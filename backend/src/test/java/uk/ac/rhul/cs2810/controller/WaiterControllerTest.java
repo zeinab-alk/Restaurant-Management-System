@@ -22,6 +22,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -138,7 +139,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Pending"); // Initial status is not "Delivered"
+    order.setStatus(OrderStatus.PENDING); // Initial status is not "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -147,7 +148,7 @@ public class WaiterControllerTest {
 
     // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
-    assertEquals("Delivered", order.getStatus()); // Ensure the status was updated
+    assertEquals(OrderStatus.DELIVERED, order.getStatus()); // Ensure the status was updated
     verify(orderRepository, times(1)).save(order); // Verify save was called
   }
 
@@ -157,7 +158,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Delivered"); // Status is already "Delivered"
+    order.setStatus(OrderStatus.DELIVERED); // Status is already "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -207,7 +208,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus(""); // Simulating an empty string
+    order.setStatus(null);
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 

@@ -15,7 +15,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, "12:30 PM", 15, "Pending");
+    order = new Order(1, customer, "12:30 PM", 15, OrderStatus.PENDING);
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
@@ -45,7 +45,7 @@ class OrderTest {
     assertEquals(customer, order.getCustomer());
     assertEquals("12:30 PM", order.getOrderTime());
     assertEquals(15, order.getWaitingTime());
-    assertEquals("Pending", order.getStatus());
+    assertEquals(OrderStatus.PENDING, order.getStatus());
     assertTrue(order.getItems().isEmpty());
   }
 
@@ -76,8 +76,8 @@ class OrderTest {
 
   @Test
   void testSetAndGetStatus() {
-    order.setStatus("In Progress");
-    assertEquals("In Progress", order.getStatus());
+    order.setStatus(OrderStatus.IN_PROGRESS);
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
   }
 
   @Test
@@ -124,7 +124,7 @@ class OrderTest {
 
   @Test
   void testUpdateStatus() {
-    order.updateStatus("Completed");
-    assertEquals("Completed", order.getStatus());
+    order.updateStatus(OrderStatus.COMPLETED);
+    assertEquals(OrderStatus.COMPLETED, order.getStatus());
   }
 }

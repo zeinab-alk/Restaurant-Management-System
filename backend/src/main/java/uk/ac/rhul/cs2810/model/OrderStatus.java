@@ -1,0 +1,5 @@
+package uk.ac.rhul.cs2810.model;
+
+public enum OrderStatus {
+  PENDING, IN_PROGRESS, READY_FOR_DELIVERY, COMPLETED, DELIVERED, PROCESSING, CANCELLED;
+}

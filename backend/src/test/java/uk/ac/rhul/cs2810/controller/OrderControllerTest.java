@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import org.springframework.data.domain.Sort;
 
@@ -41,18 +42,15 @@ public class OrderControllerTest {
   @Test
   public void testPlaceOrderSuccess() throws Exception {
     // Arrange
-    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, "Pending");
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
     when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
 
     // Act & Assert
     mockMvc
-        .perform(post("/api/orders")
-            .contentType(MediaType.APPLICATION_JSON)
+        .perform(post("/api/orders").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(mockOrder)))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value("Pending"));
+        .andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.orderNumber").value(1))
+        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.toString()));
   }
 
   /**
@@ -63,7 +61,7 @@ public class OrderControllerTest {
     // Arrange: simulate an exception thrown by the repository
     when(orderRepository.save(any(Order.class))).thenThrow(new RuntimeException("DB error"));
 
-    Order requestOrder = new Order(999, null, "2025-02-15 10:00", 10, "Pending");
+    Order requestOrder = new Order(999, null, "2025-02-15 10:00", 10, OrderStatus.PENDING);
 
     // Act & Assert: verify we get INTERNAL_SERVER_ERROR
     mockMvc
@@ -78,16 +76,13 @@ public class OrderControllerTest {
   @Test
   public void testGetOrderFound() throws Exception {
     // Arrange
-    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, "Pending");
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
     when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
 
     // Act & Assert
-    mockMvc
-        .perform(get("/api/orders/1"))
-        .andDo(print())
-        .andExpect(status().isOk())
+    mockMvc.perform(get("/api/orders/1")).andDo(print()).andExpect(status().isOk())
         .andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value("Pending"));
+        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.toString()));
   }
 
   /**
@@ -99,10 +94,7 @@ public class OrderControllerTest {
     when(orderRepository.findById(999)).thenReturn(Optional.empty());
 
     // Act & Assert
-    mockMvc
-        .perform(get("/api/orders/999"))
-        .andDo(print())
-        .andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/orders/999")).andDo(print()).andExpect(status().isNotFound());
   }
 
   /**
@@ -111,42 +103,36 @@ public class OrderControllerTest {
   @Test
   public void testGetAllOrders() throws Exception {
     // Arrange
-    Order order1 = new Order(1, null, "2025-02-14 12:00", 15, "Pending");
-    Order order2 = new Order(2, null, "2025-02-14 13:00", 10, "Completed");
+    Order order1 = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
+    Order order2 = new Order(2, null, "2025-02-14 13:00", 10, OrderStatus.COMPLETED);
     List<Order> mockOrders = Arrays.asList(order1, order2);
 
     when(orderRepository.findAll()).thenReturn(mockOrders);
 
     // Act & Assert
-    mockMvc
-        .perform(get("/api/orders"))
-        .andDo(print())
-        .andExpect(status().isOk())
+    mockMvc.perform(get("/api/orders")).andDo(print()).andExpect(status().isOk())
         .andExpect(jsonPath("$[0].orderNumber").value(1))
-        .andExpect(jsonPath("$[0].status").value("Pending"))
+        .andExpect(jsonPath("$[0].status").value(OrderStatus.PENDING.toString()))
         .andExpect(jsonPath("$[1].orderNumber").value(2))
-        .andExpect(jsonPath("$[1].status").value("Completed"));
+        .andExpect(jsonPath("$[1].status").value(OrderStatus.COMPLETED.toString()));
   }
-  
-  
+
+
   /**
    * Test retrieving the latest order successfully.
    */
   @Test
   public void testGetLatestOrder_Success() throws Exception {
     // Arrange
-    Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, "Completed");
+    Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, OrderStatus.COMPLETED);
 
     when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime")))
         .thenReturn(Arrays.asList(latestOrder));
 
     // Act & Assert
-    mockMvc
-        .perform(get("/api/orders/latest"))
-        .andDo(print())
-        .andExpect(status().isOk())
+    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isOk())
         .andExpect(jsonPath("$.orderNumber").value(3))
-        .andExpect(jsonPath("$.status").value("Completed"));
+        .andExpect(jsonPath("$.status").value(OrderStatus.COMPLETED.toString()));
   }
 
   /**
@@ -155,17 +141,11 @@ public class OrderControllerTest {
   @Test
   public void testGetLatestOrder_NotFound() throws Exception {
     // Arrange
-    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime")))
-        .thenReturn(List.of());
+    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime"))).thenReturn(List.of());
 
     // Act & Assert
-    mockMvc
-        .perform(get("/api/orders/latest"))
-        .andDo(print())
-        .andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isNotFound());
   }
 }
-
-
 
 

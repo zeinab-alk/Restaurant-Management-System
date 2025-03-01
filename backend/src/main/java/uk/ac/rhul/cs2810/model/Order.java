@@ -3,6 +3,8 @@ package uk.ac.rhul.cs2810.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,11 +36,8 @@ public class Order {
   private Customer customer;
 
   @ManyToMany
-  @JoinTable(
-      name = "order_menu_items",
-      joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "menu_item_id")
-  )
+  @JoinTable(name = "order_menu_items", joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "menu_item_id"))
   private List<MenuItem> items = new ArrayList<>();
 
   @JsonProperty("menuItems")
@@ -50,8 +49,10 @@ public class Order {
   private String orderTime;
   private int waitingTime;
 
+  @Enumerated(EnumType.STRING)
   @JsonProperty("status")
-  private String status;
+  private OrderStatus status;
+
 
   /**
    * Constructs an Order with the given parameters.
@@ -60,10 +61,10 @@ public class Order {
    * @param customer The customer who placed the order.
    * @param orderTime The time the order was placed.
    * @param waitingTime The estimated waiting time for the order.
-   * @param status The current status of the order (e.g., "Pending", "Completed").
+   * @param string The current status of the order (e.g., "Pending", "Completed").
    */
   public Order(int orderNumber, Customer customer, String orderTime, int waitingTime,
-      String status) {
+      OrderStatus status) {
     this.orderNumber = orderNumber;
     this.customer = customer;
     this.orderTime = orderTime;
@@ -115,11 +116,11 @@ public class Order {
     this.waitingTime = waitingTime;
   }
 
-  public String getStatus() {
+  public OrderStatus getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(OrderStatus status) {
     this.status = status;
   }
 
@@ -160,7 +161,7 @@ public class Order {
    *
    * @param newStatus The new status to set.
    */
-  public void updateStatus(String newStatus) {
+  public void updateStatus(OrderStatus newStatus) {
     this.status = newStatus;
   }
 
