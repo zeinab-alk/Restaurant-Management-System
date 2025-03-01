@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
+import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import org.springframework.data.domain.Sort;
 
@@ -146,6 +148,27 @@ public class OrderControllerTest {
     // Act & Assert
     mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isNotFound());
   }
+
+  @Test
+  public void testUpdateOrderStatus_Success() throws Exception {
+    // Arrange
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
+    when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
+
+    // Create the DTO request object
+    OrderStatusUpdateRequest updateRequest = new OrderStatusUpdateRequest();
+    updateRequest.setStatus(OrderStatus.READY_FOR_DELIVERY);
+
+    // Act & Assert
+    mockMvc
+        .perform(put("/api/orders/1/status").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateRequest)))
+        .andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value(OrderStatus.READY_FOR_DELIVERY.toString()));
+  }
+
+
 }
 
 
