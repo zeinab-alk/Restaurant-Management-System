@@ -286,5 +286,23 @@ public class WaiterControllerTest {
       assertEquals(HttpStatus.OK, response.getStatusCode());
       assertEquals("Order 101 confirmed.", response.getBody());
   }
+
+  @Test
+  public void confirmOrder_WhenOrderNotFound_ShouldReturnNotFound() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(new Waiter()));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Waiter or order not found.", response.getBody());
+  }
+
 }
 
