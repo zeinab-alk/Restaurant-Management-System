@@ -25,6 +25,11 @@ import uk.ac.rhul.cs2810.model.HelpRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.HelpRequestRepository;
 
+
+/**
+ * Integration tests for the HelpRequestController. This class loads the full application context
+ * and uses MockMvc to simulate HTTP requests and validate responses.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 public class HelpRequestControllerTest {
@@ -34,10 +39,13 @@ public class HelpRequestControllerTest {
   @MockBean
   private HelpRequestRepository helpRequestRepository;
 
+  /**
+   * Test creating a help request. Verifies the POST request and that the response JSON contains the
+   * correct table number.
+   */
   @Test
   @WithMockUser
   public void testCreateHelpRequest() throws Exception {
-    // Create a HelpRequest instance for testing.
     HelpRequest helpRequest = new HelpRequest(5, new Waiter());
     doReturn(helpRequest).when(helpRequestRepository).save(any(HelpRequest.class));
 
@@ -46,6 +54,10 @@ public class HelpRequestControllerTest {
         .andExpect(jsonPath("$.tableNumber").value(5));
   }
 
+  /**
+   * Test retrieving all help requests. Verifies the GET request and that the response JSON array
+   * contains the expected table numbers.
+   */
   @Test
   @WithMockUser
   public void testGetAllHelpRequests() throws Exception {
@@ -58,6 +70,10 @@ public class HelpRequestControllerTest {
         .andExpect(jsonPath("$[1].tableNumber").value(2));
   }
 
+  /**
+   * Test retrieving a help request by ID. Verifies the GET request with the correct help request
+   * details.
+   */
   @Test
   @WithMockUser
   public void testGetHelpRequestById() throws Exception {
@@ -68,6 +84,9 @@ public class HelpRequestControllerTest {
         .andExpect(jsonPath("$.tableNumber").value(3));
   }
 
+  /**
+   * Test retrieving a help request by an ID that does not exist. Verifies the GET request
+   */
   @Test
   @WithMockUser
   public void testGetHelpRequestByIdNotFound() throws Exception {
@@ -76,6 +95,10 @@ public class HelpRequestControllerTest {
     mockMvc.perform(get("/api/help-requests/5")).andExpect(status().isNotFound());
   }
 
+  /**
+   * Test resolving a help request. Verifies the PUT request so it marks the help request as
+   * resolved.
+   */
   @Test
   @WithMockUser
   public void testResolveHelpRequest() throws Exception {
