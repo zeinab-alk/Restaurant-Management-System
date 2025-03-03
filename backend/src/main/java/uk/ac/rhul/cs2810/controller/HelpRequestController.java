@@ -1,16 +1,21 @@
 package uk.ac.rhul.cs2810.controller;
 
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.HelpRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.HelpRequestRepository;
 
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller for handling requests related to Help Requests. Provides endpoints for creating,
@@ -25,7 +30,7 @@ public class HelpRequestController {
 
   /**
    * Creates a new HelpRequest for a specific table and waiter.
-   * 
+   *
    * @param tableNumber the table number where assistance is requested
    * @param waiterId the ID of the waiter assigned to the request
    * @return a ResponseEntity containing the created HelpRequest
@@ -41,7 +46,7 @@ public class HelpRequestController {
 
   /**
    * Retrieves all help requests.
-   * 
+   *
    * @return a list of all HelpRequests
    */
   @GetMapping
@@ -54,7 +59,7 @@ public class HelpRequestController {
 
   /**
    * Retrieves a specific HelpRequest by its ID.
-   * 
+   *
    * @param id the ID of the HelpRequest
    * @return a ResponseEntity containing the requested HelpRequest
    */
@@ -68,7 +73,7 @@ public class HelpRequestController {
 
   /**
    * Marks a specific HelpRequest as resolved.
-   * 
+   *
    * @param id the ID of the HelpRequest to resolve
    * @return a ResponseEntity containing the updated HelpRequest
    */
