@@ -304,5 +304,29 @@ public class WaiterControllerTest {
     assertEquals("Waiter or order not found.", response.getBody());
   }
 
+  @Test
+  public void confirmOrder_WhenMenuIsNull_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setMenu(null); // No menu assigned
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("No menu associated with this waiter.", response.getBody());
+  }
+
 }
 
