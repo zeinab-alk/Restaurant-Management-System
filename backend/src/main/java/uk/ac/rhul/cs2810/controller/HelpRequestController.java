@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Controller for handling requests related to Help Requests.
+ * Controller for handling requests related to Help Requests. Provides endpoints for creating,
+ * retrieving, and updating help requests.
  */
 @RestController
 @RequestMapping("/api/help-requests")
@@ -45,7 +46,9 @@ public class HelpRequestController {
    */
   @GetMapping
   public ResponseEntity<List<HelpRequest>> getAllHelpRequests() {
+    // Fetches all help requests from the repository.
     List<HelpRequest> requests = helpRequestRepository.findAll();
+    // Return the list of help requests
     return new ResponseEntity<>(requests, HttpStatus.OK);
   }
 
@@ -58,6 +61,7 @@ public class HelpRequestController {
   @GetMapping("/{id}")
   public ResponseEntity<HelpRequest> getHelpRequestById(@PathVariable Long id) {
     Optional<HelpRequest> request = helpRequestRepository.findById(id);
+    // If found, return the HelpRequest with OK if not, return Not Found.
     return request.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
         .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
