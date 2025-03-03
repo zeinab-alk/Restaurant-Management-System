@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,10 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
@@ -241,6 +244,47 @@ public class WaiterControllerTest {
         "Waiter Lana Shaheen has been notified.\nOrder #123 contains: No items found.";
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
+  }
+  
+  @Test
+  public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
+      // Arrange
+      int waiterId = 1;
+      int orderId = 101;
+
+      Waiter waiter = new Waiter();
+      waiter.setId(waiterId);
+      waiter.setName("John");
+      Menu menu = new Menu();
+
+      MenuItem item1 = new MenuItem(1, "Burger", 5.99);
+      item1.setAvailable(true);
+
+      MenuItem item2 = new MenuItem(2, "Fries", 2.99);
+      item2.setAvailable(true);
+
+      menu.addMenuItem(item1);
+      menu.addMenuItem(item2);
+      waiter.setMenu(menu);
+
+      Order order = new Order();
+      order.setOrderNumber(orderId);
+
+      // Fetch items from the menu dynamically
+      List<MenuItem> orderedItems =
+          Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
+      order.getMenuItems().addAll(orderedItems);
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+      // Act
+      ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+      // Assert
+      assertNotNull(response);
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertEquals("Order 101 confirmed.", response.getBody());
   }
 }
 

@@ -164,6 +164,4 @@ public class WaiterController {
 
     return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
   }
-
-
 }
