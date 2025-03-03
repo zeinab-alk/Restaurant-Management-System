@@ -353,6 +353,46 @@ public class WaiterControllerTest {
     assertEquals("Order is empty or invalid.", response.getBody());
   }
 
+  @Test
+  public void confirmOrder_WhenItemIsUnavailable_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    Menu menu = new Menu();
+
+    MenuItem availableItem = new MenuItem(3, "Pasta", 7.99);
+    availableItem.setAvailable(true);
+
+    MenuItem unavailableItem = new MenuItem(4, "Steak", 15.99);
+    unavailableItem.setAvailable(false); // This item is unavailable
+
+    menu.addMenuItem(availableItem);
+    menu.addMenuItem(unavailableItem);
+    waiter.setMenu(menu);
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+
+    // Fetching items from menu dynamically
+    List<MenuItem> orderedItems =
+        Arrays.asList(menu.getItemByName("Pasta"), menu.getItemByName("Steak") // Unavailable item
+        );
+    order.getMenuItems().addAll(orderedItems);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Item unavailable: Steak", response.getBody());
+  }
+
 
 }
 
