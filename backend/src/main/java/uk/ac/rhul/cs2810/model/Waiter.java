@@ -42,8 +42,7 @@ public class Waiter {
   /**
    * Default constructor required by JPA.
    */
-  public Waiter() {
-  }
+  public Waiter() {}
 
   /**
    * Waiter constructor.
@@ -147,6 +146,40 @@ public class Waiter {
   }
 
   /**
+   * Confirms a customer order by checking if all items are available.
+   *
+   * @param order The order to confirm.
+   * @return true if all items are available, false otherwise.
+   */
+  public boolean confirmOrder(Order order) {
+    if (order == null || menu == null) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
+    List<MenuItem> orderedItems = order.getMenuItems();
+
+    if (orderedItems == null || orderedItems.isEmpty()) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
+    for (MenuItem item : orderedItems) {
+      MenuItem menuItem = menu.getItemByName(item.getName());
+      if (menuItem == null || !menuItem.isAvailable()) {
+        System.out.println("Item unavailable: " + item.getName());
+        return false;
+      }
+    }
+
+    System.out.println("Order " + order.getOrderNumber() + " confirmed.");
+    return true;
+  }
+
+  // Overloaded confirmOrder without parameters
+  public void confirmOrder() {}
+
+  /**
    * Checks if the waiter is busy.
    *
    * @return true if busy, false otherwise.
@@ -163,8 +196,6 @@ public class Waiter {
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
-
-  public void confirmOrder() {}
 
   public void trackOrder() {}
 
@@ -224,4 +255,3 @@ public class Waiter {
     this.currentOrders = currentOrders;
   }
 }
-

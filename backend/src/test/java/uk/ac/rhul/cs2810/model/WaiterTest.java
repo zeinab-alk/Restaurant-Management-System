@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -370,7 +371,106 @@ public class WaiterTest {
         "Current orders list should remain null or empty when null order is passed");
   }
 
+  @Test
+  public void testConfirmOrder_AllItemsAvailable() {
+    Order mockOrder = mock(Order.class);
+    MenuItem item1 = mock(MenuItem.class);
+    MenuItem item2 = mock(MenuItem.class);
 
+    // Set up the mock items
+    when(item1.getName()).thenReturn("Pizza");
+    when(item2.getName()).thenReturn("Burger");
+
+    // Ensure both items are available
+    when(item1.isAvailable()).thenReturn(true);
+    when(item2.isAvailable()).thenReturn(true);
+
+    // Mock the order to return the items
+    when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1, item2));
+
+    // Set up the menu mock
+    when(mockMenu.getItemByName("Pizza")).thenReturn(item1);
+    when(mockMenu.getItemByName("Burger")).thenReturn(item2);
+
+    // Call the method
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    // Check assertions
+    assertTrue(result, "Order should be confirmed if all items are available");
+    assertTrue(
+        outContent.toString().contains("Order " + mockOrder.getOrderNumber() + " confirmed."));
+  }
+
+
+
+  @Test
+  public void testConfirmOrder_ItemUnavailable() {
+    Order mockOrder = mock(Order.class);
+    MenuItem item1 = mock(MenuItem.class);
+    MenuItem item2 = mock(MenuItem.class);
+
+    when(item1.getName()).thenReturn("Pizza");
+    when(item2.getName()).thenReturn("Burger");
+    when(item1.isAvailable()).thenReturn(true);
+    when(item2.isAvailable()).thenReturn(false); // One item is unavailable
+
+    when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1, item2));
+    when(mockMenu.getItemByName("Pizza")).thenReturn(item1);
+    when(mockMenu.getItemByName("Burger")).thenReturn(item2);
+
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Item unavailable: Burger"));
+    assertTrue(!result, "Order should not be confirmed if any item is unavailable");
+  }
+
+  @Test
+  public void testConfirmOrder_ItemNotInMenu() {
+    Order mockOrder = mock(Order.class);
+    MenuItem item1 = mock(MenuItem.class);
+
+    when(item1.getName()).thenReturn("Sushi");
+
+    when(mockOrder.getMenuItems()).thenReturn(Arrays.asList(item1));
+    when(mockMenu.getItemByName("Sushi")).thenReturn(null); // Item not found in menu
+
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Item unavailable: Sushi"));
+    assertTrue(!result, "Order should not be confirmed if an item is not in the menu");
+  }
+
+  @Test
+  public void testConfirmOrder_EmptyOrder() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getMenuItems()).thenReturn(null); // Simulating an empty order
+
+    boolean result = waiter.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order or menu is not available."),
+        "Should print a warning when order is empty");
+    assertFalse(result, "Order should not be confirmed if it contains no items");
+  }
+
+
+  @Test
+  public void testConfirmOrder_NullOrder() {
+    boolean result = waiter.confirmOrder(null);
+
+    assertTrue(outContent.toString().contains("Order or menu is not available."));
+    assertTrue(!result, "Order should not be confirmed if it is null");
+  }
+
+  @Test
+  public void testConfirmOrder_NullMenu() {
+    Waiter waiterWithoutMenu = new Waiter(1, "John", "Active", null);
+    Order mockOrder = mock(Order.class);
+
+    boolean result = waiterWithoutMenu.confirmOrder(mockOrder);
+
+    assertTrue(outContent.toString().contains("Order or menu is not available."));
+    assertTrue(!result, "Order should not be confirmed if there is no menu");
+  }
 
 }
 
