@@ -14,6 +14,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
   /**
    * Find an order by its order number.
    * 
+   *
    * @param orderNumber The order number to search for
    * @return Optional containing the order if found
    */

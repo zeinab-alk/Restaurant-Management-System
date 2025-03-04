@@ -183,7 +183,7 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
 
     // Assert
-    assertEquals("Order with ID 1 not found.", response.getBody());
+    assertEquals("Order with number 1 not found.", response.getBody());
     verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 

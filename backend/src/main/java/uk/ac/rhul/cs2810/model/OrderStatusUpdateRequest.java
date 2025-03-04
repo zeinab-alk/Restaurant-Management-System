@@ -14,7 +14,7 @@ public class OrderStatusUpdateRequest {
 
   /**
    * Constructor with status parameter.
-   * 
+   *
    * @param status The order status to set.
    */
   public OrderStatusUpdateRequest(OrderStatus status) {

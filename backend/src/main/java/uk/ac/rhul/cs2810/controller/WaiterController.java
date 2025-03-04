@@ -108,8 +108,8 @@ public class WaiterController {
       @PathVariable int orderId,
       @RequestBody OrderStatusUpdateRequest request) {
     
-    System.out.println("Received request to update order " + orderId + " to status: " + 
-                       (request != null ? request.getStatus() : "null"));
+    System.out.println("Received request to update order " + orderId + " to status: " 
+                       + (request != null ? request.getStatus() : "null"));
     
     // Check if request is null
     if (request == null) {
