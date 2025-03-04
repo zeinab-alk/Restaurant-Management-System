@@ -3,6 +3,7 @@ package uk.ac.rhul.cs2810.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -26,6 +27,7 @@ import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
+import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -394,6 +396,145 @@ public class WaiterControllerTest {
     assertEquals("Item unavailable: Steak", response.getBody());
   }
 
+  @Test
+  public void updateOrderStatus_WhenOrderExists_ShouldUpdateStatusSuccessfully() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+    
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+    
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status updated to IN_PROGRESS", response.getBody());
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+  
+  @Test
+  public void updateOrderStatus_WhenOrderNotFoundByNumber_ButFoundById_ShouldUpdateStatus() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+    
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+    
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status updated to IN_PROGRESS", response.getBody());
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+  
+  @Test
+  public void updateOrderStatus_WhenOrderNotFound_ShouldReturnNotFound() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+    
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Order with number 1 not found.", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+  
+  @Test
+  public void updateOrderStatus_WhenStatusAlreadySet_ShouldReturnOkWithMessage() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+    
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.IN_PROGRESS); // Same status as requested
+    
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status is already IN_PROGRESS", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+  
+  @Test
+  public void updateOrderStatus_WhenRequestIsNull_ShouldReturnBadRequest() {
+    // Arrange
+    int orderId = 1;
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, null);
+    
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Request body cannot be null", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+  
+  @Test
+  public void updateOrderStatus_WhenStatusIsNull_ShouldReturnBadRequest() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    // Status is null by default
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Order status cannot be null", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  public void updateOrderStatus_WhenExceptionOccurs_ShouldReturnInternalServerError() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+    
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+    
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+    when(orderRepository.save(any())).thenThrow(new RuntimeException("Database error"));
+    
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+    
+    // Assert
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertTrue(response.getBody().contains("Failed to update order status"));
+  }
 
 }
 
