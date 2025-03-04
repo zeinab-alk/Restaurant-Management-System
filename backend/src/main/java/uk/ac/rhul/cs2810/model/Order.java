@@ -29,10 +29,13 @@ public class Order {
   @JoinColumn(name = "customer_id")
   private Customer customer;
 
-  @ManyToMany
-  @JoinTable(name = "order_menu_items", joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "menu_item_id"))
-  private List<MenuItem> items = new ArrayList<>();
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "order_menu_item",
+      joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "item_id")
+  )
+  private List<MenuItem> menuItems;
 
   private String orderTime;
   private int waitingTime;
@@ -57,14 +60,14 @@ public class Order {
     this.orderTime = orderTime;
     this.waitingTime = waitingTime;
     this.status = status;
-    this.items = new ArrayList<>();
+    this.menuItems = new ArrayList<>();
   }
 
   /**
    * Default constructor (needed for JPA and JSON serialization).
    */
   public Order() {
-    this.items = new ArrayList<>();
+    this.menuItems = new ArrayList<>();
   }
 
   public int getOrderNumber() {
@@ -81,6 +84,10 @@ public class Order {
 
   public void setCustomer(Customer customer) {
     this.customer = customer;
+  }
+
+  public void setItems(List<MenuItem> items) {
+    this.menuItems = (items != null) ? items : new ArrayList<>();
   }
 
   public String getOrderTime() {
@@ -112,14 +119,7 @@ public class Order {
    */
   @JsonProperty("menuItems")
   public List<MenuItem> getItems() {
-    if (this.items == null) {
-      this.items = new ArrayList<>();
-    }
-    return this.items;
-  }
-
-  public void setItems(List<MenuItem> items) {
-    this.items = (items != null) ? items : new ArrayList<>();
+    return (this.menuItems != null) ? this.menuItems : new ArrayList<>();
   }
 
   /**
@@ -128,7 +128,10 @@ public class Order {
    * @param menuItem The menu item to add.
    */
   public void addItem(MenuItem menuItem) {
-    getItems().add(menuItem);
+    if (this.menuItems == null) {
+      this.menuItems = new ArrayList<>();
+    }
+    menuItems.add(menuItem);
   }
 
   /**
@@ -137,7 +140,9 @@ public class Order {
    * @param menuItem The menu item to remove.
    */
   public void removeItem(MenuItem menuItem) {
-    getItems().remove(menuItem);
+    if (this.menuItems != null) {
+      menuItems.remove(menuItem);
+    }
   }
 
   /**
@@ -146,7 +151,7 @@ public class Order {
    * @return The total price of the order.
    */
   public double getOrderSum() {
-    return getItems().stream().mapToDouble(MenuItem::getPrice).sum();
+    return menuItems.stream().mapToDouble(MenuItem::getPrice).sum();
   }
 
   /**
@@ -182,5 +187,9 @@ public class Order {
   public List<MenuItem> getMenuItems() {
     return getItems();
   }
+
+  /*
+   * public String getOrderDetails() { // Some optional debug output }
+   */
 }
 
