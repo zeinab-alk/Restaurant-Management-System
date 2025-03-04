@@ -16,6 +16,7 @@ import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
+import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -96,6 +97,68 @@ public class WaiterController {
   }
 
   /**
+   * Updates the status of an order.
+   *
+   * @param orderId The ID of the order to update.
+   * @param request The request containing the new status.
+   * @return ResponseEntity with success or error message.
+   */
+  @PostMapping("/orders/{orderId}/update-status")
+  public ResponseEntity<String> updateOrderStatus(
+      @PathVariable int orderId,
+      @RequestBody OrderStatusUpdateRequest request) {
+    
+    System.out.println("Received request to update order " + orderId + " to status: " + 
+                       (request != null ? request.getStatus() : "null"));
+    
+    // Check if request is null
+    if (request == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Request body cannot be null");
+    }
+    
+    // Check if status is null
+    if (request.getStatus() == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Order status cannot be null");
+    }
+    
+    try {
+      // First try with findByOrderNumber
+      Optional<Order> optionalOrder = orderRepository.findByOrderNumber(orderId);
+      
+      if (optionalOrder.isEmpty()) {
+        // If not found, try with findById as fallback
+        optionalOrder = orderRepository.findById(orderId);
+        
+        if (optionalOrder.isEmpty()) {
+          return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body("Order with number " + orderId + " not found.");
+        }
+      }
+      
+      Order order = optionalOrder.get();
+      OrderStatus newStatus = request.getStatus();
+      
+      // Prevent setting the same status again
+      if (order.getStatus() == newStatus) {
+        return ResponseEntity.ok("Order status is already " + newStatus);
+      }
+      
+      // Update the status directly to avoid potential validation issues
+      order.setStatus(newStatus);
+      orderRepository.save(order);
+      return ResponseEntity.ok("Order status updated to " + newStatus);
+      
+    } catch (Exception e) {
+      System.err.println("Error updating order status: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Failed to update order status: " + e.getMessage());
+    }
+  }
+
+  /**
    * Marks an order as delivered.
    *
    * @param orderId The ID of the order to update.
@@ -103,6 +166,7 @@ public class WaiterController {
    */
   @PostMapping("/orders/{orderId}/mark-delivered")
   public ResponseEntity<String> markOrderAsDelivered(@PathVariable int orderId) {
+    // Since orderNumber is the primary key in Order entity, we use the orderId directly
     Optional<Order> optionalOrder = orderRepository.findById(orderId);
 
     if (optionalOrder.isPresent()) {
@@ -120,7 +184,7 @@ public class WaiterController {
       return ResponseEntity
           .ok("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     } else {
-      return ResponseEntity.status(404).body("Order with ID " + orderId + " not found.");
+      return ResponseEntity.status(404).body("Order with number " + orderId + " not found.");
     }
   }
 
