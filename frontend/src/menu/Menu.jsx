@@ -78,6 +78,19 @@ function Menu() {
     '& .MuiSlider-thumb': {
       height: 24,
       width: 24,
+      backgroundColor: '#fff',
+      border: '2px solid currentColor',
+      '&:focus, &:hover, &.Mui-active': {
+        boxShadow: '0 0 0 8px rgba(58, 133, 137, 0.16)',
+      },
+    },
+    '& .MuiSlider-track': {
+      height: 8,
+      borderRadius: 4,
+    },
+    '& .MuiSlider-rail': {
+      height: 8,
+      borderRadius: 4,
     },
   });
 
@@ -141,7 +154,7 @@ function Menu() {
     // Build an order object that your Spring Boot Order entity can parse
     const orderData = {
       orderTime: new Date().toISOString(),
-      status: "Pending",
+      status: "PENDING",
       menuItems: cart.map(item => ({
         itemId: item.itemId,
         name: item.name,
@@ -311,10 +324,13 @@ function Menu() {
           <PriceSlider
             value={priceRange}
             onChange={(_, newValue) => setPriceRange(newValue)}
+            onChangeCommitted={(_, newValue) => setPriceRange(newValue)}
             valueLabelDisplay="auto"
             min={0}
             max={maxPriceValue}
             sx={{ flex: 2 }}
+            disableSwap
+            size="medium"
           />
         </Box>
 
