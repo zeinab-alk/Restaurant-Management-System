@@ -10,4 +10,12 @@ import uk.ac.rhul.cs2810.model.Order;
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
   Optional<Order> findTopByOrderByOrderTimeDesc();
+  
+  /**
+   * Find an order by its order number.
+   * 
+   * @param orderNumber The order number to search for
+   * @return Optional containing the order if found
+   */
+  Optional<Order> findByOrderNumber(int orderNumber);
 }
