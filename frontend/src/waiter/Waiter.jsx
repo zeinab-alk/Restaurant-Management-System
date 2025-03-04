@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip } from "@mui/material";
+import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip, Select, MenuItem, FormControl, Snackbar } from "@mui/material";
 import axios from "axios";
 import { API_ENDPOINT } from "../config";
 import Collapse from '@mui/material/Collapse';
@@ -14,17 +14,34 @@ const WaiterPage = () => {
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
+  const [newOrderAlert, setNewOrderAlert] = useState(false);
+
+  // Define available order statuses
+  const orderStatuses = [
+    'PENDING', 
+    'IN_PROGRESS', 
+    'READY_FOR_DELIVERY', 
+    'COMPLETED', 
+    'DELIVERED', 
+    'PROCESSING', 
+    'CANCELLED'
+  ];
 
   // Poll for latest order every 5 seconds
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/orders/latest`);
-        if (response.data && response.data.id !== lastOrderId) {
-          const { orderNumber, menuItems, id } = response.data;
+        if (response.data && response.data.orderNumber !== lastOrderId) {
+          const { orderNumber, menuItems } = response.data;
+          // Get a list of item names
           const orderDetails = menuItems.map(item => item.name).join(", ");
           setOrderNotification(`New Order #${orderNumber}: ${orderDetails}`);
-          setLastOrderId(id);
+          setLastOrderId(orderNumber);
+          setNewOrderAlert(true);
+          
+          // Auto-refresh orders when a new one arrives
+          fetchOrders();
         }
       } catch (error) {
         console.error("Error fetching latest order:", error);
@@ -38,10 +55,7 @@ const WaiterPage = () => {
   const fetchOrders = () => {
     axios.get(`${API_ENDPOINT}/api/orders`)
       .then(res => {
-        const filtered = res.data.filter(order => 
-          order.status !== 'Delivered'
-        );
-        setOrders(filtered);
+        setOrders(res.data);
       })
       .catch(err => {
         setError('Failed to load orders');
@@ -49,16 +63,72 @@ const WaiterPage = () => {
       });
   };
 
-  React.useEffect(fetchOrders, []);
+  // Fetch orders on component mount and every 30 seconds
+  useEffect(() => {
+    fetchOrders();
+    
+    // Set up interval to refresh orders every 30 seconds
+    const refreshInterval = setInterval(fetchOrders, 30000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, []);
 
-  // Enhanced delivery handler
-  const markDelivered = (orderId) => {
-    axios.post(`${API_ENDPOINT}/api/orders/${orderId}/mark-delivered`)
-      .then(() => {
+  // Enhanced status update handler
+  const updateOrderStatus = (orderId, newStatus) => {
+    console.log(`Attempting to update order ${orderId} to status: ${newStatus}`);
+    
+    // Format the payload exactly as expected by the backend
+    const payload = { 
+      status: newStatus.trim().toUpperCase() // Ensure it matches the Java enum format
+    };
+    
+    console.log('Sending payload:', payload);
+    
+    // Add explicit headers and prevent browsers from caching
+    axios.post(`${API_ENDPOINT}/api/waiters/orders/${orderId}/update-status`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
+      .then((response) => {
+        console.log('Update successful:', response);
         fetchOrders(); // Refresh list
-        setOrderNotification(`Order ${orderId} marked delivered`);
+        setOrderNotification(`Order #${orderId} updated to ${newStatus}`);
       })
-      .catch(err => setError('Failed to update order status'));
+      .catch(err => {
+        console.error('Status update error:', err);
+        console.error('Response data:', err.response?.data);
+        console.error('Response status:', err.response?.status);
+        console.error('Response headers:', err.response?.headers);
+        
+        // More specific error message based on the status code
+        let errorMsg = 'Failed to update order status';
+        
+        if (err.response) {
+          if (err.response.status === 403) {
+            errorMsg += ': Access forbidden. You may not have permission to perform this action.';
+          } else if (err.response.status === 404) {
+            errorMsg += ': Order not found';
+          } else if (err.response.status === 400) {
+            errorMsg += ': Invalid request format';
+          } else {
+            errorMsg += ': ' + (err.response.data || err.message);
+          }
+        } else {
+          errorMsg += ': ' + err.message;
+        }
+        
+        setError(errorMsg);
+      });
+  };
+
+  // Legacy handler for backward compatibility
+  const markDelivered = (orderId) => {
+    updateOrderStatus(orderId, 'DELIVERED');
   };
 
   const toggleExpansion = (orderId) => {
@@ -69,6 +139,26 @@ const WaiterPage = () => {
     });
   };
 
+  // Helper function to get color based on status
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'PENDING':
+      case 'PROCESSING':
+        return 'warning';
+      case 'IN_PROGRESS':
+        return 'info';
+      case 'READY_FOR_DELIVERY':
+        return 'secondary';
+      case 'COMPLETED':
+      case 'DELIVERED':
+        return 'success';
+      case 'CANCELLED':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Container sx={{ py: 4 }}>
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
@@ -77,6 +167,14 @@ const WaiterPage = () => {
         </Button>
         <Button component={RouterLink} to="/menu" variant="contained" color="primary">
           View Menu
+        </Button>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={fetchOrders}
+          sx={{ ml: 'auto' }}
+        >
+          Refresh Orders
         </Button>
       </Stack>
 
@@ -144,6 +242,14 @@ const WaiterPage = () => {
         </Alert>
       )}
 
+      {/* New Order Notification */}
+      <Snackbar
+        open={newOrderAlert}
+        autoHideDuration={6000}
+        onClose={() => setNewOrderAlert(false)}
+        message="New order received! The list has been updated."
+      />
+
       {/* Updated Table Action */}
       <TableContainer component={Paper} sx={{ 
         maxWidth: '800px',
@@ -161,8 +267,10 @@ const WaiterPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map((order, index) => {
-              const orderId = order.id || `temp-${index}`;
+            {orders.map((order) => {
+              // Use orderNumber as the key and ID for all operations
+              const orderId = order.orderNumber;
+              
               return (
                 <React.Fragment key={`order-${orderId}`}>
                   <TableRow 
@@ -187,29 +295,41 @@ const WaiterPage = () => {
                     <TableCell>
                       <Chip 
                         label={order.status} 
-                        color={order.status === 'Pending' ? 'warning' : 'success'}
+                        color={getStatusColor(order.status)}
                         size="small"
                       />
                     </TableCell>
-                    <TableCell align="center" sx={{ width: 140 }}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markDelivered(orderId);
-                        }}
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          letterSpacing: 0.5,
-                          borderRadius: 1
-                        }}
+                    <TableCell align="center" sx={{ width: 180 }}>
+                      <FormControl 
+                        size="small" 
+                        sx={{ minWidth: 150 }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        MARK DELIVERED
-                      </Button>
+                        <Select
+                          value=""
+                          displayEmpty
+                          onChange={(e) => {
+                            updateOrderStatus(orderId, e.target.value);
+                          }}
+                          sx={{ 
+                            fontSize: '0.75rem',
+                            height: 32
+                          }}
+                        >
+                          <MenuItem value="" disabled>
+                            <em>Update Status</em>
+                          </MenuItem>
+                          {orderStatuses.map(status => (
+                            <MenuItem 
+                              key={status} 
+                              value={status}
+                              disabled={order.status === status}
+                            >
+                              {status.replace(/_/g, ' ')}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </TableCell>
                   </TableRow>
 
@@ -235,9 +355,8 @@ const WaiterPage = () => {
                             </TableHead>
                             <TableBody>
                               {order.menuItems?.map((item, itemIndex) => {
-                                const itemSafeId = item.id || `temp-item-${itemIndex}-${Date.now()}`;
                                 return (
-                                  <TableRow key={`${orderId}-${itemSafeId}`}>
+                                  <TableRow key={`${orderId}-item-${itemIndex}`}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell align="right">{item.quantity || 1}</TableCell>
                                     <TableCell sx={{ fontStyle: 'italic' }}>
@@ -264,9 +383,9 @@ const WaiterPage = () => {
         direction="row" 
         spacing={2} 
         justifyContent="center" 
-        sx={{ mt: 3, color: 'text.secondary' }}
+        sx={{ mt: 3, color: 'text.secondary', flexWrap: 'wrap' }}
       >
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
           <Box sx={{ 
             width: 12, 
             height: 12, 
@@ -276,7 +395,27 @@ const WaiterPage = () => {
           }} />
           Pending
         </Box>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
+          <Box sx={{ 
+            width: 12, 
+            height: 12, 
+            bgcolor: 'info.main', 
+            borderRadius: '50%', 
+            mr: 1 
+          }} />
+          In Progress
+        </Box>
+        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
+          <Box sx={{ 
+            width: 12, 
+            height: 12, 
+            bgcolor: 'secondary.main', 
+            borderRadius: '50%', 
+            mr: 1 
+          }} />
+          Ready For Delivery
+        </Box>
+        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
           <Box sx={{ 
             width: 12, 
             height: 12, 
@@ -285,6 +424,16 @@ const WaiterPage = () => {
             mr: 1 
           }} />
           Delivered
+        </Box>
+        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
+          <Box sx={{ 
+            width: 12, 
+            height: 12, 
+            bgcolor: 'error.main', 
+            borderRadius: '50%', 
+            mr: 1 
+          }} />
+          Cancelled
         </Box>
       </Stack>
     </Container>
