@@ -151,7 +151,11 @@ public class WaiterControllerTest {
 
     // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
+<<<<<<< HEAD
     assertEquals(OrderStatus.DELIVERED.name(), order.getStatus().name());
+=======
+    assertEquals("Delivered", order.getStatus()); // Ensure the status was updated
+>>>>>>> parent of 8e0caffb (#8: modified tests to return correct order status format)
     verify(orderRepository, times(1)).save(order); // Verify save was called
   }
 
