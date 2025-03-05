@@ -34,11 +34,8 @@ public class Order {
   private Customer customer;
 
   @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "order_menu_item",
-      joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "item_id")
-  )
+  @JoinTable(name = "order_menu_item", joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "item_id"))
   private List<MenuItem> menuItems;
 
   @JsonProperty("menuItems")
@@ -52,7 +49,7 @@ public class Order {
 
   @JsonProperty("status")
   private OrderStatus status;
-  
+
   private boolean waiterConfirmed;
 
   /**
@@ -126,11 +123,11 @@ public class Order {
   }
 
   public boolean isWaiterConfirmed() {
-      return waiterConfirmed;
+    return waiterConfirmed;
   }
 
   public void setWaiterConfirmed(boolean waiterConfirmed) {
-      this.waiterConfirmed = waiterConfirmed;
+    this.waiterConfirmed = waiterConfirmed;
   }
 
   /**

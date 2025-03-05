@@ -151,7 +151,8 @@ public class WaiterControllerTest {
 
     // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
-    assertEquals(OrderStatus.DELIVERED.name(), order.getStatus().name()); // Ensure the status was updated
+    assertEquals(OrderStatus.DELIVERED.name(), order.getStatus().name()); // Ensure the status was
+                                                                          // updated
     verify(orderRepository, times(1)).save(order); // Verify save was called
   }
 
@@ -246,46 +247,46 @@ public class WaiterControllerTest {
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
   }
-  
+
   @Test
   public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
-      // Arrange
-      int waiterId = 1;
-      int orderId = 101;
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
 
-      Waiter waiter = new Waiter();
-      waiter.setId(waiterId);
-      waiter.setName("John");
-      Menu menu = new Menu();
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    Menu menu = new Menu();
 
-      MenuItem item1 = new MenuItem(1, "Burger", 5.99);
-      item1.setAvailable(true);
+    MenuItem item1 = new MenuItem(1, "Burger", 5.99);
+    item1.setAvailable(true);
 
-      MenuItem item2 = new MenuItem(2, "Fries", 2.99);
-      item2.setAvailable(true);
+    MenuItem item2 = new MenuItem(2, "Fries", 2.99);
+    item2.setAvailable(true);
 
-      menu.addMenuItem(item1);
-      menu.addMenuItem(item2);
-      waiter.setMenu(menu);
+    menu.addMenuItem(item1);
+    menu.addMenuItem(item2);
+    waiter.setMenu(menu);
 
-      Order order = new Order();
-      order.setOrderNumber(orderId);
+    Order order = new Order();
+    order.setOrderNumber(orderId);
 
-      // Fetch items from the menu dynamically
-      List<MenuItem> orderedItems =
-          Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
-      order.getMenuItems().addAll(orderedItems);
+    // Fetch items from the menu dynamically
+    List<MenuItem> orderedItems =
+        Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
+    order.getMenuItems().addAll(orderedItems);
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-      // Act
-      ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
 
-      // Assert
-      assertNotNull(response);
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("Order 101 confirmed.", response.getBody());
+    // Assert
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order 101 confirmed.", response.getBody());
   }
 
   @Test

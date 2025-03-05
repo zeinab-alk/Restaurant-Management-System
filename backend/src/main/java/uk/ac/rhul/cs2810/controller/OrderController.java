@@ -91,26 +91,25 @@ public class OrderController {
     }
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
   }
-  
+
   /**
    * Allows waiter to confirm order.
-   * 
-   * @param orderId
-   * @return
+   *
+   * @param orderId order to be confirmed
+   * @return order status
    */
   @PutMapping("/{orderId}/confirm")
   public Order confirmOrder(@PathVariable int orderId) {
-      Order order = orderRepository.findById(orderId)
-              .orElseThrow();
+    Order order = orderRepository.findById(orderId).orElseThrow();
 
-      if (order.getStatus() == OrderStatus.CONFIRMED) {
-          throw new RuntimeException("Order is already confirmed.");
-      }
+    if (order.getStatus() == OrderStatus.CONFIRMED) {
+      throw new RuntimeException("Order is already confirmed.");
+    }
 
-      order.setStatus(OrderStatus.CONFIRMED);
-      order.setWaiterConfirmed(true);
+    order.setStatus(OrderStatus.CONFIRMED);
+    order.setWaiterConfirmed(true);
 
-      return orderRepository.save(order);
+    return orderRepository.save(order);
   }
 }
 
