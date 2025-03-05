@@ -9,6 +9,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.Menu;
@@ -44,11 +50,16 @@ public class WaiterControllerTest {
   @InjectMocks
   private WaiterController waiterController;
 
+  private MockMvc mockMvc;
+
   @BeforeEach
   public void setUp() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    mockMvc = MockMvcBuilders.standaloneSetup(waiterController).build();
   }
+
+
 
   @Test
   public void callWaiter_WhenWaiterAvailable_ShouldReturnSuccessMessage() {
@@ -248,6 +259,7 @@ public class WaiterControllerTest {
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
   }
+<<<<<<< HEAD
   
   @Test
   public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
@@ -535,6 +547,22 @@ public class WaiterControllerTest {
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     assertTrue(response.getBody().contains("Failed to update order status"));
   }
+=======
+
+  @Test
+  public void testGetReadyOrders_Success() throws Exception {
+    Order readyOrder1 = new Order(1, null, "2025-03-01 12:00", 10, OrderStatus.READY_FOR_DELIVERY);
+    Order readyOrder2 = new Order(2, null, "2025-03-01 12:30", 15, OrderStatus.READY_FOR_DELIVERY);
+
+    when(orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY))
+        .thenReturn(Arrays.asList(readyOrder1, readyOrder2));
+
+    mockMvc.perform(get("/api/waiters/ready-orders")).andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].orderNumber").value(1))
+        .andExpect(jsonPath("$[1].orderNumber").value(2));
+  }
+
+>>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))
 
 }
 

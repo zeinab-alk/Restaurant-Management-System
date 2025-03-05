@@ -1,15 +1,19 @@
 package uk.ac.rhul.cs2810.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 
 /**
  * Repository interface for managing orders in the database.
  */
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+  // Find the most recent order
   Optional<Order> findTopByOrderByOrderTimeDesc();
+<<<<<<< HEAD
   
   /**
    * Find an order by its order number.
@@ -20,3 +24,9 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
    */
   Optional<Order> findByOrderNumber(int orderNumber);
 }
+=======
+
+  // Find all orders with a specific status
+  List<Order> findByStatus(OrderStatus status);
+}
+>>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))

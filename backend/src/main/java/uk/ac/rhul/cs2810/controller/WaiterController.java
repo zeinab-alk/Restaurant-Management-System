@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -188,6 +189,7 @@ public class WaiterController {
     }
   }
 
+<<<<<<< HEAD
   /**
    * Confirms a customer order by checking if all items are available.
    *
@@ -229,4 +231,15 @@ public class WaiterController {
 
     return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
   }
+=======
+  @GetMapping("/ready-orders")
+  public ResponseEntity<List<Order>> getReadyOrders() {
+    List<Order> readyOrders = orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY);
+    if (readyOrders.isEmpty()) {
+      return ResponseEntity.status(404).body(null);
+    }
+    return ResponseEntity.ok(readyOrders);
+  }
+
+>>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))
 }
