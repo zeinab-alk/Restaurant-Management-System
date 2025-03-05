@@ -105,52 +105,49 @@ public class WaiterController {
    * @return ResponseEntity with success or error message.
    */
   @PostMapping("/orders/{orderId}/update-status")
-  public ResponseEntity<String> updateOrderStatus(
-      @PathVariable int orderId,
+  public ResponseEntity<String> updateOrderStatus(@PathVariable int orderId,
       @RequestBody OrderStatusUpdateRequest request) {
-    
-    System.out.println("Received request to update order " + orderId + " to status: " 
-                       + (request != null ? request.getStatus() : "null"));
-    
+
+    System.out.println("Received request to update order " + orderId + " to status: "
+        + (request != null ? request.getStatus() : "null"));
+
     // Check if request is null
     if (request == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("Request body cannot be null");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body cannot be null");
     }
-    
+
     // Check if status is null
     if (request.getStatus() == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("Order status cannot be null");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order status cannot be null");
     }
-    
+
     try {
       // First try with findByOrderNumber
       Optional<Order> optionalOrder = orderRepository.findByOrderNumber(orderId);
-      
+
       if (optionalOrder.isEmpty()) {
         // If not found, try with findById as fallback
         optionalOrder = orderRepository.findById(orderId);
-        
+
         if (optionalOrder.isEmpty()) {
           return ResponseEntity.status(HttpStatus.NOT_FOUND)
               .body("Order with number " + orderId + " not found.");
         }
       }
-      
+
       Order order = optionalOrder.get();
       OrderStatus newStatus = request.getStatus();
-      
+
       // Prevent setting the same status again
       if (order.getStatus() == newStatus) {
         return ResponseEntity.ok("Order status is already " + newStatus);
       }
-      
+
       // Update the status directly to avoid potential validation issues
       order.setStatus(newStatus);
       orderRepository.save(order);
       return ResponseEntity.ok("Order status updated to " + newStatus);
-      
+
     } catch (Exception e) {
       System.err.println("Error updating order status: " + e.getMessage());
       e.printStackTrace();
@@ -189,7 +186,6 @@ public class WaiterController {
     }
   }
 
-<<<<<<< HEAD
   /**
    * Confirms a customer order by checking if all items are available.
    *
@@ -231,7 +227,7 @@ public class WaiterController {
 
     return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
   }
-=======
+
   @GetMapping("/ready-orders")
   public ResponseEntity<List<Order>> getReadyOrders() {
     List<Order> readyOrders = orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY);
@@ -240,6 +236,5 @@ public class WaiterController {
     }
     return ResponseEntity.ok(readyOrders);
   }
-
->>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))
 }
+

@@ -259,47 +259,46 @@ public class WaiterControllerTest {
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
   }
-<<<<<<< HEAD
-  
+
   @Test
   public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
-      // Arrange
-      int waiterId = 1;
-      int orderId = 101;
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
 
-      Waiter waiter = new Waiter();
-      waiter.setId(waiterId);
-      waiter.setName("John");
-      Menu menu = new Menu();
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    Menu menu = new Menu();
 
-      MenuItem item1 = new MenuItem(1, "Burger", 5.99);
-      item1.setAvailable(true);
+    MenuItem item1 = new MenuItem(1, "Burger", 5.99);
+    item1.setAvailable(true);
 
-      MenuItem item2 = new MenuItem(2, "Fries", 2.99);
-      item2.setAvailable(true);
+    MenuItem item2 = new MenuItem(2, "Fries", 2.99);
+    item2.setAvailable(true);
 
-      menu.addMenuItem(item1);
-      menu.addMenuItem(item2);
-      waiter.setMenu(menu);
+    menu.addMenuItem(item1);
+    menu.addMenuItem(item2);
+    waiter.setMenu(menu);
 
-      Order order = new Order();
-      order.setOrderNumber(orderId);
+    Order order = new Order();
+    order.setOrderNumber(orderId);
 
-      // Fetch items from the menu dynamically
-      List<MenuItem> orderedItems =
-          Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
-      order.getMenuItems().addAll(orderedItems);
+    // Fetch items from the menu dynamically
+    List<MenuItem> orderedItems =
+        Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
+    order.getMenuItems().addAll(orderedItems);
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-      // Act
-      ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
 
-      // Assert
-      assertNotNull(response);
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("Order 101 confirmed.", response.getBody());
+    // Assert
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order 101 confirmed.", response.getBody());
   }
 
   @Test
@@ -414,112 +413,112 @@ public class WaiterControllerTest {
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     request.setStatus(OrderStatus.IN_PROGRESS);
-    
+
     Order order = new Order();
     order.setOrderNumber(orderId);
     order.setStatus(OrderStatus.PENDING);
-    
+
     when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("Order status updated to IN_PROGRESS", response.getBody());
     assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
     verify(orderRepository, times(1)).save(order);
   }
-  
+
   @Test
   public void updateOrderStatus_WhenOrderNotFoundByNumber_ButFoundById_ShouldUpdateStatus() {
     // Arrange
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     request.setStatus(OrderStatus.IN_PROGRESS);
-    
+
     Order order = new Order();
     order.setOrderNumber(orderId);
     order.setStatus(OrderStatus.PENDING);
-    
+
     when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("Order status updated to IN_PROGRESS", response.getBody());
     assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
     verify(orderRepository, times(1)).save(order);
   }
-  
+
   @Test
   public void updateOrderStatus_WhenOrderNotFound_ShouldReturnNotFound() {
     // Arrange
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     request.setStatus(OrderStatus.IN_PROGRESS);
-    
+
     when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
     when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     assertEquals("Order with number 1 not found.", response.getBody());
     verify(orderRepository, never()).save(any());
   }
-  
+
   @Test
   public void updateOrderStatus_WhenStatusAlreadySet_ShouldReturnOkWithMessage() {
     // Arrange
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     request.setStatus(OrderStatus.IN_PROGRESS);
-    
+
     Order order = new Order();
     order.setOrderNumber(orderId);
     order.setStatus(OrderStatus.IN_PROGRESS); // Same status as requested
-    
+
     when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("Order status is already IN_PROGRESS", response.getBody());
     verify(orderRepository, never()).save(any());
   }
-  
+
   @Test
   public void updateOrderStatus_WhenRequestIsNull_ShouldReturnBadRequest() {
     // Arrange
     int orderId = 1;
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, null);
-    
+
     // Assert
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertEquals("Request body cannot be null", response.getBody());
     verify(orderRepository, never()).save(any());
   }
-  
+
   @Test
   public void updateOrderStatus_WhenStatusIsNull_ShouldReturnBadRequest() {
     // Arrange
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     // Status is null by default
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertEquals("Order status cannot be null", response.getBody());
@@ -532,22 +531,22 @@ public class WaiterControllerTest {
     int orderId = 1;
     OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
     request.setStatus(OrderStatus.IN_PROGRESS);
-    
+
     Order order = new Order();
     order.setOrderNumber(orderId);
     order.setStatus(OrderStatus.PENDING);
-    
+
     when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
     when(orderRepository.save(any())).thenThrow(new RuntimeException("Database error"));
-    
+
     // Act
     ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
-    
+
     // Assert
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     assertTrue(response.getBody().contains("Failed to update order status"));
   }
-=======
+
 
   @Test
   public void testGetReadyOrders_Success() throws Exception {
@@ -561,8 +560,6 @@ public class WaiterControllerTest {
         .andExpect(jsonPath("$[0].orderNumber").value(1))
         .andExpect(jsonPath("$[1].orderNumber").value(2));
   }
-
->>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))
 
 }
 

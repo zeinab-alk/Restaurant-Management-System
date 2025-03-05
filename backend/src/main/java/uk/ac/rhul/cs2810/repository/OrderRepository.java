@@ -13,8 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
   // Find the most recent order
   Optional<Order> findTopByOrderByOrderTimeDesc();
-<<<<<<< HEAD
-  
+
   /**
    * Find an order by its order number.
    * 
@@ -23,10 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
    * @return Optional containing the order if found
    */
   Optional<Order> findByOrderNumber(int orderNumber);
-}
-=======
 
   // Find all orders with a specific status
   List<Order> findByStatus(OrderStatus status);
 }
->>>>>>> d402b467 (Added API endpoint for retrieving READY_FOR_DELIVERY orders, updated OrderRepository to support status filtering, and implemented unit tests for WaiterController. (User Story #12))
