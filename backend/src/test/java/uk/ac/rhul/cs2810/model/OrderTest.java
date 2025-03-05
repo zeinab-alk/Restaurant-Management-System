@@ -15,7 +15,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, "12:30 PM", 15, "Pending");
+    order = new Order(1, customer, "12:30 PM", 15, OrderStatus.PENDING);
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
@@ -76,7 +76,7 @@ class OrderTest {
 
   @Test
   void testSetAndGetStatus() {
-    order.setStatus("In Progress");
+    order.setStatus(OrderStatus.IN_PROGRESS);
     assertEquals("In Progress", order.getStatus());
   }
 
@@ -124,7 +124,7 @@ class OrderTest {
 
   @Test
   void testUpdateStatus() {
-    order.updateStatus("Completed");
+    order.updateStatus(OrderStatus.COMPLETED);
     assertEquals("Completed", order.getStatus());
   }
 }

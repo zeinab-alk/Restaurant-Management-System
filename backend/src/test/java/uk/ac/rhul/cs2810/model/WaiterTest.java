@@ -160,12 +160,12 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfSuccessfulDelivery() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Pending"); // Ensure status is "Pending"
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING); // Ensure status is "Pending"
 
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that setStatus was called with the correct argument ("Delivered")
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check if the correct message was printed
     String output = outContent.toString();
@@ -176,11 +176,11 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfAlreadyDelivered() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Delivered");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder, never()).setStatus("Delivered");
+    verify(mockOrder, never()).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
@@ -188,11 +188,11 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfCaseInsensitiveStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("delivered");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder, never()).setStatus("Delivered");
+    verify(mockOrder, never()).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
@@ -200,17 +200,17 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfUnexpectedStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Processing");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
   }
 
   @Test
   public void testMarkOrderAsDeliveredMethodOutputVerification() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Pending");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING);
 
     waiter.markOrderAsDelivered(mockOrder);
 
@@ -221,7 +221,7 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyOrderStatus() {
       Order mockOrder = mock(Order.class);
-      when(mockOrder.getStatus()).thenReturn(""); // Empty status
+      when(mockOrder.getStatus()).thenReturn(null); // Empty status
 
       waiter.markOrderAsDelivered(mockOrder);
 
@@ -232,11 +232,11 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfInProgressStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("in-progress");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.IN_PROGRESS);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
 
@@ -244,13 +244,13 @@ public class WaiterTest {
   public void testMarkOrderAsDeliveredMethodIfCompletedStatus() {
     // Mock an order with the status "Completed"
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Completed");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.COMPLETED);
 
     // Call the markOrderAsDelivered method
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that the status is changed to "Delivered"
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
@@ -260,13 +260,13 @@ public class WaiterTest {
   public void testMarkOrderAsDeliveredMethodIfCancelledStatus() {
     // Mock an order with the status "Cancelled"
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Cancelled");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.CANCELLED);
 
     // Call the markOrderAsDelivered method
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that the status is changed to "Delivered"
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
@@ -286,7 +286,7 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfWhitespaceOrderStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("   "); // Order status is only whitespace
+    when(mockOrder.getStatus()).thenReturn(null); // Order status is only whitespace
 
     waiter.markOrderAsDelivered(mockOrder);
 
@@ -296,7 +296,7 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyStringOrderStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn(""); // Empty string
+    when(mockOrder.getStatus()).thenReturn(null); // Empty string
 
     waiter.markOrderAsDelivered(mockOrder);
 

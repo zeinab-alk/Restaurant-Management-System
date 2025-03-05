@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -106,14 +107,14 @@ public class WaiterController {
 
     if (optionalOrder.isPresent()) {
       Order order = optionalOrder.get();
-      if (order.getStatus() == null || order.getStatus().trim().isEmpty()) {
+      if (order.getStatus() == null) {
         return ResponseEntity.status(400).body("Order status is invalid.");
       }
-      if ("Delivered".equalsIgnoreCase(order.getStatus())) {
+      if (OrderStatus.DELIVERED.equals(order.getStatus())) {
         return ResponseEntity.ok("Order " + order.getOrderNumber() + " is already delivered.");
       }
 
-      order.setStatus("Delivered");
+      order.setStatus(OrderStatus.DELIVERED);
       orderRepository.save(order); // Save the updated order
 
       return ResponseEntity

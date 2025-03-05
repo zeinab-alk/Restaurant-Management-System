@@ -91,12 +91,11 @@ public class Waiter {
       System.out.println("Order is null.");
       return;
     }
-    String orderStatus = order.getStatus();
-    if (orderStatus == null || orderStatus.trim().isEmpty()
-        || "Delivered".equalsIgnoreCase(orderStatus)) {
+    OrderStatus orderStatus = order.getStatus();
+    if (orderStatus == null || OrderStatus.DELIVERED.equals(order.getStatus())) {
       System.out.println("Order is already delivered or invalid.");
     } else {
-      order.setStatus("Delivered");
+      order.setStatus(OrderStatus.DELIVERED);
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }

@@ -25,6 +25,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -141,7 +142,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Pending"); // Initial status is not "Delivered"
+    order.setStatus(OrderStatus.PENDING); // Initial status is not "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -160,7 +161,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Delivered"); // Status is already "Delivered"
+    order.setStatus(OrderStatus.DELIVERED); // Status is already "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -210,7 +211,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus(""); // Simulating an empty string
+    order.setStatus(null); // Simulating an empty string
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 

@@ -51,7 +51,7 @@ public class Order {
   private int waitingTime;
 
   @JsonProperty("status")
-  private String status;
+  private OrderStatus status;
 
   /**
    * Constructs an Order with the given parameters.
@@ -63,7 +63,7 @@ public class Order {
    * @param status The current status of the order (e.g., "Pending", "Completed").
    */
   public Order(int orderNumber, Customer customer, String orderTime, int waitingTime,
-      String status) {
+      OrderStatus status) {
     this.orderNumber = orderNumber;
     this.customer = customer;
     this.orderTime = orderTime;
@@ -115,12 +115,12 @@ public class Order {
     this.waitingTime = waitingTime;
   }
 
-  public String getStatus() {
+  public OrderStatus getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
-    this.status = status;
+  public void setStatus(OrderStatus string) {
+    this.status = string;
   }
 
   /**
@@ -160,7 +160,7 @@ public class Order {
    *
    * @param newStatus The new status to set.
    */
-  public void updateStatus(String newStatus) {
+  public void updateStatus(OrderStatus newStatus) {
     this.status = newStatus;
   }
 
