@@ -151,8 +151,7 @@ public class WaiterControllerTest {
 
     // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
-    assertEquals(OrderStatus.DELIVERED.name(), order.getStatus().name()); // Ensure the status was
-                                                                          // updated
+    assertEquals(OrderStatus.DELIVERED.name(), order.getStatus().name());
     verify(orderRepository, times(1)).save(order); // Verify save was called
   }
 
