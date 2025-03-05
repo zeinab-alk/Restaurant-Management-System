@@ -52,6 +52,8 @@ public class Order {
 
   @JsonProperty("status")
   private OrderStatus status;
+  
+  private boolean waiterConfirmed;
 
   /**
    * Constructs an Order with the given parameters.
@@ -121,6 +123,14 @@ public class Order {
 
   public void setStatus(OrderStatus string) {
     this.status = string;
+  }
+
+  public boolean isWaiterConfirmed() {
+      return waiterConfirmed;
+  }
+
+  public void setWaiterConfirmed(boolean waiterConfirmed) {
+      this.waiterConfirmed = waiterConfirmed;
   }
 
   /**
