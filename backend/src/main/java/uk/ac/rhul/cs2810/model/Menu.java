@@ -18,7 +18,7 @@ public class Menu {
   @Id  // Marks this field as the primary key
   @GeneratedValue(strategy = GenerationType.IDENTITY)  // Configures auto-generation of IDs
   private Integer id;
-  private Integer menuId;
+  private String name;
 
   /**
    * List of menu items associated with this menu.
@@ -27,7 +27,6 @@ public class Menu {
   @OneToMany  // Establishes one-to-many relationship with MenuItem entities
   private List<MenuItem> menuItems;
 
-  private String name;
 
   /**
    * Default constructor that initializes an empty list of menu items.
@@ -44,7 +43,7 @@ public class Menu {
    */
   public Menu(int menuId, String name) {
     this.id = menuId;
-    this.name = name;
+    this.setName(name);
   }
 
   /**
@@ -105,5 +104,13 @@ public class Menu {
    */
   public void addMenuItem(MenuItem item) {
     menuItems.add(item);
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

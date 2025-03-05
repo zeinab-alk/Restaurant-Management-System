@@ -44,6 +44,8 @@ public class Waiter {
    */
   public Waiter() {}
 
+  Order order;
+
   /**
    * Waiter constructor.
    *
@@ -101,6 +103,7 @@ public class Waiter {
   }
 
   /**
+<<<<<<< HEAD
    * Notifies the waiter when a new order is placed with item details.
    *
    * @param order The order that has been placed.
@@ -203,8 +206,6 @@ public class Waiter {
   public void cancelOrder() {}
 
   public void notifyTeam() {}
-
-  // Getters and Setters
 
   public int getId() {
     return id;

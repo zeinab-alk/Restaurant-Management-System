@@ -27,6 +27,11 @@ public class OrderController {
 
   private final OrderRepository orderRepository;
 
+  /**
+   * Constructor to initialise the order repository.
+   *
+   * @param orderRepository repository for order class
+   */
   public OrderController(OrderRepository orderRepository) {
     this.orderRepository = orderRepository;
   }

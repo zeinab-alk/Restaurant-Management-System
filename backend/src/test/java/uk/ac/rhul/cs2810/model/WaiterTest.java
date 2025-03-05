@@ -29,6 +29,7 @@ public class WaiterTest {
   private Waiter waiter;
   private Menu mockMenu;
   private MenuItem mockMenuItem;
+  Order order;
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final PrintStream originalSystemOut = System.out;
@@ -42,6 +43,8 @@ public class WaiterTest {
     mockMenu = mock(Menu.class);
     mockMenuItem = mock(MenuItem.class);
     waiter = new Waiter(1, "John", "Active", mockMenu);
+    order = new Order();
+    order.setStatus(OrderStatus.PENDING);
     System.setOut(new PrintStream(outContent));
   }
 
@@ -54,7 +57,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemFound_TrueAvailability() {
+  public void testChangeMenuItemFoundTrueAvailability() {
     // Mock behaviour: when getItemByName is called, return the mock menu item
     when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
 
@@ -69,7 +72,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemFound_FalseAvailability() {
+  public void testChangeMenuItemFoundFalseAvailability() {
     // Mock behaviour: when getItemByName is called, return the mock menu item
     when(mockMenu.getItemByName("Pizza")).thenReturn(mockMenuItem);
 
@@ -84,7 +87,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_ItemNotFound() {
+  public void testChangeMenuItemNotFound() {
     // Mock behaviour: when getItemByName is called, return null (item not found)
     when(mockMenu.getItemByName("Burger")).thenReturn(null);
 
@@ -99,7 +102,7 @@ public class WaiterTest {
   }
 
   @Test
-  public void testChangeMenu_NoMenu() {
+  public void testChangeMenuNoMenu() {
     // Create a waiter with no menu (null)
     Waiter waiterWithoutMenu = new Waiter(1, "John", "Active", null);
 
@@ -123,14 +126,6 @@ public class WaiterTest {
     assertEquals(2, waiter.getId());
     assertEquals("Mike", waiter.getName());
     assertEquals("Inactive", waiter.getStatus());
-  }
-
-  // Optionally add more tests for other methods, for example, confirmOrder, trackOrder, etc.
-  @Test
-  public void testConfirmOrder() {
-    // Here you would check the behavior of confirmOrder
-    // For now, it's just a placeholder method with no functionality
-    assertDoesNotThrow(() -> waiter.confirmOrder());
   }
 
   @Test
@@ -272,7 +267,9 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
 
-  // Reset System.out after the test
+  /**
+   * Reset System.out after the test.
+   */
   @AfterEach
   public void restoreSystemOut() {
     System.setOut(originalSystemOut);
@@ -302,6 +299,21 @@ public class WaiterTest {
     waiter.markOrderAsDelivered(mockOrder);
 
     assertTrue(outContent.toString().contains("Order is already delivered or invalid."));
+  }
+  
+  @Test
+  public void testConfirmOrder() {
+    boolean result = waiter.confirmOrder(order);
+
+    assertTrue(result);
+    assertEquals("Confirmed", order.getStatus());
+  }
+
+  @Test
+  public void testConfirmOrderWithoutOrder() {
+    
+    boolean result = waiter.confirmOrder(null);
+    assertFalse(result);
   }
 
   @Test
@@ -474,4 +486,3 @@ public class WaiterTest {
   }
 
 }
-
