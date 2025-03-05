@@ -6,6 +6,7 @@ CREATE TYPE name AS
 last_name VARCHAR(50));
 
 CREATE TYPE order_status AS ENUM(
+	'Confirmed',
 	'Pending', 
 	'In Progress', 
 	'Completed', 
