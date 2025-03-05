@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs2810.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -164,4 +165,23 @@ public class WaiterController {
 
     return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
   }
+
+  /**
+   * Sends an assistance warning for a specific table.
+   *
+   * @param tableNumber The table that needs assistance.
+   * @return ResponseEntity with the confirmation message.
+   */
+  @PostMapping("/send-warning")
+  public ResponseEntity<String> sendAssistanceWarning(
+      @RequestBody(required = false) Map<String, Integer> requestBody) {
+    if (requestBody == null || !requestBody.containsKey("tableNumber")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Table number is required.");
+    }
+
+    Integer tableNumber = requestBody.get("tableNumber");
+    return ResponseEntity.ok("Assistance warning sent for table " + tableNumber);
+  }
 }
+
+

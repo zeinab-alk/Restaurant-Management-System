@@ -7,6 +7,8 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { TextField } from "@mui/material";
+
 
 const WaiterPage = () => {
   const [orderNotification, setOrderNotification] = useState(null);
@@ -14,6 +16,9 @@ const WaiterPage = () => {
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
+  const [assistanceWarning, setAssistanceWarning] = useState(null);
+  const [tableNumber, setTableNumber] = useState('');
+
 
   // Poll for latest order every 5 seconds
   useEffect(() => {
@@ -68,6 +73,31 @@ const WaiterPage = () => {
       return next;
     });
   };
+ 
+  // Assistance warning handler
+  const sendWarning = () => {
+    if (!tableNumber.trim()) {
+        setError("Please enter a valid table number.");
+        return;
+    }
+
+    setError(''); // Clear previous error
+
+    axios.post(`${API_ENDPOINT}/api/waiters/send-warning`, { tableNumber: parseInt(tableNumber) }, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(() => {
+        setAssistanceWarning(`Assistance requested for Table #${tableNumber}`);
+        setTableNumber('');
+    })
+    .catch(err => {
+        setError('Failed to send assistance warning: ' + (err.response?.data || err.message));
+    });
+};
+
+  
 
   return (
     <Container sx={{ py: 4 }}>
@@ -81,8 +111,41 @@ const WaiterPage = () => {
       </Stack>
 
       <Typography variant="h3" component="h1" gutterBottom>
-        Waiter Dashboard
-      </Typography>
+  Waiter Dashboard
+</Typography>
+
+<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+  <TextField
+    label="Table Number"
+    variant="outlined"
+    size="small"
+    value={tableNumber}
+    onChange={(e) => setTableNumber(e.target.value)}
+    sx={{ width: 150 }}
+  />
+  <Button variant="contained" color="error" onClick={sendWarning}>
+    Send Warning
+  </Button>
+</Stack>
+
+{/* Assistance Warning Notification */}
+{assistanceWarning && (
+  <Alert
+    severity="warning"
+    sx={{ mb: 3 }}
+    action={
+      <Button
+        color="inherit"
+        size="small"
+        onClick={() => setAssistanceWarning(null)}
+      >
+        DISMISS
+      </Button>
+    }
+  >
+    {assistanceWarning}
+  </Alert>
+)}
 
       <Box sx={{ 
         display: 'flex', 
@@ -120,11 +183,11 @@ const WaiterPage = () => {
           <Typography variant="caption">Menu Items</Typography>
         </Button>
       </Box>
-
+      
       {/* Add error display */}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {/* Custom Action Alert */}
+     
+     {/* Custom Action Alert */}
       {orderNotification && (
         <Alert
           severity="info"
@@ -143,7 +206,8 @@ const WaiterPage = () => {
           {orderNotification}
         </Alert>
       )}
-
+     
+      
       {/* Updated Table Action */}
       <TableContainer component={Paper} sx={{ 
         maxWidth: '800px',
@@ -292,3 +356,4 @@ const WaiterPage = () => {
 };
 
 export default WaiterPage;
+

@@ -9,7 +9,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -245,46 +247,46 @@ public class WaiterControllerTest {
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
   }
-  
+
   @Test
   public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
-      // Arrange
-      int waiterId = 1;
-      int orderId = 101;
+    // Arrange
+    int waiterId = 1;
+    int orderId = 101;
 
-      Waiter waiter = new Waiter();
-      waiter.setId(waiterId);
-      waiter.setName("John");
-      Menu menu = new Menu();
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    Menu menu = new Menu();
 
-      MenuItem item1 = new MenuItem(1, "Burger", 5.99);
-      item1.setAvailable(true);
+    MenuItem item1 = new MenuItem(1, "Burger", 5.99);
+    item1.setAvailable(true);
 
-      MenuItem item2 = new MenuItem(2, "Fries", 2.99);
-      item2.setAvailable(true);
+    MenuItem item2 = new MenuItem(2, "Fries", 2.99);
+    item2.setAvailable(true);
 
-      menu.addMenuItem(item1);
-      menu.addMenuItem(item2);
-      waiter.setMenu(menu);
+    menu.addMenuItem(item1);
+    menu.addMenuItem(item2);
+    waiter.setMenu(menu);
 
-      Order order = new Order();
-      order.setOrderNumber(orderId);
+    Order order = new Order();
+    order.setOrderNumber(orderId);
 
-      // Fetch items from the menu dynamically
-      List<MenuItem> orderedItems =
-          Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
-      order.getMenuItems().addAll(orderedItems);
+    // Fetch items from the menu dynamically
+    List<MenuItem> orderedItems =
+        Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
+    order.getMenuItems().addAll(orderedItems);
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-      // Act
-      ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
 
-      // Assert
-      assertNotNull(response);
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("Order 101 confirmed.", response.getBody());
+    // Assert
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order 101 confirmed.", response.getBody());
   }
 
   @Test
@@ -393,6 +395,30 @@ public class WaiterControllerTest {
     assertEquals("Item unavailable: Steak", response.getBody());
   }
 
+  @Test
+  public void sendAssistanceWarning_WhenTableNumberProvided_ShouldReturnSuccessMessage() {
 
+    Map<String, Integer> requestBody = new HashMap<>();
+    requestBody.put("tableNumber", 5);
+    ResponseEntity<String> response = waiterController.sendAssistanceWarning(requestBody);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Assistance warning sent for table 5", response.getBody());
+  }
+
+  @Test
+  public void sendAssistanceWarning_WhenTableNumberMissing_ShouldReturnBadRequest() {
+    Map<String, Integer> requestBody = new HashMap<>(); // No tableNumber included
+    ResponseEntity<String> response = waiterController.sendAssistanceWarning(requestBody);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Table number is required.", response.getBody());
+  }
+
+  @Test
+  public void sendAssistanceWarning_WhenRequestBodyIsNull_ShouldReturnBadRequest() {
+    ResponseEntity<String> response = waiterController.sendAssistanceWarning(null);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Table number is required.", response.getBody());
+  }
 }
+
 
