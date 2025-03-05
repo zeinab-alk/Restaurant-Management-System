@@ -10,7 +10,8 @@ CREATE TYPE order_status AS ENUM(
 	'Pending', 
 	'In Progress', 
 	'Completed', 
-	'Cancelled'
+	'Cancelled',
+	'Delivered'
 );
 
 CREATE TYPE payment_status AS ENUM(
