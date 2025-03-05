@@ -15,7 +15,6 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Represents an order placed by a customer at a restaurant. Contains details about the order,
  * including the customer, items, order time, waiting time, and status.
