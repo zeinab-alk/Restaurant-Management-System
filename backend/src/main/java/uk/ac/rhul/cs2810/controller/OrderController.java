@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 
 /**
@@ -88,6 +90,27 @@ public class OrderController {
       return ResponseEntity.ok(latestOrder);
     }
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+  }
+  
+  /**
+   * Allows waiter to confirm order.
+   * 
+   * @param orderId
+   * @return
+   */
+  @PutMapping("/{orderId}/confirm")
+  public Order confirmOrder(@PathVariable int orderId) {
+      Order order = orderRepository.findById(orderId)
+              .orElseThrow();
+
+      if (order.getStatus() == OrderStatus.CONFIRMED) {
+          throw new RuntimeException("Order is already confirmed.");
+      }
+
+      order.setStatus(OrderStatus.CONFIRMED);
+      order.setWaiterConfirmed(true);
+
+      return orderRepository.save(order);
   }
 }
 
