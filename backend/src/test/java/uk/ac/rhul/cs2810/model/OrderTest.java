@@ -45,7 +45,7 @@ class OrderTest {
     assertEquals(customer, order.getCustomer());
     assertEquals("12:30 PM", order.getOrderTime());
     assertEquals(15, order.getWaitingTime());
-    assertEquals("Pending", order.getStatus());
+    assertEquals(OrderStatus.PENDING, order.getStatus());
     assertTrue(order.getItems().isEmpty());
   }
 
@@ -77,7 +77,7 @@ class OrderTest {
   @Test
   void testSetAndGetStatus() {
     order.setStatus(OrderStatus.IN_PROGRESS);
-    assertEquals("In Progress", order.getStatus());
+    assertEquals(OrderStatus.IN_PROGRESS.name(), order.getStatus().name());
   }
 
   @Test
@@ -125,6 +125,6 @@ class OrderTest {
   @Test
   void testUpdateStatus() {
     order.updateStatus(OrderStatus.COMPLETED);
-    assertEquals("Completed", order.getStatus());
+    assertEquals(OrderStatus.COMPLETED.name(), order.getStatus().name());
   }
 }

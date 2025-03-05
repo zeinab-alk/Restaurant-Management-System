@@ -53,7 +53,7 @@ public class OrderControllerTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value("Pending"));
+        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.name()));
   }
 
   /**
@@ -88,7 +88,7 @@ public class OrderControllerTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value("Pending"));
+        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.name()));
   }
 
   /**
@@ -124,9 +124,9 @@ public class OrderControllerTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].orderNumber").value(1))
-        .andExpect(jsonPath("$[0].status").value("Pending"))
+        .andExpect(jsonPath("$[0].status").value(OrderStatus.PENDING.name()))
         .andExpect(jsonPath("$[1].orderNumber").value(2))
-        .andExpect(jsonPath("$[1].status").value("Completed"));
+        .andExpect(jsonPath("$[1].status").value(OrderStatus.COMPLETED.name()));
   }
   
   
@@ -147,7 +147,7 @@ public class OrderControllerTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.orderNumber").value(3))
-        .andExpect(jsonPath("$.status").value("Completed"));
+        .andExpect(jsonPath("$.status").value(OrderStatus.COMPLETED.name()));
   }
 
   /**
