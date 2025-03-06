@@ -6,6 +6,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,8 +131,27 @@ public class MenuItem {
     return imageUrl;
   }
 
+  /**
+   * This is a validated setURL to make sure if setURL is utilised, only valid URLS can be used.
+   *
+   * @param imageUrl is the URL we will be using.
+   */
   public void setImageUrl(String imageUrl) {
-    this.imageUrl = imageUrl;
+    if (isValidUrl(imageUrl)) {
+      this.imageUrl = imageUrl;
+    } else {
+      throw new IllegalArgumentException("Invalid image URL");
+    }
+  }
+
+  private boolean isValidUrl(String url) {
+    try {
+      URI uri = new URI(url); // Create URI instance
+      uri.toURL(); // Convert URI to URL (no longer using the deprecated URL constructor)
+      return true;
+    } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+      return false;
+    }
   }
 }
 

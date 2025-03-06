@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -104,4 +105,25 @@ public class MenuItemTest {
     assertEquals("", item.getImageUrl(), "The imageUrl should be an empty string.");
   }
 
+  // New Test: Invalid image URL (Malformed URL)
+  @Test
+  void testSetInvalidImageUrl() {
+    // Set an invalid URL (e.g., missing scheme)
+    String invalidImageUrl = "invalid-url";
+
+    // Verify that an IllegalArgumentException is thrown
+    assertThrows(IllegalArgumentException.class, () -> item.setImageUrl(invalidImageUrl),
+        "An IllegalArgumentException should be thrown for an invalid image URL.");
+  }
+
+  // New Test: Invalid image URL (malformed URL)
+  @Test
+  void testSetMalformedImageUrl() {
+    // Set a malformed URL (e.g., missing domain)
+    String malformedImageUrl = "http://";
+
+    // Verify that an IllegalArgumentException is thrown
+    assertThrows(IllegalArgumentException.class, () -> item.setImageUrl(malformedImageUrl),
+        "An IllegalArgumentException should be thrown for a malformed image URL.");
+  }
 }
