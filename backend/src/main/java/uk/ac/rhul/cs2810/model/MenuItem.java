@@ -38,7 +38,8 @@ public class MenuItem {
   private boolean availability;
 
   @Column(name = "image_url", nullable = true) // Allows NULL values and ensures correct mapping
-  private String imageUrl;
+  private String imageUrl; // This may need to be added into the constructor
+  // It is currently coded so that you will need to manually input the URL into the schemas
 
   public boolean isAvailable() {
     return availability;
