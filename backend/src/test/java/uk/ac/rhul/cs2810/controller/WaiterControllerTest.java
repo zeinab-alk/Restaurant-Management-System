@@ -3,11 +3,16 @@ package uk.ac.rhul.cs2810.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +25,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
+import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
@@ -41,10 +50,13 @@ public class WaiterControllerTest {
   @InjectMocks
   private WaiterController waiterController;
 
+  private MockMvc mockMvc;
+
   @BeforeEach
   public void setUp() {
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    mockMvc = MockMvcBuilders.standaloneSetup(waiterController).build();
   }
 
 
@@ -109,7 +121,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Pending"); // Initial status is not "Delivered"
+    order.setStatus(OrderStatus.PENDING); // Initial status is not "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -118,7 +130,7 @@ public class WaiterControllerTest {
 
     // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
-    assertEquals("Delivered", order.getStatus()); // Ensure the status was updated
+    assertEquals(OrderStatus.DELIVERED, order.getStatus()); // Ensure the status was updated
     verify(orderRepository, times(1)).save(order); // Verify save was called
   }
 
@@ -128,7 +140,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus("Delivered"); // Status is already "Delivered"
+    order.setStatus(OrderStatus.DELIVERED); // Status is already "Delivered"
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -150,7 +162,7 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
 
     // Assert
-    assertEquals("Order with ID 1 not found.", response.getBody());
+    assertEquals("Order with number 1 not found.", response.getBody());
     verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 
@@ -178,7 +190,7 @@ public class WaiterControllerTest {
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
-    order.setStatus(""); // Simulating an empty string
+    order.setStatus(null);
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -310,5 +322,158 @@ public class WaiterControllerTest {
     assertEquals("Item unavailable: Steak", response.getBody());
   }
 
+  @Test
+  public void updateOrderStatus_WhenOrderExists_ShouldUpdateStatusSuccessfully() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status updated to IN_PROGRESS", response.getBody());
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+
+  @Test
+  public void updateOrderStatus_WhenOrderNotFoundByNumber_ButFoundById_ShouldUpdateStatus() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status updated to IN_PROGRESS", response.getBody());
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+
+  @Test
+  public void updateOrderStatus_WhenOrderNotFound_ShouldReturnNotFound() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.empty());
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Order with number 1 not found.", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  public void updateOrderStatus_WhenStatusAlreadySet_ShouldReturnOkWithMessage() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.IN_PROGRESS); // Same status as requested
+
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order status is already IN_PROGRESS", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  public void updateOrderStatus_WhenRequestIsNull_ShouldReturnBadRequest() {
+    // Arrange
+    int orderId = 1;
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, null);
+
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Request body cannot be null", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  public void updateOrderStatus_WhenStatusIsNull_ShouldReturnBadRequest() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    // Status is null by default
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Order status cannot be null", response.getBody());
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  public void updateOrderStatus_WhenExceptionOccurs_ShouldReturnInternalServerError() {
+    // Arrange
+    int orderId = 1;
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    Order order = new Order();
+    order.setOrderNumber(orderId);
+    order.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findByOrderNumber(orderId)).thenReturn(Optional.of(order));
+    when(orderRepository.save(any())).thenThrow(new RuntimeException("Database error"));
+
+    // Act
+    ResponseEntity<String> response = waiterController.updateOrderStatus(orderId, request);
+
+    // Assert
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertTrue(response.getBody().contains("Failed to update order status"));
+  }
+
+
+  @Test
+  public void testGetReadyOrders_Success() throws Exception {
+    Order readyOrder1 = new Order(1, null, "2025-03-01 12:00", 10, OrderStatus.READY_FOR_DELIVERY);
+    Order readyOrder2 = new Order(2, null, "2025-03-01 12:30", 15, OrderStatus.READY_FOR_DELIVERY);
+
+    when(orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY))
+        .thenReturn(Arrays.asList(readyOrder1, readyOrder2));
+
+    mockMvc.perform(get("/api/waiters/ready-orders")).andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].orderNumber").value(1))
+        .andExpect(jsonPath("$[1].orderNumber").value(2));
+  }
 
 }

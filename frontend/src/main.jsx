@@ -38,6 +38,18 @@ const router = createBrowserRouter([
     path: "/waiter/edit-item/:id",
     element: <App><EditMenuItem /></App>,
   },
+  {
+    path: "/menuitem/add",
+    element: <App><AddMenuItem /></App>,
+  },
+  {
+    path: "/menuitem/change",
+    element: <App><ChangeMenuItem /></App>,
+  },
+  {
+    path: "/menuitem/edit/:id",
+    element: <App><EditMenuItem /></App>,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
