@@ -28,7 +28,8 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable()) // Disable CSRF (use with caution)
         .cors(withDefaults())         // Enable CORS with default settings
-        .authorizeHttpRequests(auth -> auth.requestMatchers("/api/**").permitAll()
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/**").permitAll() // Allow all API requests without authentication
             .anyRequest().authenticated()); // Secure other endpoints
 
     return http.build();
@@ -44,8 +45,9 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOriginPatterns(Arrays.asList("*")); // Allow all origins
     config.setAllowedHeaders(Arrays.asList("*"));        // Allow all headers
-    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     config.setAllowCredentials(true); // Allow credentials (for authentication)
+    config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);

@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 
 /**
@@ -88,6 +90,28 @@ public class OrderController {
       return ResponseEntity.ok(latestOrder);
     }
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+  }
+
+  /**
+   * Updates the status of an existing order.
+   *
+   * @param id The ID of the order to update.
+   * @param request The request body containing the new order status.
+   * @return ResponseEntity with the updated order.
+   */
+  @PutMapping("/{id}/status")
+  public ResponseEntity<Order> updateOrderStatus(@PathVariable int id,
+      @RequestBody OrderStatusUpdateRequest request) {
+    Optional<Order> optionalOrder = orderRepository.findById(id);
+    if (optionalOrder.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Order order = optionalOrder.get();
+    order.setStatus(request.getStatus());
+    orderRepository.save(order);
+
+    return ResponseEntity.ok(order);
   }
 }
 
