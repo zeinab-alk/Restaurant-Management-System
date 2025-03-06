@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip, Select, MenuItem, FormControl, Snackbar } from "@mui/material";
+import { 
+  Button, 
+  Container, 
+  Stack, 
+  Typography, 
+  Alert, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableRow, 
+  TableContainer, 
+  TableHead, 
+  Paper, 
+  Box, 
+  Chip, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  Snackbar,
+  useTheme,
+  Grid
+} from "@mui/material";
 import axios from "axios";
 import { API_ENDPOINT } from "../config";
 import Collapse from '@mui/material/Collapse';
@@ -9,6 +30,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const WaiterPage = () => {
+  const theme = useTheme();
   const [orderNotification, setOrderNotification] = useState(null);
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
@@ -99,56 +121,38 @@ const WaiterPage = () => {
         fetchOrders(); // Refresh list
         setOrderNotification(`Order #${orderId} updated to ${newStatus}`);
       })
-      .catch(err => {
-        console.error('Status update error:', err);
-        console.error('Response data:', err.response?.data);
-        console.error('Response status:', err.response?.status);
-        console.error('Response headers:', err.response?.headers);
-        
-        // More specific error message based on the status code
-        let errorMsg = 'Failed to update order status';
-        
-        if (err.response) {
-          if (err.response.status === 403) {
-            errorMsg += ': Access forbidden. You may not have permission to perform this action.';
-          } else if (err.response.status === 404) {
-            errorMsg += ': Order not found';
-          } else if (err.response.status === 400) {
-            errorMsg += ': Invalid request format';
-          } else {
-            errorMsg += ': ' + (err.response.data || err.message);
-          }
-        } else {
-          errorMsg += ': ' + err.message;
-        }
-        
-        setError(errorMsg);
+      .catch((error) => {
+        console.error('Status update error:', error);
+        setError(`Failed to update order status: ${error.message}`);
       });
   };
 
-  // Legacy handler for backward compatibility
+  // Mark an order as delivered
   const markDelivered = (orderId) => {
     updateOrderStatus(orderId, 'DELIVERED');
   };
 
   const toggleExpansion = (orderId) => {
     setExpandedOrders(prev => {
-      const next = new Set(prev);
-      next.has(orderId) ? next.delete(orderId) : next.add(orderId);
-      return next;
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
     });
   };
 
-  // Helper function to get color based on status
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'PENDING':
-      case 'PROCESSING':
         return 'warning';
       case 'IN_PROGRESS':
+      case 'PROCESSING':
         return 'info';
       case 'READY_FOR_DELIVERY':
-        return 'secondary';
+        return 'primary';
       case 'COMPLETED':
       case 'DELIVERED':
         return 'success';
@@ -160,282 +164,282 @@ const WaiterPage = () => {
   };
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button component={RouterLink} to="/" variant="contained" color="success">
-          Back to Home
-        </Button>
-        <Button component={RouterLink} to="/menu" variant="contained" color="primary">
-          View Menu
-        </Button>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={fetchOrders}
-          sx={{ ml: 'auto' }}
-        >
-          Refresh Orders
-        </Button>
-      </Stack>
-
-      <Typography variant="h3" component="h1" gutterBottom>
-        Waiter Dashboard
-      </Typography>
-
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: 2, 
-        mb: 4,
-        '& .MuiButton-root': {
-          minWidth: 0,
-          width: 150,
-          height: 150,
-          p: 1.5,
-          borderRadius: 2,
-          flexDirection: 'column'
-        }
-      }}>
-        <Button 
-          component={RouterLink} 
-          to="/waiter/add-item" 
-          variant="contained" 
-          color="primary"
-          sx={{ boxShadow: 3 }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Add</Typography>
-          <Typography variant="caption">New Item</Typography>
-        </Button>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Navigation and Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
+          mb: 3
+        }}>
+          <Button 
+            component={RouterLink} 
+            to="/" 
+            variant="contained" 
+            color="success"
+            startIcon={<span role="img" aria-label="home">🏠</span>}
+            sx={{ fontWeight: 'medium' }}
+          >
+            Back to Home
+          </Button>
+          
+          <Button 
+            component={RouterLink} 
+            to="/menuitem/change" 
+            variant="contained" 
+            color="primary"
+            startIcon={<span role="img" aria-label="edit">✏️</span>}
+            sx={{ fontWeight: 'medium' }}
+          >
+            Edit Menu
+          </Button>
+          
+          <Button 
+            component={RouterLink} 
+            to="/menuitem/add" 
+            variant="contained" 
+            color="secondary"
+            startIcon={<span role="img" aria-label="add">➕</span>}
+            sx={{ fontWeight: 'medium' }}
+          >
+            Add Menu Item
+          </Button>
+        </Box>
         
-        <Button 
-          component={RouterLink} 
-          to="/waiter/edit-items" 
-          variant="contained" 
-          color="secondary"
-          sx={{ boxShadow: 3 }}
+        <Typography 
+          variant="h3" 
+          component="h1" 
+          gutterBottom 
+          align="center" 
+          sx={{ 
+            mb: 3,
+            fontWeight: 'bold',
+            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' }
+          }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Edit</Typography>
-          <Typography variant="caption">Menu Items</Typography>
-        </Button>
+          Waiter Dashboard
+        </Typography>
       </Box>
-
-      {/* Add error display */}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {/* Custom Action Alert */}
-      {orderNotification && (
-        <Alert
-          severity="info"
-          sx={{ mb: 3, '& .MuiAlert-action': { pt: 0.5 } }}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => setOrderNotification(null)}
-              sx={{ textTransform: 'none' }}
+      
+      {/* Notifications */}
+      <Box sx={{ mb: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        
+        {orderNotification && (
+          <Snackbar
+            open={newOrderAlert}
+            autoHideDuration={6000}
+            onClose={() => setNewOrderAlert(false)}
+          >
+            <Alert 
+              onClose={() => setNewOrderAlert(false)} 
+              severity="info" 
+              variant="filled"
             >
-              DISMISS
-            </Button>
-          }
-        >
-          {orderNotification}
-        </Alert>
-      )}
-
-      {/* New Order Notification */}
-      <Snackbar
-        open={newOrderAlert}
-        autoHideDuration={6000}
-        onClose={() => setNewOrderAlert(false)}
-        message="New order received! The list has been updated."
-      />
-
-      {/* Updated Table Action */}
-      <TableContainer component={Paper} sx={{ 
-        maxWidth: '800px',
-        mx: 'auto',
-        boxShadow: 3
-      }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'background.default' }}>
-              <TableCell sx={{ width: 40 }}></TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Order #</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Items</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order) => {
-              // Use orderNumber as the key and ID for all operations
-              const orderId = order.orderNumber;
-              
-              return (
-                <React.Fragment key={`order-${orderId}`}>
-                  <TableRow 
-                    hover 
-                    onClick={() => toggleExpansion(orderId)}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell>
-                      <IconButton size="small">
-                        {expandedOrders.has(orderId) ? 
-                          <KeyboardArrowUpIcon /> : 
-                          <KeyboardArrowDownIcon />
-                        }
-                      </IconButton>
-                    </TableCell>
-                    <TableCell>#{order.orderNumber}</TableCell>
-                    <TableCell sx={{ maxWidth: 200 }}>
-                      <Typography noWrap>
-                        {order.menuItems?.length} items
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={order.status} 
-                        color={getStatusColor(order.status)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="center" sx={{ width: 180 }}>
-                      <FormControl 
-                        size="small" 
-                        sx={{ minWidth: 150 }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Select
-                          value=""
-                          displayEmpty
-                          onChange={(e) => {
-                            updateOrderStatus(orderId, e.target.value);
-                          }}
-                          sx={{ 
-                            fontSize: '0.75rem',
-                            height: 32
-                          }}
-                        >
-                          <MenuItem value="" disabled>
-                            <em>Update Status</em>
-                          </MenuItem>
-                          {orderStatuses.map(status => (
-                            <MenuItem 
-                              key={status} 
-                              value={status}
-                              disabled={order.status === status}
-                            >
-                              {status.replace(/_/g, ' ')}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                  </TableRow>
-
-                  <TableRow>
-                    <TableCell colSpan={6} sx={{ p: 0, border: 0 }}>
-                      <Collapse in={expandedOrders.has(orderId)}>
-                        <Box sx={{ 
-                          p: 2, 
-                          bgcolor: 'background.paper',
-                          borderTop: '1px solid',
-                          borderColor: 'divider'
-                        }}>
-                          <Typography variant="subtitle1" gutterBottom>
-                            Order Details
-                          </Typography>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Item</TableCell>
-                                <TableCell align="right">Quantity</TableCell>
-                                <TableCell>Notes</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {order.menuItems?.map((item, itemIndex) => {
-                                return (
-                                  <TableRow key={`${orderId}-item-${itemIndex}`}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell align="right">{item.quantity || 1}</TableCell>
-                                    <TableCell sx={{ fontStyle: 'italic' }}>
-                                      {item.notes || 'No special requests'}
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Status Legend */}
-      <Stack 
-        direction="row" 
-        spacing={2} 
-        justifyContent="center" 
-        sx={{ mt: 3, color: 'text.secondary', flexWrap: 'wrap' }}
+              {orderNotification}
+            </Alert>
+          </Snackbar>
+        )}
+      </Box>
+      
+      {/* Orders Section */}
+      <Typography 
+        variant="h5" 
+        gutterBottom 
+        sx={{ 
+          mb: 2,
+          fontWeight: 'medium' 
+        }}
       >
-        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
+        Current Orders
+      </Typography>
+      
+      {orders.length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 1, mb: 4 }} elevation={2}>
+          <Typography variant="h6" color="text.secondary">
+            No orders found
+          </Typography>
+        </Paper>
+      ) : (
+        <Paper sx={{ 
+          overflow: 'hidden',
+          mb: 4,
+          boxShadow: 2,
+          borderRadius: 1
+        }} elevation={3}>
           <Box sx={{ 
-            width: 12, 
-            height: 12, 
-            bgcolor: 'warning.main', 
-            borderRadius: '50%', 
-            mr: 1 
-          }} />
-          Pending
-        </Box>
-        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
-          <Box sx={{ 
-            width: 12, 
-            height: 12, 
-            bgcolor: 'info.main', 
-            borderRadius: '50%', 
-            mr: 1 
-          }} />
-          In Progress
-        </Box>
-        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
-          <Box sx={{ 
-            width: 12, 
-            height: 12, 
-            bgcolor: 'secondary.main', 
-            borderRadius: '50%', 
-            mr: 1 
-          }} />
-          Ready For Delivery
-        </Box>
-        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
-          <Box sx={{ 
-            width: 12, 
-            height: 12, 
-            bgcolor: 'success.main', 
-            borderRadius: '50%', 
-            mr: 1 
-          }} />
-          Delivered
-        </Box>
-        <Box display="flex" alignItems="center" sx={{ m: 1 }}>
-          <Box sx={{ 
-            width: 12, 
-            height: 12, 
-            bgcolor: 'error.main', 
-            borderRadius: '50%', 
-            mr: 1 
-          }} />
-          Cancelled
-        </Box>
-      </Stack>
+            overflowX: 'auto', 
+            width: '100%'
+          }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                  <TableCell sx={{ 
+                    width: '50px', 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    fontWeight: 'bold'
+                  }}></TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    Order #
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    display: { xs: 'none', sm: 'table-cell' }
+                  }}>
+                    Time
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    Status
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {orders.map((order) => (
+                  <React.Fragment key={order.orderNumber}>
+                    <TableRow
+                      sx={{
+                        backgroundColor: theme => (
+                          expandedOrders.has(order.orderNumber)
+                            ? theme.palette.action.hover
+                            : 'inherit'
+                        ),
+                        '&:hover': {
+                          backgroundColor: theme => theme.palette.action.hover
+                        }
+                      }}
+                    >
+                      <TableCell>
+                        <IconButton
+                          aria-label="expand row"
+                          size="small"
+                          onClick={() => toggleExpansion(order.orderNumber)}
+                        >
+                          {expandedOrders.has(order.orderNumber) ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                        </IconButton>
+                      </TableCell>
+                      <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
+                        {order.orderNumber}
+                      </TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                        {new Date(order.orderTime).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={order.status}
+                          color={getStatusColor(order.status)}
+                          size="small"
+                          sx={{ fontWeight: 'medium' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ 
+                          display: 'flex',
+                          flexDirection: { xs: 'column', md: 'row' },
+                          gap: 1
+                        }}>
+                          <FormControl 
+                            variant="outlined" 
+                            size="small"
+                            sx={{ minWidth: 150 }}
+                          >
+                            <Select
+                              value=""
+                              displayEmpty
+                              onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
+                              sx={{ fontSize: '0.875rem' }}
+                            >
+                              <MenuItem value="" disabled>
+                                Update Status
+                              </MenuItem>
+                              {orderStatuses
+                                .filter(status => status !== order.status) // Don't show current status
+                                .map(status => (
+                                  <MenuItem key={status} value={status}>
+                                    {status.replace(/_/g, ' ')}
+                                  </MenuItem>
+                                ))
+                              }
+                            </Select>
+                          </FormControl>
+                          
+                          {order.status === 'READY_FOR_DELIVERY' && (
+                            <Button
+                              variant="contained"
+                              color="success"
+                              size="small"
+                              onClick={() => markDelivered(order.orderNumber)}
+                              sx={{ whiteSpace: 'nowrap' }}
+                            >
+                              Mark Delivered
+                            </Button>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                        <Collapse in={expandedOrders.has(order.orderNumber)} timeout="auto" unmountOnExit>
+                          <Box sx={{ m: 2 }}>
+                            <Typography variant="h6" gutterBottom component="div">
+                              Order Details
+                            </Typography>
+                            <Table size="small" aria-label="order details">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Item</TableCell>
+                                  <TableCell align="right">Price</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {order.menuItems.map((item, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell component="th" scope="row">
+                                      {item.name}
+                                    </TableCell>
+                                    <TableCell align="right">£{item.price.toFixed(2)}</TableCell>
+                                  </TableRow>
+                                ))}
+                                <TableRow>
+                                  <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
+                                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                                    £{order.menuItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
+                                  </TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+        </Paper>
+      )}
     </Container>
   );
 };
