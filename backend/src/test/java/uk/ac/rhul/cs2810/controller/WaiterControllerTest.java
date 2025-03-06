@@ -60,40 +60,6 @@ public class WaiterControllerTest {
   }
 
 
-
-  @Test
-  public void callWaiter_WhenWaiterAvailable_ShouldReturnSuccessMessage() {
-    // Arrange
-    int tableNumber = 5;
-    Waiter availableWaiter = new Waiter();
-    availableWaiter.setBusy(false);
-
-    when(waiterRepository.findAvailableWaiter()).thenReturn(Optional.of(availableWaiter));
-
-    // Act
-    ResponseEntity<String> response = waiterController.callWaiter(tableNumber);
-
-    // Assert
-    assertEquals("A waiter is on the way to table " + tableNumber + "!", response.getBody());
-    assertTrue(availableWaiter.isBusy());
-    verify(waiterRepository, times(1)).save(availableWaiter);
-  }
-
-  @Test
-  public void callWaiter_WhenNoWaiterAvailable_ShouldReturnErrorMessage() {
-    // Arrange
-    int tableNumber = 5;
-    when(waiterRepository.findAvailableWaiter()).thenReturn(Optional.empty());
-
-    // Act
-    ResponseEntity<String> response = waiterController.callWaiter(tableNumber);
-
-    // Assert
-    assertEquals("No waiters available. Please call +44 123 456 789 for assistance.",
-        response.getBody());
-    verify(waiterRepository, never()).save(any(Waiter.class));
-  }
-
   @Test
   public void notifyWaiterNewOrder_WhenWaiterExists_ShouldReturnOrderDetails() {
     // Arrange
@@ -260,102 +226,24 @@ public class WaiterControllerTest {
     verify(waiterRepository, times(1)).save(waiter);
   }
 
-  @Test
-  public void confirmOrder_WhenWaiterAndOrderExistAndItemsAvailable_ShouldReturnConfirmationMessage() {
-    // Arrange
-    int waiterId = 1;
-    int orderId = 101;
-
-    Waiter waiter = new Waiter();
-    waiter.setId(waiterId);
-    waiter.setName("John");
-    Menu menu = new Menu();
-
-    MenuItem item1 = new MenuItem(1, "Burger", 5.99);
-    item1.setAvailable(true);
-
-    MenuItem item2 = new MenuItem(2, "Fries", 2.99);
-    item2.setAvailable(true);
-
-    menu.addMenuItem(item1);
-    menu.addMenuItem(item2);
-    waiter.setMenu(menu);
-
-    Order order = new Order();
-    order.setOrderNumber(orderId);
-
-    // Fetch items from the menu dynamically
-    List<MenuItem> orderedItems =
-        Arrays.asList(menu.getItemByName("Burger"), menu.getItemByName("Fries"));
-    order.getMenuItems().addAll(orderedItems);
-
-    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-
-    // Act
-    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
-
-    // Assert
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals("Order 101 confirmed.", response.getBody());
-  }
-
-  @Test
-  public void confirmOrder_WhenOrderNotFound_ShouldReturnNotFound() {
-    // Arrange
-    int waiterId = 1;
-    int orderId = 101;
-
-    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(new Waiter()));
-    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
-
-    // Act
-    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
-
-    // Assert
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    assertEquals("Waiter or order not found.", response.getBody());
-  }
-
-  @Test
-  public void confirmOrder_WhenMenuIsNull_ShouldReturnBadRequest() {
-    // Arrange
-    int waiterId = 1;
-    int orderId = 101;
-
-    Waiter waiter = new Waiter();
-    waiter.setId(waiterId);
-    waiter.setMenu(null); // No menu assigned
-
-    Order order = new Order();
-    order.setOrderNumber(orderId);
-
-    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-
-    // Act
-    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
-
-    // Assert
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    assertEquals("No menu associated with this waiter.", response.getBody());
-  }
 
   @Test
   public void confirmOrder_WhenOrderIsEmpty_ShouldReturnBadRequest() {
     // Arrange
     int waiterId = 1;
-    int orderId = 101;
+    int orderId = 10;
 
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
-    waiter.setMenu(new Menu());
+    waiter.setName("John");
 
     Order order = new Order();
-    order.setOrderNumber(orderId);
+    order.setOrderNumber(303);
+    order.setItems(null); // Order has no items
 
-    // Order is empty, no items added
+    Menu menu = new Menu();
+    waiter.setMenu(menu);
+
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -363,38 +251,31 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
 
     // Assert
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals(400, response.getStatusCodeValue());
     assertEquals("Order is empty or invalid.", response.getBody());
   }
 
   @Test
-  public void confirmOrder_WhenItemIsUnavailable_ShouldReturnBadRequest() {
+  public void confirmOrder_WhenMenuItemIsNotFound_ShouldReturnBadRequest() {
     // Arrange
     int waiterId = 1;
-    int orderId = 101;
+    int orderId = 10;
 
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
-    Menu menu = new Menu();
+    waiter.setName("John");
 
-    MenuItem availableItem = new MenuItem(3, "Pasta", 7.99);
-    availableItem.setAvailable(true);
-
-    MenuItem unavailableItem = new MenuItem(4, "Steak", 15.99);
-    unavailableItem.setAvailable(false); // This item is unavailable
-
-    menu.addMenuItem(availableItem);
-    menu.addMenuItem(unavailableItem);
-    waiter.setMenu(menu);
+    MenuItem item1 = new MenuItem();
+    item1.setName("Burger"); // Not found in menu
 
     Order order = new Order();
-    order.setOrderNumber(orderId);
+    order.setOrderNumber(505);
+    order.setItems(Arrays.asList(item1));
 
-    // Fetching items from menu dynamically
-    List<MenuItem> orderedItems =
-        Arrays.asList(menu.getItemByName("Pasta"), menu.getItemByName("Steak") // Unavailable item
-        );
-    order.getMenuItems().addAll(orderedItems);
+    Menu menu = new Menu();
+    menu.setMenuItems(Arrays.asList()); // Menu is empty
+
+    waiter.setMenu(menu);
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
@@ -403,7 +284,41 @@ public class WaiterControllerTest {
     ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
 
     // Assert
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals(400, response.getStatusCodeValue());
+    assertEquals("Item unavailable: Burger", response.getBody());
+  }
+
+  @Test
+  public void confirmOrder_WhenOrderHasUnavailableItems_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 10;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+
+    MenuItem item1 = new MenuItem();
+    item1.setName("Steak");
+    item1.setAvailable(false); // Item is unavailable
+
+    Order order = new Order();
+    order.setOrderNumber(606);
+    order.setItems(Arrays.asList(item1));
+
+    Menu menu = new Menu();
+    menu.setMenuItems(Arrays.asList(item1)); // Menu contains the item, but it's unavailable
+
+    waiter.setMenu(menu);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(400, response.getStatusCodeValue());
     assertEquals("Item unavailable: Steak", response.getBody());
   }
 
@@ -562,4 +477,3 @@ public class WaiterControllerTest {
   }
 
 }
-

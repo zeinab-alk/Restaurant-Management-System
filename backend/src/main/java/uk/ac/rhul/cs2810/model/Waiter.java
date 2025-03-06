@@ -21,9 +21,13 @@ public class Waiter {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "waiter_id")
   private int id;
 
+  @Column(name = "waiter_name")
   private String name;
+
+  @Column(name = "status")
   private String status;
 
   @ElementCollection
@@ -33,7 +37,7 @@ public class Waiter {
   private List<String> currentOrders;
 
   @ManyToOne
-  @JoinColumn(name = "menu_id") // Foreign key reference to the Menu table
+  @JoinColumn(name = "menu_id")
   private Menu menu;
 
   @Column(name = "is_busy")
@@ -47,10 +51,10 @@ public class Waiter {
   /**
    * Waiter constructor.
    *
-   * @param id as id.
-   * @param name as name.
-   * @param status as status.
-   * @param menu as the menu.
+   * @param id the waiter ID.
+   * @param name the waiter name.
+   * @param status the status of the waiter.
+   * @param menu the assigned menu.
    */
   public Waiter(int id, String name, String status, Menu menu) {
     this.id = id;
@@ -123,9 +127,8 @@ public class Waiter {
           "Waiter " + this.name + " has been notified of new order: " + orderId;
       System.out.println(notificationMessage);
 
-
       // Extracting ordered items
-      List<MenuItem> orderedItems = order.getMenuItems(); // Ensure Order has getMenuItems()
+      List<MenuItem> orderedItems = order.getMenuItems();
       StringBuilder orderDetails = new StringBuilder("Order " + order.getOrderNumber() + ": ");
 
       for (MenuItem item : orderedItems) {
@@ -176,36 +179,38 @@ public class Waiter {
     return true;
   }
 
-  // Overloaded confirmOrder without parameters
+  // Overloaded confirmOrder without parameters (just a stub)
   public void confirmOrder() {}
 
-  /**
-   * Checks if the waiter is busy.
-   *
-   * @return true if busy, false otherwise.
-   */
+  public void trackOrder() {
+    // Stub method for WaiterTest compilation
+    System.out.println("Tracking order...");
+  }
+
+  public void updateOrderStatus() {
+    // Stub method for WaiterTest compilation
+    System.out.println("Updating order status...");
+  }
+
+  public void cancelOrder() {
+    // Stub method for WaiterTest compilation
+    System.out.println("Cancelling order...");
+  }
+
+  public void notifyTeam() {
+    // Stub method for WaiterTest compilation
+    System.out.println("Notifying the team...");
+  }
+
+  // =============== GETTERS & SETTERS ===============
+
   public boolean isBusy() {
     return busy;
   }
 
-  /**
-   * Sets the busy status of the waiter.
-   *
-   * @param busy as busy status.
-   */
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
-
-  public void trackOrder() {}
-
-  public void updateOrderStatus() {}
-
-  public void cancelOrder() {}
-
-  public void notifyTeam() {}
-
-  // Getters and Setters
 
   public int getId() {
     return id;
