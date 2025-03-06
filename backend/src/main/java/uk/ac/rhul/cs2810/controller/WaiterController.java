@@ -228,6 +228,13 @@ public class WaiterController {
     return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
   }
 
+  /**
+   * Retrieves a list of orders that are ready for delivery.
+   *
+   * @return ResponseEntity containing a list of orders with status READY_FOR_DELIVERY. Returns a
+   *         404 status if no ready orders are found.
+   */
+
   @GetMapping("/ready-orders")
   public ResponseEntity<List<Order>> getReadyOrders() {
     List<Order> readyOrders = orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY);
