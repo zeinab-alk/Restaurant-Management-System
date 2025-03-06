@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
@@ -98,5 +99,48 @@ public class WaiterController {
       return ResponseEntity.status(404).body("Order with ID " + orderId + " not found.");
     }
   }
+
+  /**
+   * Confirms a customer order by checking if all items are available.
+   *
+   * @param waiterId The ID of the waiter handling the order.
+   * @param orderId The ID of the order to confirm.
+   * @return ResponseEntity with confirmation message.
+   */
+  @PostMapping("/{waiterId}/confirm-order/{orderId}")
+  public ResponseEntity<String> confirmOrder(@PathVariable int waiterId,
+      @PathVariable int orderId) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+    if (optionalWaiter.isEmpty() || optionalOrder.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Waiter or order not found.");
+    }
+
+    Waiter waiter = optionalWaiter.get();
+    Order order = optionalOrder.get();
+    Menu menu = waiter.getMenu();
+
+    if (menu == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("No menu associated with this waiter.");
+    }
+
+    List<MenuItem> orderedItems = order.getMenuItems();
+    if (orderedItems == null || orderedItems.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order is empty or invalid.");
+    }
+
+    for (MenuItem item : orderedItems) {
+      MenuItem menuItem = menu.getItemByName(item.getName());
+      if (menuItem == null || !menuItem.isAvailable()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Item unavailable: " + item.getName());
+      }
+    }
+
+    return ResponseEntity.ok("Order " + order.getOrderNumber() + " confirmed.");
+  }
 }
+
 

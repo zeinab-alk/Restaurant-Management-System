@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.Waiter;
@@ -210,5 +211,102 @@ public class WaiterControllerTest {
     assertEquals(expected, response.getBody());
     verify(waiterRepository, times(1)).save(waiter);
   }
-}
 
+
+  @Test
+  public void confirmOrder_WhenOrderIsEmpty_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 10;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+
+    Order order = new Order();
+    order.setOrderNumber(303);
+    order.setItems(null); // Order has no items
+
+    Menu menu = new Menu();
+    waiter.setMenu(menu);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(400, response.getStatusCodeValue());
+    assertEquals("Order is empty or invalid.", response.getBody());
+  }
+
+  @Test
+  public void confirmOrder_WhenMenuItemIsNotFound_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 10;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+
+    MenuItem item1 = new MenuItem();
+    item1.setName("Burger"); // Not found in menu
+
+    Order order = new Order();
+    order.setOrderNumber(505);
+    order.setItems(Arrays.asList(item1));
+
+    Menu menu = new Menu();
+    menu.setMenuItems(Arrays.asList()); // Menu is empty
+
+    waiter.setMenu(menu);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(400, response.getStatusCodeValue());
+    assertEquals("Item unavailable: Burger", response.getBody());
+  }
+
+  @Test
+  public void confirmOrder_WhenOrderHasUnavailableItems_ShouldReturnBadRequest() {
+    // Arrange
+    int waiterId = 1;
+    int orderId = 10;
+
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+
+    MenuItem item1 = new MenuItem();
+    item1.setName("Steak");
+    item1.setAvailable(false); // Item is unavailable
+
+    Order order = new Order();
+    order.setOrderNumber(606);
+    order.setItems(Arrays.asList(item1));
+
+    Menu menu = new Menu();
+    menu.setMenuItems(Arrays.asList(item1)); // Menu contains the item, but it's unavailable
+
+    waiter.setMenu(menu);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    // Act
+    ResponseEntity<String> response = waiterController.confirmOrder(waiterId, orderId);
+
+    // Assert
+    assertEquals(400, response.getStatusCodeValue());
+    assertEquals("Item unavailable: Steak", response.getBody());
+  }
+
+
+}
