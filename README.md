@@ -19,7 +19,6 @@ This document explains how to start the backend and frontend services for the Re
    ```
 3. Start the Spring Boot application:
    ```
-   # Or if you have Maven installed globally
    mvn spring-boot:run
    ```
 4. The backend server will start on http://localhost:8080
