@@ -30,7 +30,7 @@ public class MenuItem {
 
   private int popularity;
   private boolean availability;
-
+  
   private String imageUrl;
 
   /**
@@ -127,6 +127,14 @@ public class MenuItem {
 
   public void setPopularity(int popularity) {
     this.popularity = popularity;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
   }
 }
 
