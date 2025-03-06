@@ -31,6 +31,8 @@ public class MenuItem {
   private int popularity;
   private boolean availability;
 
+  private String imageUrl;
+
   /**
    * Checks if the item is available.
    *

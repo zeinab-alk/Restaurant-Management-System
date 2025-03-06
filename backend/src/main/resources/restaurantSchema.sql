@@ -66,6 +66,7 @@ CREATE TABLE menu_item (
   	dietary_restrictions dietary_restrictions[], 
   	allergy_information allergy_information[], 
   	popularity int CHECK (popularity >= 0.0 AND popularity <= 5.0) NOT NULL,
+  	image_url VARCHAR(255) NULL, --for the images
   	PRIMARY KEY (item_id), 
   	FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
 );
