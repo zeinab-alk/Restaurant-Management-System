@@ -28,12 +28,15 @@ import {
   Grid,
   ListItemText,
   Autocomplete,
-  Box
+  Box,
+  IconButton
 } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { styled } from '@mui/material/styles';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 const useContainerWidth = () => {
   const containerRef = useRef(null);
@@ -73,6 +76,7 @@ function Menu({ isEmbedded }) {
   const [caloriesRange, setCaloriesRange] = useState([0, 1000]);
   const [maxCaloriesValue, setMaxCaloriesValue] = useState(1000);
   const [sortBy, setSortBy] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   const FilterSlider = styled(Slider)({
     color: '#3a8589',
@@ -205,20 +209,27 @@ function Menu({ isEmbedded }) {
       // First sort by availability (available items first)
       const availabilitySort = Number(b.available) - Number(a.available);
       
-      // Then apply the selected sort criteria
-      if(sortBy === 'Price (Low-High)') {
-        return availabilitySort || a.price - b.price;
+      // If items have different availability, that takes precedence
+      if (availabilitySort !== 0) return availabilitySort;
+      
+      // Then apply the selected sort criteria with direction
+      let comparison = 0;
+      
+      if(sortBy === 'Alphabetical') {
+        comparison = a.name.localeCompare(b.name);
       }
-      if(sortBy === 'Price (High-Low)') {
-        return availabilitySort || b.price - a.price;
+      else if(sortBy === 'Price') {
+        comparison = a.price - b.price;
       }
-      if(sortBy === 'Popularity') {
-        return availabilitySort || b.popularity - a.popularity;
+      else if(sortBy === 'Popularity') {
+        comparison = b.popularity - a.popularity;
       }
-      if(sortBy === 'Calories') {
-        return availabilitySort || a.caloricInfo - b.caloricInfo;
+      else if(sortBy === 'Calories') {
+        comparison = a.caloricInfo - b.caloricInfo;
       }
-      return availabilitySort;
+      
+      // Apply sorting direction
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
 
   const priceBounds = menuItems.reduce(
@@ -493,26 +504,55 @@ function Menu({ isEmbedded }) {
             boxShadow: 1
           }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Sorting & Filters
+              Sort
             </Typography>
             
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                label="Sort By"
-                size="small"
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  label="Sort By"
+                  size="small"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="Alphabetical">Alphabetical</MenuItem>
+                  <MenuItem value="Price">Price</MenuItem>
+                  <MenuItem value="Popularity">Popularity</MenuItem>
+                  <MenuItem value="Calories">Calories</MenuItem>
+                </Select>
+              </FormControl>
+              <IconButton 
+                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                color="primary"
+                sx={{ 
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  p: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'background.paper',
+                  minWidth: '80px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 0.5
+                }}
               >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value="Price (Low-High)">Price (Low-High)</MenuItem>
-                <MenuItem value="Price (High-Low)">Price (High-Low)</MenuItem>
-                <MenuItem value="Popularity">Popularity</MenuItem>
-                <MenuItem value="Calories">Calories</MenuItem>
-              </Select>
-            </FormControl>
+                {sortDirection === 'asc' ? (
+                  <>
+                    <ArrowUpwardIcon fontSize="small" />
+                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>ASC</Typography>
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownwardIcon fontSize="small" />
+                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>DESC</Typography>
+                  </>
+                )}
+              </IconButton>
+            </Box>
           </Box>
 
           {/* Dietary Restrictions */}
