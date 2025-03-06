@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -26,33 +25,11 @@ import uk.ac.rhul.cs2810.repository.WaiterRepository;
 @CrossOrigin(origins = "http://localhost:5173")
 public class WaiterController {
 
-  private static final String CONTACT_NUMBER = "+44 123 456 789";
-
   @Autowired
   private WaiterRepository waiterRepository;
 
   @Autowired
-  private OrderRepository orderRepository; // Inject order repo
-
-  /**
-   * Calls a waiter for a specific table.
-   *
-   * @param tableNumber The table number requesting a waiter.
-   * @return ResponseEntity with the status message.
-   */
-  @PostMapping("/call-waiter")
-  public ResponseEntity<String> callWaiter(@RequestParam int tableNumber) {
-    Optional<Waiter> availableWaiter = waiterRepository.findAvailableWaiter();
-
-    if (availableWaiter.isPresent()) {
-      Waiter waiter = availableWaiter.get();
-      waiter.setBusy(true);
-      waiterRepository.save(waiter);
-      return ResponseEntity.ok("A waiter is on the way to table " + tableNumber + "!");
-    }
-    return ResponseEntity
-        .ok("No waiters available. Please call " + CONTACT_NUMBER + " for assistance.");
-  }
+  private OrderRepository orderRepository;
 
   /**
    * Notifies the waiter of a new order.
@@ -121,5 +98,5 @@ public class WaiterController {
       return ResponseEntity.status(404).body("Order with ID " + orderId + " not found.");
     }
   }
-
 }
+
