@@ -54,11 +54,8 @@ public class WaiterControllerTest {
 
   @BeforeEach
   public void setUp() {
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     mockMvc = MockMvcBuilders.standaloneSetup(waiterController).build();
   }
-
 
   @Test
   public void notifyWaiterNewOrder_WhenWaiterExists_ShouldReturnOrderDetails() {
