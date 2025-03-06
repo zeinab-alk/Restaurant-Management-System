@@ -17,3 +17,5 @@ VALUES
 (1, 'Dairy'),
 (2, 'Dairy'),
 (3, 'Gluten'); 
+INSERT INTO waiters (waiter_name, email, status, is_busy) 
+VALUES ('Lana Shaheen', 'Lana@gmail.com', 'Available', false);
