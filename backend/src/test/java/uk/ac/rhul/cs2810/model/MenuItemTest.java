@@ -64,4 +64,44 @@ public class MenuItemTest {
     // Verify that the availability is false
     assertFalse(item.isAvailable(), "The availability should be false.");
   }
+
+  @Test
+  void testSetImageUrl() {
+    // Set a value for imageUrl
+    String expectedImageUrl = "https://example.com/images/taco_deluxe.jpg";
+    item.setImageUrl(expectedImageUrl);
+
+    // Verify that the imageUrl has been correctly set
+    assertEquals(expectedImageUrl, item.getImageUrl(), "The imageUrl should be correctly set.");
+  }
+
+  @Test
+  void testGetImageUrl() {
+    // Set a value for imageUrl
+    String expectedImageUrl = "https://example.com/images/taco_deluxe.jpg";
+    item.setImageUrl(expectedImageUrl);
+
+    // Verify that getImageUrl() returns the correct value
+    assertEquals(expectedImageUrl, item.getImageUrl(),
+        "The getImageUrl method should return the correct image URL.");
+  }
+
+  @Test
+  void testSetNullImageUrl() {
+    // Set imageUrl to null
+    item.setImageUrl(null);
+
+    // Verify that the imageUrl is null
+    assertEquals(null, item.getImageUrl(), "The imageUrl should be null.");
+  }
+
+  @Test
+  void testSetEmptyImageUrl() {
+    // Set imageUrl to an empty string
+    item.setImageUrl("");
+
+    // Verify that the imageUrl is an empty string
+    assertEquals("", item.getImageUrl(), "The imageUrl should be an empty string.");
+  }
+
 }

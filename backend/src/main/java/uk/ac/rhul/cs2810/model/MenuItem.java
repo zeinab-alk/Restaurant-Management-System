@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +33,9 @@ public class MenuItem {
 
   private int popularity;
   private boolean availability;
+
+  @Column(name = "image_url", nullable = true) // Allows NULL values and ensures correct mapping
+  private String imageUrl;
 
   public boolean isAvailable() {
     return availability;
@@ -118,6 +122,14 @@ public class MenuItem {
 
   public void setPopularity(int popularity) {
     this.popularity = popularity;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
   }
 }
 
