@@ -350,17 +350,58 @@ const WaiterPage = () => {
         Waiter Dashboard
       </Typography>
 
-      <Stack spacing={2} direction="column">
-        <Button component={RouterLink} to="/waiter/add-item" variant="contained" color="primary" size="large">
-          Add New Menu Item
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: 2, 
+        mb: 4,
+        '& .MuiButton-root': {
+          minWidth: 0,
+          width: 150,
+          height: 150,
+          p: 1.5,
+          borderRadius: 2,
+          flexDirection: 'column'
+        }
+      }}>
+        <Button 
+          component={RouterLink} 
+          to="/waiter/add-item" 
+          variant="contained" 
+          color="primary"
+          sx={{ boxShadow: 3 }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>Add</Typography>
+          <Typography variant="caption">New Item</Typography>
         </Button>
-        <Button component={RouterLink} to="/waiter/edit-items" variant="contained" color="secondary" size="large">
-          Change Menu Item
+        
+        <Button 
+          component={RouterLink} 
+          to="/waiter/edit-items" 
+          variant="contained" 
+          color="secondary"
+          sx={{ boxShadow: 3 }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>Edit</Typography>
+          <Typography variant="caption">Menu Items</Typography>
         </Button>
-      </Stack>
+      </Box>
 
       {orderNotification && (
-        <Alert severity="info" sx={{ mt: 2 }}>
+        <Alert
+          severity="info"
+          sx={{ mb: 3, '& .MuiAlert-action': { pt: 0.5 } }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setOrderNotification(null)}
+              sx={{ textTransform: 'none' }}
+            >
+              DISMISS
+            </Button>
+          }
+        >
           {orderNotification}
         </Alert>
       )}

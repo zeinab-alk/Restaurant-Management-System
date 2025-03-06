@@ -282,6 +282,97 @@ function Menu() {
     );
   };
 
+  const filteredMenuItems = menuItems
+    .filter(item => {
+      const price = item.price;
+      const meetsPrice = price >= priceRange[0] && price <= priceRange[1];
+      const hasDietary = selectedDietary.every(d => item.dietaryRestrictions.includes(d));
+      const excludesAllergens = selectedAllergens.length === 0 || 
+                                !selectedAllergens.some(a => item.allergenInformation.includes(a));
+      return hasDietary && excludesAllergens && meetsPrice;
+    })
+    .sort((a, b) => {
+      // First sort by availability (available items first)
+      const availabilitySort = Number(b.available) - Number(a.available);
+      
+      // Then apply the selected sort criteria
+      if(sortBy === 'Price (Low-High)') {
+        return availabilitySort || a.price - b.price;
+      }
+      if(sortBy === 'Price (High-Low)') {
+        return availabilitySort || b.price - a.price;
+      }
+      if(sortBy === 'Popularity') {
+        return availabilitySort || b.popularity - a.popularity;
+      }
+      if(sortBy === 'Calories') {
+        return availabilitySort || a.caloricInfo - b.caloricInfo;
+      }
+      return availabilitySort;
+    });
+
+  const priceBounds = menuItems.reduce(
+    (acc, item) => [Math.min(acc[0], item.price), Math.max(acc[1], item.price)],
+    [Infinity, -Infinity]
+  );
+
+  const renderDynamicTags = (containerWidth) => (value, getTagProps) => {
+    const CHIP_WIDTH = 90; // Average width per tag
+    const COUNTER_WIDTH = 50; // Width reserved for "+X" counter
+    const availableWidth = containerWidth - COUNTER_WIDTH;
+    
+    // Calculate max visible tags that can fit
+    const maxVisible = Math.max(1, Math.floor(availableWidth / CHIP_WIDTH));
+    const visibleTags = value.slice(0, maxVisible);
+    const remainingTags = value.length - maxVisible;
+
+    return (
+      <div style={{ 
+        display: 'flex',
+        flexWrap: 'nowrap',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '2px 0',
+        maxWidth: '100%',
+        overflow: 'hidden',
+        height: 32
+      }}>
+        {visibleTags.map((option, index) => (
+          <Chip
+            {...getTagProps({ index })}
+            key={option}
+            label={option}
+            size="small"
+            sx={{ 
+              maxWidth: CHIP_WIDTH,
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              '& .MuiChip-label': { 
+                padding: '0 6px',
+                whiteSpace: 'nowrap'
+              }
+            }}
+          />
+        ))}
+        {remainingTags > 0 && (
+          <Chip
+            label={`+${remainingTags}`}
+            size="small"
+            sx={{ 
+              bgcolor: 'warning.light',
+              color: 'warning.contrastText',
+              fontWeight: 'bold',
+              px: 0.5,
+              flexShrink: 0,
+              minWidth: COUNTER_WIDTH
+            }}
+            title={value.slice(maxVisible).join(', ')}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <Container>
       {/* Back to Home Button */}
