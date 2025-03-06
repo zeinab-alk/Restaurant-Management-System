@@ -55,6 +55,14 @@ public class Order {
   private String status;
 
   /**
+   * Order status options.
+   */
+  public static final String STATUS_PENDING = "Pending";
+  public static final String STATUS_PREPARING = "Preparing";
+  public static final String STATUS_READY = "Ready";
+  public static final String STATUS_DELIVERED = "Delivered";
+
+  /**
    * Constructs an Order with the given parameters.
    *
    * @param orderNumber The unique order number.
@@ -122,6 +130,13 @@ public class Order {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  /**
+   * Marks this order as Ready.
+   */
+  public void markAsReady() {
+    this.status = STATUS_READY;
   }
 
   /**
