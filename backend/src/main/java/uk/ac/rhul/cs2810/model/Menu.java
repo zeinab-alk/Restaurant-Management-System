@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,89 +10,73 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simple menu class that represents a restaurant menu.
- * This class is mapped to a database table using JPA annotations.
+ * Represents a restaurant menu.
  */
-@Entity  // Marks this class as a JPA entity to be managed by the persistence provider
+@Entity
 public class Menu {
 
-  @Id  // Marks this field as the primary key
-  @GeneratedValue(strategy = GenerationType.IDENTITY)  // Configures auto-generation of IDs
-  private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "menu_id")
   private Integer menuId;
-
-  /**
-   * List of menu items associated with this menu.
-   * Uses a one-to-many relationship as one menu can have multiple items.
-   */
-  @OneToMany  // Establishes one-to-many relationship with MenuItem entities
-  private List<MenuItem> menuItems;
 
   private String name;
 
+  @OneToMany
+  private List<MenuItem> menuItems;
+
   /**
-   * Default constructor that initializes an empty list of menu items.
+   * Default constructor that initialises the menu items list.
    */
   public Menu() {
     this.menuItems = new ArrayList<>();
   }
 
   /**
-   * Constructor for creating a menu with an ID and name.
+   * Constructs a menu with a specified ID and name.
    *
-   * @param menuId The unique ID of the menu.
-   * @param name The name of the menu.
+   * @param menuId the menu ID.
+   * @param name the menu name.
    */
   public Menu(int menuId, String name) {
-    this.id = menuId;
+    this.menuId = menuId;
+    this.name = name;
+    this.menuItems = new ArrayList<>();
+  }
+
+  public Integer getMenuId() {
+    return menuId;
+  }
+
+  public void setMenuId(Integer menuId) {
+    this.menuId = menuId;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
     this.name = name;
   }
 
-  /**
-   * Gets the menu's unique identifier.
-   *
-   * @return The menu's ID
-   */
-  public Integer getId() {
-    return id;
-  }
-
-  /**
-   * Sets the menu's unique identifier.
-   *
-   * @param id The ID to set
-   */
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  /**
-   * Gets the list of menu items.
-   *
-   * @return List of menu items
-   */
   public List<MenuItem> getMenuItems() {
     return menuItems;
   }
 
-  /**
-   * Sets the list of menu items.
-   *
-   * @param menuItems The list of menu items to set
-   */
   public void setMenuItems(List<MenuItem> menuItems) {
     this.menuItems = menuItems;
   }
 
   /**
-   * Finding the item by its name.
+   * Retrieves a menu item by its name.
    *
-   * @param name as the item name
-   * @return the menu item
+   * @param itemName the name of the menu item.
+   * @return the MenuItem if found, otherwise null.
    */
-  public MenuItem getItemByName(String name) {
+  public MenuItem getItemByName(String itemName) {
     for (MenuItem item : menuItems) {
-      if (item.getName().equalsIgnoreCase(name)) {
+      if (item.getName().equalsIgnoreCase(itemName)) {
         return item;
       }
     }
@@ -99,11 +84,12 @@ public class Menu {
   }
 
   /**
-   * Adds a new menu item to the menu.
+   * Adds a new item to the menu.
    *
-   * @param item The menu item to add
+   * @param item the menu item to add.
    */
   public void addMenuItem(MenuItem item) {
-    menuItems.add(item);
+    this.menuItems.add(item);
   }
 }
+

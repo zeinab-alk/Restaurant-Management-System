@@ -9,11 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a single item on the restaurant's menu.
- * This class holds essential information such as ID, name, price, calorie count, dietary
- * restrictions, allergen details, and popularity.
+ * Represents an item on the restaurant menu.
  */
-@Entity  // Marks this class as a JPA entity
+@Entity
 public class MenuItem {
 
   @Id
@@ -24,26 +22,35 @@ public class MenuItem {
   private double price;
   private int caloricInfo;
 
-  @ElementCollection  // For collections of simple types
+  @ElementCollection
   private List<String> dietaryRestrictions;
 
-  @ElementCollection  // For collections of simple types
+  @ElementCollection
   private List<String> allergenInformation;
 
   private int popularity;
   private boolean availability;
 
+  /**
+   * Checks if the item is available.
+   *
+   * @return true if available, false otherwise.
+   */
   public boolean isAvailable() {
     return availability;
   }
 
+  /**
+   * Sets the availability of the menu item.
+   *
+   * @param availability the new availability status.
+   */
   public void setAvailable(boolean availability) {
     this.availability = availability;
   }
 
   /**
-   * Default constructor that initializes dietaryRestrictions and allergenInformation as empty
-   * lists.
+   * Default constructor initializing empty lists.
    */
   public MenuItem() {
     this.dietaryRestrictions = new ArrayList<>();
@@ -51,11 +58,11 @@ public class MenuItem {
   }
 
   /**
-   * Constructor for creating a MenuItem with basic details.
+   * Constructs a MenuItem with basic details.
    *
-   * @param itemId The unique ID of the menu item.
-   * @param name The name of the menu item.
-   * @param price The price of the menu item.
+   * @param itemId the item ID.
+   * @param name the item name.
+   * @param price the item price.
    */
   public MenuItem(int itemId, String name, double price) {
     this();
