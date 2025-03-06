@@ -112,6 +112,11 @@ public class Waiter {
    * @param availability as availability status.
    */
   public void changeMenu(String itemName, boolean availability) {
+    if (itemName == null) {
+      System.out.println("Item name cannot be null.");
+      return;
+    }
+    
     if (menu != null) {
       MenuItem item = menu.getItemByName(itemName);
       if (item != null) {
