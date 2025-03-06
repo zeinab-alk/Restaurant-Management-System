@@ -16,6 +16,7 @@ CREATE TABLE menu_item (
                            allergy_information VARCHAR(50),
                            popularity int CHECK (popularity >= 0.0 AND popularity <= 5.0) NOT NULL,
                            availability BOOLEAN DEFAULT true,
+                           image_url VARCHAR(255) NULL, --allows the image to be NULL since I will be URL loading
                            PRIMARY KEY (item_id),
                            FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
 );
