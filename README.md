@@ -53,7 +53,7 @@ If you encounter any issues:
 1. Make sure both backend and frontend dependencies are installed:
    ```
    # For backend
-   cd backend && ./mvnw clean install
+   cd backend && mvn clean install
    
    # For frontend
    cd frontend && npm install
