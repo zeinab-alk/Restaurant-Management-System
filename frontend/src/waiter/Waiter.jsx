@@ -1,27 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { 
-  Button, 
-  Container, 
-  Stack, 
-  Typography, 
-  Alert, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableRow, 
-  TableContainer, 
-  TableHead, 
-  Paper, 
-  Box, 
-  Chip, 
-  Select, 
-  MenuItem, 
-  FormControl, 
-  Snackbar,
-  useTheme,
-  Grid
-} from "@mui/material";
+import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip } from "@mui/material";
 import axios from "axios";
 import { API_ENDPOINT } from "../config";
 import Collapse from '@mui/material/Collapse';
@@ -30,41 +9,23 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const WaiterPage = () => {
-  const theme = useTheme();
   const [orderNotification, setOrderNotification] = useState(null);
   const [helpRequests, setHelpRequests] = useState([]);
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
-  const [newOrderAlert, setNewOrderAlert] = useState(false);
-
-  // Define available order statuses
-  const orderStatuses = [
-    'PENDING', 
-    'IN_PROGRESS', 
-    'READY_FOR_DELIVERY', 
-    'COMPLETED', 
-    'DELIVERED', 
-    'PROCESSING', 
-    'CANCELLED'
-  ];
 
   // Poll for latest order every 5 seconds
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/orders/latest`);
-        if (response.data && response.data.orderNumber !== lastOrderId) {
-          const { orderNumber, menuItems } = response.data;
-          // Get a list of item names
+        if (response.data && response.data.id !== lastOrderId) {
+          const { orderNumber, menuItems, id } = response.data;
           const orderDetails = menuItems.map(item => item.name).join(", ");
           setOrderNotification(`New Order #${orderNumber}: ${orderDetails}`);
-          setLastOrderId(orderNumber);
-          setNewOrderAlert(true);
-          
-          // Auto-refresh orders when a new one arrives
-          fetchOrders();
+          setLastOrderId(id);
         }
       } catch (error) {
         console.error("Error fetching latest order:", error);
@@ -78,7 +39,10 @@ const WaiterPage = () => {
   const fetchOrders = () => {
     axios.get(`${API_ENDPOINT}/api/orders`)
       .then(res => {
-        setOrders(res.data);
+        const filtered = res.data.filter(order => 
+          order.status !== 'Delivered'
+        );
+        setOrders(filtered);
       })
       .catch(err => {
         setError('Failed to load orders');
@@ -86,62 +50,23 @@ const WaiterPage = () => {
       });
   };
 
-  // Fetch orders on component mount and every 30 seconds
-  useEffect(() => {
-    fetchOrders();
-    
-    // Set up interval to refresh orders every 30 seconds
-    const refreshInterval = setInterval(fetchOrders, 30000);
-    
-    // Clean up interval on component unmount
-    return () => clearInterval(refreshInterval);
-  }, []);
+  React.useEffect(fetchOrders, []);
 
-  // Enhanced status update handler
-  const updateOrderStatus = (orderId, newStatus) => {
-    console.log(`Attempting to update order ${orderId} to status: ${newStatus}`);
-    
-    // Format the payload exactly as expected by the backend
-    const payload = { 
-      status: newStatus.trim().toUpperCase() // Ensure it matches the Java enum format
-    };
-    
-    console.log('Sending payload:', payload);
-    
-    // Add explicit headers and prevent browsers from caching
-    axios.post(`${API_ENDPOINT}/api/waiters/orders/${orderId}/update-status`, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    })
-      .then((response) => {
-        console.log('Update successful:', response);
-        fetchOrders(); // Refresh list
-        setOrderNotification(`Order #${orderId} updated to ${newStatus}`);
-      })
-      .catch((error) => {
-        console.error('Status update error:', error);
-        setError(`Failed to update order status: ${error.message}`);
-      });
-  };
-
-  // Mark an order as delivered
+  // Enhanced delivery handler
   const markDelivered = (orderId) => {
-    updateOrderStatus(orderId, 'DELIVERED');
+    axios.post(`${API_ENDPOINT}/api/orders/${orderId}/mark-delivered`)
+      .then(() => {
+        fetchOrders(); // Refresh list
+        setOrderNotification(`Order ${orderId} marked delivered`);
+      })
+      .catch(err => setError('Failed to update order status'));
   };
 
   const toggleExpansion = (orderId) => {
     setExpandedOrders(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(orderId)) {
-        newSet.delete(orderId);
-      } else {
-        newSet.add(orderId);
-      }
-      return newSet;
+      const next = new Set(prev);
+      next.has(orderId) ? next.delete(orderId) : next.add(orderId);
+      return next;
     });
   };
   useEffect(() => {
@@ -192,102 +117,72 @@ const WaiterPage = () => {
   };
 
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'PENDING':
-        return 'warning';
-      case 'IN_PROGRESS':
-      case 'PROCESSING':
-        return 'info';
-      case 'READY_FOR_DELIVERY':
-        return 'primary';
-      case 'COMPLETED':
-      case 'DELIVERED':
-        return 'success';
-      case 'CANCELLED':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
-      {/* Navigation and Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
-          mb: 3
-        }}>
-          <Button 
-            component={RouterLink} 
-            to="/" 
-            variant="contained" 
-            color="success"
-            startIcon={<span role="img" aria-label="home">🏠</span>}
-            sx={{ fontWeight: 'medium' }}
-          >
-            Back to Home
-          </Button>
-          
-          <Button 
-            component={RouterLink} 
-            to="/menuitem/change" 
-            variant="contained" 
-            color="primary"
-            startIcon={<span role="img" aria-label="edit">✏️</span>}
-            sx={{ fontWeight: 'medium' }}
-          >
-            Edit Menu
-          </Button>
-          
-          <Button 
-            component={RouterLink} 
-            to="/menuitem/add" 
-            variant="contained" 
-            color="secondary"
-            startIcon={<span role="img" aria-label="add">➕</span>}
-            sx={{ fontWeight: 'medium' }}
-          >
-            Add Menu Item
-          </Button>
-        </Box>
-        
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom 
-          align="center" 
-          sx={{ 
-            mb: 3,
-            fontWeight: 'bold',
-            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' }
-          }}
+    <Container sx={{ py: 4 }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+        <Button component={RouterLink} to="/" variant="contained" color="success">
+          Back to Home
+        </Button>
+        <Button component={RouterLink} to="/menu" variant="contained" color="primary">
+          View Menu
+        </Button>
+      </Stack>
+
+      <Typography variant="h3" component="h1" gutterBottom>
+        Waiter Dashboard
+      </Typography>
+
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: 2, 
+        mb: 4,
+        '& .MuiButton-root': {
+          minWidth: 0,
+          width: 150,
+          height: 150,
+          p: 1.5,
+          borderRadius: 2,
+          flexDirection: 'column'
+        }
+      }}>
+        <Button 
+          component={RouterLink} 
+          to="/waiter/add-item" 
+          variant="contained" 
+          color="primary"
+          sx={{ boxShadow: 3 }}
         >
-          Waiter Dashboard
-        </Typography>
-      </Box>
-      
-      {/* Notifications */}
-      <Box sx={{ mb: 4 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>Add</Typography>
+          <Typography variant="caption">New Item</Typography>
+        </Button>
         
-        {orderNotification && (
-          <Snackbar
-            open={newOrderAlert}
-            autoHideDuration={6000}
-            onClose={() => setNewOrderAlert(false)}
-          >
-            <Alert 
-              onClose={() => setNewOrderAlert(false)} 
-              severity="info" 
-              variant="filled"
+        <Button 
+          component={RouterLink} 
+          to="/waiter/edit-items" 
+          variant="contained" 
+          color="secondary"
+          sx={{ boxShadow: 3 }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>Edit</Typography>
+          <Typography variant="caption">Menu Items</Typography>
+        </Button>
+      </Box>
+
+      {/* Add error display */}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {/* Custom Action Alert */}
+      {orderNotification && (
+        <Alert
+          severity="info"
+          sx={{ mb: 3, '& .MuiAlert-action': { pt: 0.5 } }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setOrderNotification(null)}
+              sx={{ textTransform: 'none' }}
             >
               DISMISS
             </Button>
@@ -421,22 +316,7 @@ const WaiterPage = () => {
         justifyContent="center" 
         sx={{ mt: 3, color: 'text.secondary' }}
       >
-        Current Orders
-      </Typography>
-      
-      {orders.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 1, mb: 4 }} elevation={2}>
-          <Typography variant="h6" color="text.secondary">
-            No orders found
-          </Typography>
-        </Paper>
-      ) : (
-        <Paper sx={{ 
-          overflow: 'hidden',
-          mb: 4,
-          boxShadow: 2,
-          borderRadius: 1
-        }} elevation={3}>
+        <Box display="flex" alignItems="center">
           <Box sx={{ 
             width: 12, 
             height: 12, 
@@ -470,58 +350,17 @@ const WaiterPage = () => {
         Waiter Dashboard
       </Typography>
 
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: 2, 
-        mb: 4,
-        '& .MuiButton-root': {
-          minWidth: 0,
-          width: 150,
-          height: 150,
-          p: 1.5,
-          borderRadius: 2,
-          flexDirection: 'column'
-        }
-      }}>
-        <Button 
-          component={RouterLink} 
-          to="/waiter/add-item" 
-          variant="contained" 
-          color="primary"
-          sx={{ boxShadow: 3 }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Add</Typography>
-          <Typography variant="caption">New Item</Typography>
+      <Stack spacing={2} direction="column">
+        <Button component={RouterLink} to="/waiter/add-item" variant="contained" color="primary" size="large">
+          Add New Menu Item
         </Button>
-        
-        <Button 
-          component={RouterLink} 
-          to="/waiter/edit-items" 
-          variant="contained" 
-          color="secondary"
-          sx={{ boxShadow: 3 }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Edit</Typography>
-          <Typography variant="caption">Menu Items</Typography>
+        <Button component={RouterLink} to="/waiter/edit-items" variant="contained" color="secondary" size="large">
+          Change Menu Item
         </Button>
-      </Box>
+      </Stack>
 
       {orderNotification && (
-        <Alert
-          severity="info"
-          sx={{ mb: 3, '& .MuiAlert-action': { pt: 0.5 } }}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => setOrderNotification(null)}
-              sx={{ textTransform: 'none' }}
-            >
-              DISMISS
-            </Button>
-          }
-        >
+        <Alert severity="info" sx={{ mt: 2 }}>
           {orderNotification}
         </Alert>
       )}
