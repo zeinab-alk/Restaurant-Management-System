@@ -6,99 +6,74 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 
 /**
- * Represents a request for assistance from a client to a waiter.
+ * Represents a help request from a customer.
  */
 @Entity
-@Table(name = "help_requests")
 public class HelpRequest {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
   private int tableNumber;
-  private boolean resolved = false;
-  private LocalDateTime requestTime;
+  private boolean resolved;
 
   @ManyToOne
   @JoinColumn(name = "waiter_id")
-  private Waiter assignedWaiter;
+  private Waiter waiter;
 
   /**
    * Default constructor.
-   * Initializes the requestTime to the current time.
    */
-  public HelpRequest() {
-    this.requestTime = LocalDateTime.now();
-  }
+  public HelpRequest() {}
 
   /**
-   * Constructs a new HelpRequest for a specific table and assigned waiter.
+   * Constructs a HelpRequest.
    *
-   * @param tableNumber    the number of the table
-   * @param assignedWaiter the waiter assigned to this request
+   * @param tableNumber the table number requesting help.
+   * @param waiter the assigned waiter.
    */
-  public HelpRequest(int tableNumber, Waiter assignedWaiter) {
+  public HelpRequest(int tableNumber, Waiter waiter) {
     this.tableNumber = tableNumber;
-    this.assignedWaiter = assignedWaiter;
-    this.requestTime = LocalDateTime.now();
+    this.waiter = waiter;
+    this.resolved = false;
   }
 
-  /**
-   * Returns the unique identifier of the help request.
-   *
-   * @return the request ID
-   */
+
   public Long getId() {
     return id;
   }
 
-  /**
-   * Returns the table number associated with the help request.
-   *
-   * @return the table number
-   */
+  public void setId(Long id) {
+    this.id = id;
+  }
+
   public int getTableNumber() {
     return tableNumber;
   }
 
-  /**
-   * Sets whether the help request is resolved.
-   *
-   * @param resolved true if resolved, false otherwise
-   */
-  public void setResolved(boolean resolved) {
-    this.resolved = resolved;
+  public void setTableNumber(int tableNumber) {
+    this.tableNumber = tableNumber;
   }
 
   /**
-   * Checks if the help request is resolved.
-   *
-   * @return true if resolved, false otherwise
+   * Marks the request as resolved.
    */
   public boolean isResolved() {
     return resolved;
   }
 
-  /**
-   * Returns the time when the help request was made.
-   *
-   * @return the request time
-   */
-  public LocalDateTime getRequestTime() {
-    return requestTime;
+  public void setResolved(boolean resolved) {
+    this.resolved = resolved;
   }
 
-  /**
-   * Returns the assigned waiter for this help request.
-   *
-   * @return the assigned waiter
-   */
-  public Waiter getAssignedWaiter() {
-    return assignedWaiter;
+  public Waiter getWaiter() {
+    return waiter;
+  }
+
+  public void setWaiter(Waiter waiter) {
+    this.waiter = waiter;
   }
 }
+
