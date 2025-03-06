@@ -19,10 +19,6 @@ This document explains how to start the backend and frontend services for the Re
    ```
 3. Start the Spring Boot application:
    ```
-   # Using Maven wrapper (recommended)
-   ./mvnw spring-boot:run   # On Linux/macOS
-   mvnw.cmd spring-boot:run # On Windows
-   
    # Or if you have Maven installed globally
    mvn spring-boot:run
    ```
