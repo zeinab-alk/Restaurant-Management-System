@@ -54,7 +54,7 @@ const useContainerWidth = () => {
   return [containerRef, width];
 };
 
-function Menu() {
+function Menu({ isEmbedded }) {
   const [menuItems, setMenuItems] = useState([]);
   const [error, setError] = useState();
   const theme = useTheme();
@@ -70,9 +70,11 @@ function Menu() {
   const [selectedAllergens, setSelectedAllergens] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [maxPriceValue, setMaxPriceValue] = useState(100);
+  const [caloriesRange, setCaloriesRange] = useState([0, 1000]);
+  const [maxCaloriesValue, setMaxCaloriesValue] = useState(1000);
   const [sortBy, setSortBy] = useState('');
 
-  const PriceSlider = styled(Slider)({
+  const FilterSlider = styled(Slider)({
     color: '#3a8589',
     height: 8,
     '& .MuiSlider-thumb': {
@@ -133,6 +135,10 @@ function Menu() {
       const maxPrice = Math.ceil(Math.max(...menuItems.map(item => item.price)));
       setMaxPriceValue(maxPrice);
       setPriceRange([0, maxPrice]);
+      
+      const maxCalories = Math.ceil(Math.max(...menuItems.map(item => item.caloricInfo)));
+      setMaxCaloriesValue(maxCalories);
+      setCaloriesRange([0, maxCalories]);
     }
   }, [menuItems]);
 
@@ -187,11 +193,13 @@ function Menu() {
   const filteredMenuItems = menuItems
     .filter(item => {
       const price = item.price;
+      const calories = item.caloricInfo;
       const meetsPrice = price >= priceRange[0] && price <= priceRange[1];
+      const meetsCalories = calories >= caloriesRange[0] && calories <= caloriesRange[1];
       const hasDietary = selectedDietary.every(d => item.dietaryRestrictions.includes(d));
       const excludesAllergens = selectedAllergens.length === 0 || 
                                 !selectedAllergens.some(a => item.allergenInformation.includes(a));
-      return hasDietary && excludesAllergens && meetsPrice;
+      return hasDietary && excludesAllergens && meetsPrice && meetsCalories;
     })
     .sort((a, b) => {
       // First sort by availability (available items first)
@@ -276,261 +284,510 @@ function Menu() {
   };
 
   return (
-    <Container>
-      {/* Back to Home Button */}
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <Button component={RouterLink} to="/" variant="contained" color="success">
-          Back to Home
-        </Button>
-      </Stack>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Only show navigation buttons when not embedded */}
+      {!isEmbedded && (
+        <>
+          {/* Navigation Buttons */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            mb: 4
+          }}>
+            <Button 
+              component={RouterLink} 
+              to="/" 
+              variant="contained" 
+              color="success" 
+              startIcon={<span role="img" aria-label="home">🏠</span>}
+              sx={{ fontWeight: 'medium' }}
+            >
+              Back to Home
+            </Button>
 
-      {/* Request Waiter Button */}
-      {showWaiterButton && (
-        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-          <Button variant="contained" color="primary" onClick={callWaiter}>
-            Request Waiter
-          </Button>
-        </Stack>
+            {showWaiterButton && (
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={callWaiter}
+                startIcon={<span role="img" aria-label="waiter">👨‍🍳</span>}
+                sx={{ fontWeight: 'medium' }}
+              >
+                Request Waiter
+              </Button>
+            )}
+          </Box>
+
+          {/* Notifications */}
+          <Box sx={{ mb: 4 }}>
+            {waiterMessage && <Alert severity="success" sx={{ mb: 2 }}>{waiterMessage}</Alert>}
+            {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
+          </Box>
+        </>
       )}
 
-      {/* Success/Error Messages */}
-      {waiterMessage && <Alert severity="success" sx={{ mb: 2 }}>{waiterMessage}</Alert>}
-      {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
-
-      <Typography variant="h3" component="h1" gutterBottom>
-        Our Menu
-      </Typography>
+      {/* Page Title - Show only when not embedded */}
+      {!isEmbedded && (
+        <Typography 
+          variant="h3" 
+          component="h1" 
+          gutterBottom 
+          align="center" 
+          sx={{ 
+            mb: 4,
+            fontWeight: 'bold',
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+          }}
+        >
+          Our Menu
+        </Typography>
+      )}
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!error && menuItems.length < 1 && (
         <Alert severity="warning" sx={{ mb: 2 }}>No menu items available</Alert>
       )}
 
-      <Stack 
-        direction="row" 
-        spacing={2} 
-        sx={{ 
-          mb: 2, 
-          alignItems: 'center',
-          justifyContent: 'space-between',
+      {/* Filter Controls - Show only when not embedded */}
+      {!isEmbedded && (
+        <Box sx={{ 
+          mb: 3, 
           width: '100%',
-          '& > *': { flex: 1, maxWidth: 220 }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body1" sx={{ minWidth: 100 }}>
-            £{priceRange[0]} - £{priceRange[1]}
-          </Typography>
-          <PriceSlider
-            value={priceRange}
-            onChange={(_, newValue) => setPriceRange(newValue)}
-            onChangeCommitted={(_, newValue) => setPriceRange(newValue)}
-            valueLabelDisplay="auto"
-            min={0}
-            max={maxPriceValue}
-            sx={{ flex: 2 }}
-            disableSwap
-            size="medium"
-          />
-        </Box>
-
-        <FormControl sx={{ width: 200 }}>
-          <InputLabel>Sort By</InputLabel>
-          <Select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            label="Sort By"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value="Price (Low-High)">Price (Low-High)</MenuItem>
-            <MenuItem value="Price (High-Low)">Price (High-Low)</MenuItem>
-            <MenuItem value="Popularity">Popularity</MenuItem>
-            <MenuItem value="Calories">Calories</MenuItem>
-          </Select>
-        </FormControl>
-
-        <Autocomplete
-          multiple
-          options={dietaryOptions}
-          value={selectedDietary}
-          onChange={(_, newValue) => setSelectedDietary(newValue)}
-          renderInput={(params) => <TextField {...params} label="Dietary" />}
-          renderTags={renderDynamicTags(containerWidth)}
-          limitTags={2}
-          sx={{ 
-            width: 200,
-            '& .MuiAutocomplete-inputRoot': {
-              flexWrap: 'nowrap'
-            }
-          }}
-          size="small"
-        />
-
-        <Autocomplete
-          multiple
-          options={allergenOptions}
-          value={selectedAllergens}
-          onChange={(_, newValue) => setSelectedAllergens(newValue)}
-          renderInput={(params) => (
-            <TextField 
-              {...params} 
-              label="Exclude Allergens" 
-              sx={{ 
-                '& .MuiInputBase-root': { 
-                  minHeight: 40, // Fixed height
-                  py: 0.5 // Vertical padding
-                }
-              }}
+          display: 'grid', 
+          gridTemplateColumns: {
+            xs: '1fr',           // Stack everything on mobile
+            sm: 'repeat(2, 1fr)', // 2 items per row on tablet
+            md: 'repeat(2, 1fr)'  // 2 items per row on desktop
+          },
+          gap: 2
+        }}>
+          {/* Price Range */}
+          <Box sx={{ 
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            boxShadow: 1
+          }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Price: £{priceRange[0]} - £{priceRange[1]}
+            </Typography>
+            
+            <Slider
+              getAriaLabel={() => 'Price range'}
+              value={priceRange}
+              onChange={(_, newValue) => setPriceRange(newValue)}
+              valueLabelDisplay="auto"
+              min={0}
+              max={maxPriceValue}
+              sx={{ color: '#3a8589', mb: 2 }}
+              valueLabelFormat={(value) => `£${value}`}
             />
-          )}
-          renderTags={renderDynamicTags(containerWidth)}
-          sx={{ 
-            width: 200,
-            '& .MuiAutocomplete-inputRoot': {
-              flexWrap: 'nowrap',
-              paddingRight: '8px !important' // Prevent icon overlap
-            }
-          }}
-          size="small"
-        />
-      </Stack>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField 
+                label="Min £" 
+                type="number"
+                size="small"
+                value={priceRange[0]}
+                inputProps={{ min: 0, max: priceRange[1], step: 0.5 }}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value) && value >= 0 && value <= priceRange[1]) {
+                    setPriceRange([value, priceRange[1]]);
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Max £"
+                type="number"
+                size="small"
+                value={priceRange[1]}
+                inputProps={{ min: priceRange[0], max: maxPriceValue, step: 0.5 }}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value) && value >= priceRange[0] && value <= maxPriceValue) {
+                    setPriceRange([priceRange[0], value]);
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+          </Box>
+
+          {/* Calories Range */}
+          <Box sx={{ 
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            boxShadow: 1
+          }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Calories: {caloriesRange[0]} - {caloriesRange[1]} kcal
+            </Typography>
+            
+            <Slider
+              getAriaLabel={() => 'Calories range'}
+              value={caloriesRange}
+              onChange={(_, newValue) => setCaloriesRange(newValue)}
+              valueLabelDisplay="auto"
+              min={0}
+              max={maxCaloriesValue}
+              sx={{ color: '#3a8589', mb: 2 }}
+              valueLabelFormat={(value) => `${value} kcal`}
+            />
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Min kcal"
+                type="number"
+                size="small"
+                value={caloriesRange[0]}
+                inputProps={{ min: 0, max: caloriesRange[1], step: 10 }}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (!isNaN(value) && value >= 0 && value <= caloriesRange[1]) {
+                    setCaloriesRange([value, caloriesRange[1]]);
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Max kcal"
+                type="number"
+                size="small"
+                value={caloriesRange[1]}
+                inputProps={{ min: caloriesRange[0], max: maxCaloriesValue, step: 10 }}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (!isNaN(value) && value >= caloriesRange[0] && value <= maxCaloriesValue) {
+                    setCaloriesRange([caloriesRange[0], value]);
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Filter Dropdowns */}
+      {!isEmbedded && (
+        <Box sx={{ 
+          mb: 3, 
+          width: '100%',
+          display: 'grid', 
+          gridTemplateColumns: {
+            xs: '1fr',           // Stack everything on mobile
+            sm: 'repeat(2, 1fr)', // 2 items per row on tablet
+            md: 'repeat(3, 1fr)'  // 3 items per row on desktop
+          },
+          gap: 2
+        }}>
+          {/* Filters and Sorting */}
+          <Box sx={{ 
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            boxShadow: 1
+          }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Sorting & Filters
+            </Typography>
+            
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                label="Sort By"
+                size="small"
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="Price (Low-High)">Price (Low-High)</MenuItem>
+                <MenuItem value="Price (High-Low)">Price (High-Low)</MenuItem>
+                <MenuItem value="Popularity">Popularity</MenuItem>
+                <MenuItem value="Calories">Calories</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Dietary Restrictions */}
+          <Box sx={{ 
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            boxShadow: 1
+          }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Dietary Restrictions
+            </Typography>
+            
+            <Autocomplete
+              multiple
+              options={dietaryOptions}
+              value={selectedDietary}
+              onChange={(_, newValue) => setSelectedDietary(newValue)}
+              renderInput={(params) => <TextField {...params} label="Dietary" size="small" />}
+              renderTags={renderDynamicTags(containerWidth)}
+              limitTags={3}
+            />
+          </Box>
+
+          {/* Allergens */}
+          <Box sx={{ 
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            boxShadow: 1
+          }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Allergen Information
+            </Typography>
+            
+            <Autocomplete
+              multiple
+              options={allergenOptions}
+              value={selectedAllergens}
+              onChange={(_, newValue) => setSelectedAllergens(newValue)}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Exclude Allergens" 
+                  size="small"
+                />
+              )}
+              renderTags={renderDynamicTags(containerWidth)}
+              limitTags={2}
+            />
+          </Box>
+        </Box>
+      )}
 
       {filteredMenuItems.length === 0 ? (
         <Typography variant="h6" align="center" sx={{ mt: 4 }}>
           No items match your filters
         </Typography>
       ) : (
-        <TableContainer component={Paper} elevation={3}>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Name
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Price
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Calories
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Dietary Info
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Allergens
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Status
-                </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredMenuItems.map((item) => (
-                <TableRow 
-                  key={item.itemId}
-                  sx={{ 
-                    opacity: item.available ? 1 : 0.5,
-                    backgroundColor: theme => 
-                      item.available 
-                        ? theme.palette.mode === 'dark' 
-                          ? 'rgba(255, 255, 255, 0.02)' 
-                          : 'rgba(0, 0, 0, 0.02)'
-                        : 'transparent',
-                    '&:hover': {
-                      backgroundColor: theme => 
-                        item.available 
-                          ? theme.palette.action.hover
-                          : 'transparent'
-                    }
-                  }}
-                >
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>£{item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.caloricInfo} kcal</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.dietaryRestrictions.map((restriction, index) => (
-                        <Tooltip key={index} title={restriction} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>
-                            {dietarySymbols[restriction]}
-                          </span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
+        <Paper sx={{ 
+          overflow: 'hidden',
+          mb: 4,
+          boxShadow: 2,
+          borderRadius: 1
+        }} elevation={3}>
+          <Box sx={{ 
+            overflowX: 'auto', 
+            width: '100%'
+          }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    Name
                   </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.allergenInformation.map((allergen, index) => (
-                        <Tooltip key={index} title={allergen} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>
-                            {allergenSymbols[allergen]}
-                          </span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    Price
                   </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={item.available ? "Available" : "Unavailable"} 
-                      color={item.available ? "success" : "error"} 
-                      size="small"
-                    />
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    display: { xs: 'none', sm: 'table-cell' } 
+                  }}>
+                    Calories
                   </TableCell>
-                  <TableCell>
-                    {item.available && (
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={() => addToCart(item)}>
-                        Add to Order
-                      </Button>
-                    )}
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    display: { xs: 'none', md: 'table-cell' } 
+                  }}>
+                    Dietary Info
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    display: { xs: 'none', md: 'table-cell' } 
+                  }}>
+                    Allergens
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    Status
+                  </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    Actions
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-
-      <Typography variant="h4" sx={{ mt: 4 }}>Your Order</Typography>
-      {cart.length === 0 ? (
-        <Typography>No items in cart</Typography>
-      ) : (
-        <Paper sx={{ p: 2, mt: 2 }}>
-          <Typography variant="h6">
-            Items: {cart.length}
-          </Typography>
-          {cart.map((item, index) => (
-            <Stack key={index} direction="row" justifyContent="space-between">
-              <Typography>{item.name} - £{item.price.toFixed(2)}</Typography>
-              <Button 
-                variant="contained" 
-                color="error" 
-                size="small" 
-                onClick={() => removeFromCart(index)}>
-                Remove
-              </Button>
-            </Stack>
-          ))}
-          <Button 
-            variant="contained" 
-            color="success" 
-            sx={{ mt: 2 }} 
-            onClick={placeOrder}>
-            Place Order
-          </Button>
+              </TableHead>
+              <TableBody>
+                {filteredMenuItems.map((item) => (
+                  <TableRow 
+                    key={item.itemId}
+                    sx={{ 
+                      opacity: item.available ? 1 : 0.5,
+                      backgroundColor: theme => 
+                        item.available 
+                          ? theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 255, 255, 0.02)' 
+                            : 'rgba(0, 0, 0, 0.02)'
+                          : 'transparent',
+                      '&:hover': {
+                        backgroundColor: theme => 
+                          item.available 
+                            ? theme.palette.action.hover
+                            : 'transparent'
+                      }
+                    }}
+                  >
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{item.name}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>£{item.price.toFixed(2)}</TableCell>
+                    <TableCell sx={{ 
+                      whiteSpace: 'nowrap',
+                      display: { xs: 'none', sm: 'table-cell' } 
+                    }}>
+                      {item.caloricInfo} kcal
+                    </TableCell>
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                      <Stack direction="row" spacing={0.5}>
+                        {item.dietaryRestrictions.map((restriction, index) => (
+                          <Tooltip key={index} title={restriction} arrow>
+                            <span style={{ fontSize: '1.2rem' }}>
+                              {dietarySymbols[restriction]}
+                            </span>
+                          </Tooltip>
+                        ))}
+                      </Stack>
+                    </TableCell>
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                      <Stack direction="row" spacing={0.5}>
+                        {item.allergenInformation.map((allergen, index) => (
+                          <Tooltip key={index} title={allergen} arrow>
+                            <span style={{ fontSize: '1.2rem' }}>
+                              {allergenSymbols[allergen]}
+                            </span>
+                          </Tooltip>
+                        ))}
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={item.available ? "Available" : "Unavailable"} 
+                        color={item.available ? "success" : "error"} 
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {item.available && (
+                        <Button 
+                          variant="contained" 
+                          color="primary" 
+                          size="small"
+                          onClick={() => addToCart(item)}>
+                          Add to Order
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
         </Paper>
       )}
 
-      {orderSuccess && <Alert severity="success" sx={{ mt: 2 }}>Order placed successfully!</Alert>}
+      {/* Only show order section when not embedded */}
+      {!isEmbedded && (
+        <Paper elevation={3} sx={{ 
+          p: 3, 
+          mb: 3, 
+          borderRadius: 1,
+          boxShadow: 2
+        }}>
+          <Typography variant="h5" gutterBottom>Your Order</Typography>
+          
+          {cart.length === 0 ? (
+            <Typography variant="body1" color="text.secondary">No items in cart</Typography>
+          ) : (
+            <Box>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                Items: {cart.length}
+              </Typography>
+              
+              <Stack spacing={2} sx={{ mb: 3 }}>
+                {cart.map((item, index) => (
+                  <Paper key={index} sx={{ 
+                    p: 2, 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    boxShadow: 1
+                  }}>
+                    <Box>
+                      <Typography variant="body1">{item.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">£{item.price.toFixed(2)}</Typography>
+                    </Box>
+                    <Button 
+                      variant="outlined" 
+                      color="error" 
+                      size="small" 
+                      onClick={() => removeFromCart(index)}
+                      startIcon={<span role="img" aria-label="remove">🗑️</span>}>
+                      Remove
+                    </Button>
+                  </Paper>
+                ))}
+              </Stack>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">
+                  Total: £{cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  color="success" 
+                  size="large"
+                  onClick={placeOrder}
+                  startIcon={<span role="img" aria-label="order">✅</span>}>
+                  Place Order
+                </Button>
+              </Box>
+            </Box>
+          )}
+          
+          {orderSuccess && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              Order placed successfully! A waiter will be with you shortly.
+            </Alert>
+          )}
+        </Paper>
+      )}
     </Container>
   );
 }
+
+// Set default props
+Menu.defaultProps = {
+  isEmbedded: false
+};
 
 export default Menu;
