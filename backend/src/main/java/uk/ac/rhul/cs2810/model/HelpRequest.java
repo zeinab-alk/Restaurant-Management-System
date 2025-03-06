@@ -40,7 +40,6 @@ public class HelpRequest {
     this.resolved = false;
   }
 
-
   public Long getId() {
     return id;
   }
@@ -76,4 +75,3 @@ public class HelpRequest {
     this.waiter = waiter;
   }
 }
-
