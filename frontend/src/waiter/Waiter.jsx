@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip } from "@mui/material";
 import axios from "axios";
@@ -11,46 +11,125 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 const WaiterPage = () => {
   const [orderNotification, setOrderNotification] = useState(null);
   const [helpRequests, setHelpRequests] = useState([]);
+  const [helpRequests, setHelpRequests] = useState([]);
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
+  const [newOrderAlert, setNewOrderAlert] = useState(false);
 
-  // Poll for latest order every 5 seconds
+  // Define available order statuses
+  const orderStatuses = [
+    'PENDING', 
+    'IN_PROGRESS', 
+    'READY_FOR_DELIVERY', 
+    'COMPLETED', 
+    'DELIVERED', 
+    'PROCESSING', 
+    'CANCELLED'
+  ];
+
+  // Define fetchOrders first using useCallback
+  const fetchOrders = useCallback(() => {
+    setError(''); // Clear any previous errors
+    
+    axios.get(`${API_ENDPOINT}/api/orders`)
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          const filtered = res.data.filter(order => 
+            order.status !== 'Delivered'
+          );
+          setOrders(filtered);
+        } else {
+          console.warn("Unexpected response format from orders API:", res.data);
+          setOrders([]);
+        }
+      })
+      .catch(err => {
+        // Don't show error for 404 (no orders)
+        if (err.response && err.response.status === 404) {
+          setOrders([]);
+          return;
+        }
+        
+        setError('Failed to load orders');
+        console.error('Order fetch error:', err);
+        // Set empty array on error so UI doesn't break
+        setOrders([]);
+      });
+  }, []);
+
+  // Initial orders fetch on component mount
   useEffect(() => {
-    const interval = setInterval(async () => {
+    fetchOrders();
+    
+    // Also fetch orders periodically in case of missed updates
+    const ordersInterval = setInterval(fetchOrders, 3000); // Every 3 seconds
+    
+    return () => clearInterval(ordersInterval);
+  }, [fetchOrders]);
+
+  // Poll for latest order more frequently (2 seconds is a good balance)
+  useEffect(() => {
+    const fetchLatestOrder = async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/orders/latest`);
+        // Only update if we have a valid response with data
         if (response.data && response.data.id !== lastOrderId) {
           const { orderNumber, menuItems, id } = response.data;
           const orderDetails = menuItems.map(item => item.name).join(", ");
           setOrderNotification(`New Order #${orderNumber}: ${orderDetails}`);
           setLastOrderId(id);
+          
+          // Immediately fetch all orders when a new one is detected
+          fetchOrders();
         }
       } catch (error) {
-        console.error("Error fetching latest order:", error);
+        // Don't show errors for 404 (no orders) or 204 (no content)
+        if (error.response && error.response.status !== 404 && error.response.status !== 204) {
+          console.error("Error fetching latest order:", error);
+        }
       }
-    }, 5000);
+    };
 
+    // Run immediately on mount
+    fetchLatestOrder();
+    
+    // Poll every 2 seconds for a good balance of responsiveness and efficiency
+    const interval = setInterval(fetchLatestOrder, 2000);
     return () => clearInterval(interval);
-  }, [lastOrderId]);
+  }, [lastOrderId, fetchOrders]);
 
-  // Enhanced fetch with error handling
-  const fetchOrders = () => {
-    axios.get(`${API_ENDPOINT}/api/orders`)
-      .then(res => {
-        const filtered = res.data.filter(order => 
-          order.status !== 'Delivered'
-        );
-        setOrders(filtered);
-      })
-      .catch(err => {
-        setError('Failed to load orders');
-        console.error('Order fetch error:', err);
-      });
-  };
+  // Also set the help requests polling interval to 2 seconds
+  useEffect(() => {
+    const fetchHelpRequests = async () => {
+      try {
+        const response = await axios.get(`${API_ENDPOINT}/api/help-requests`);
+        if (Array.isArray(response.data)) {
+          setHelpRequests(response.data);
+        } else {
+          console.error("Unexpected response format:", response.data);
+          // Set empty array instead of showing error
+          setHelpRequests([]);
+        }
+      } catch (error) {
+        // Don't log 404 errors (no help requests)
+        if (error.response && error.response.status !== 404) {
+          console.error("Error fetching help requests:", error);
+        }
+        // Set empty array on error so UI doesn't break
+        setHelpRequests([]);
+      }
+    };
 
-  React.useEffect(fetchOrders, []);
+    // Run immediately on mount
+    fetchHelpRequests();
+    
+    // Poll every 2 seconds
+    const helpInterval = setInterval(fetchHelpRequests, 2000);
+
+    return () => clearInterval(helpInterval);
+  }, []);
 
   // Enhanced delivery handler
   const markDelivered = (orderId) => {
@@ -116,6 +195,33 @@ const WaiterPage = () => {
     }
   };
 
+  // Add resolveRequest function
+  const resolveRequest = async (id) => {
+    try {
+      // Optimistically update UI
+      setHelpRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.id === id ? { ...req, resolved: true } : req
+        )
+      );
+      
+      // Send API request
+      const response = await axios.put(`${API_ENDPOINT}/api/help-requests/${id}/resolve`);
+
+      if (response.status !== 200) {
+        throw new Error("Failed to mark as resolved.");
+      }
+    } catch (error) {
+      console.error("Error resolving help request:", error);
+      
+      // Revert UI change if API call fails
+      setHelpRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.id === id ? { ...req, resolved: false } : req
+        )
+      );
+    }
+  };
 
   return (
     <Container sx={{ py: 4 }}>
@@ -395,7 +501,6 @@ const WaiterPage = () => {
           </Alert>
         ))
       )}
-
     </Container>
   );
 };
