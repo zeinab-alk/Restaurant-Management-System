@@ -1,6 +1,6 @@
-# Restaurant Management System Quick Start
+# Restaurant Management System
 
-This document explains how to start both the backend and frontend servers with a single command.
+This document explains how to start the backend and frontend services for the Restaurant Management System.
 
 ## Prerequisites
 
@@ -10,53 +10,57 @@ This document explains how to start both the backend and frontend servers with a
 
 ## Starting the Application
 
-### For Windows Users
+### Starting the Backend (Spring Boot)
 
-1. Open Command Prompt or PowerShell
-2. Navigate to the project root directory
-3. Run the batch file:
+1. Open a terminal/command prompt
+2. Navigate to the backend directory:
    ```
-   start-app.bat
+   cd backend
    ```
-4. Two separate command windows will open - one for the backend and one for the frontend
+3. Start the Spring Boot application:
+   ```
+   # Using Maven wrapper (recommended)
+   ./mvnw spring-boot:run   # On Linux/macOS
+   mvnw.cmd spring-boot:run # On Windows
+   
+   # Or if you have Maven installed globally
+   mvn spring-boot:run
+   ```
+4. The backend server will start on http://localhost:8080
 
-### For Linux/macOS Users
+### Starting the Frontend (React)
 
-1. Open Terminal
-2. Navigate to the project root directory
-3. Make sure the script is executable:
+1. Open a new terminal/command prompt window
+2. Navigate to the frontend directory:
    ```
-   chmod +x start-app.sh
+   cd frontend
    ```
-4. Run the shell script:
+3. Install dependencies (if not already installed):
    ```
-   ./start-app.sh
+   npm install
    ```
-5. Both servers will start in the same terminal window
-6. Press Ctrl+C to stop both servers
-
-### For WSL Users (Windows Subsystem for Linux)
-
-1. Open Command Prompt or PowerShell
-2. Navigate to the project root directory
-3. Run the WSL batch file:
+4. Start the development server:
    ```
-   start-app-wsl.bat
+   npm run dev
    ```
-4. Two separate WSL windows will open - one for the backend and one for the frontend
+5. The frontend server will start on http://localhost:5173
 
 ## Accessing the Application
 
+Once both services are running, you can access:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8080
 
 ## Troubleshooting
 
-If you encounter any issues starting the application:
+If you encounter any issues:
 
 1. Make sure both backend and frontend dependencies are installed:
    ```
+   # For backend
    cd backend && ./mvnw clean install
+   
+   # For frontend
    cd frontend && npm install
    ```
 
