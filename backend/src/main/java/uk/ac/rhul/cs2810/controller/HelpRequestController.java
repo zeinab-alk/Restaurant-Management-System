@@ -2,91 +2,110 @@ package uk.ac.rhul.cs2810.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.HelpRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.HelpRequestRepository;
-
+import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
 /**
- * Controller for handling requests related to Help Requests. Provides endpoints for creating,
- * retrieving, and updating help requests.
+ * Controller for handling Help Requests.
  */
 @RestController
 @RequestMapping("/api/help-requests")
+@CrossOrigin(origins = "http://localhost:5173")
 public class HelpRequestController {
+
+  private static final Logger logger = LoggerFactory.getLogger(HelpRequestController.class);
 
   @Autowired
   private HelpRequestRepository helpRequestRepository;
 
+  @Autowired
+  private WaiterRepository waiterRepository;
+
   /**
-   * Creates a new HelpRequest for a specific table and waiter.
-   *
-   * @param tableNumber the table number where assistance is requested
-   * @param waiterId the ID of the waiter assigned to the request
-   * @return a ResponseEntity containing the created HelpRequest
+   * Creates a new HelpRequest.
    */
   @PostMapping
-  public ResponseEntity<HelpRequest> createHelpRequest(@RequestParam int tableNumber,
-      @RequestParam Long waiterId) {
-    HelpRequest newRequest = new HelpRequest(tableNumber, new Waiter());
+  public ResponseEntity<?> createHelpRequest(@RequestBody HelpRequest request) {
+    logger.info(" Received HelpRequest: Table {}", request.getTableNumber());
 
-    helpRequestRepository.save(newRequest);
-    return new ResponseEntity<>(newRequest, HttpStatus.CREATED);
+    if (request.getTableNumber() <= 0) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid table number.");
+    }
+
+    // Assign a random available waiter if none provided
+    List<Waiter> availableWaiters = (List<Waiter>) waiterRepository.findAll();
+    if (availableWaiters.isEmpty()) {
+      logger.error("ERROR: No waiters available.");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No available waiters.");
+    }
+
+    // Assign the first available waiter
+    request.setWaiter(availableWaiters.get(0));
+    request.setResolved(false); // Ensure new requests are unresolved
+
+    // Save to DB
+    helpRequestRepository.save(request);
+    logger.info("✅ Help request successfully saved for Table {}", request.getTableNumber());
+
+    return new ResponseEntity<>(request, HttpStatus.CREATED);
   }
 
   /**
-   * Retrieves all help requests.
-   *
-   * @return a list of all HelpRequests
+   * Retrieves all unresolved HelpRequests.
    */
   @GetMapping
-  public ResponseEntity<List<HelpRequest>> getAllHelpRequests() {
-    // Fetches all help requests from the repository.
-    List<HelpRequest> requests = helpRequestRepository.findAll();
-    // Return the list of help requests
-    return new ResponseEntity<>(requests, HttpStatus.OK);
+  public ResponseEntity<List<HelpRequest>> getActiveHelpRequests() {
+    List<HelpRequest> activeRequests = helpRequestRepository.findByResolvedFalse();
+    return ResponseEntity.ok(activeRequests);
   }
 
   /**
-   * Retrieves a specific HelpRequest by its ID.
-   *
-   * @param id the ID of the HelpRequest
-   * @return a ResponseEntity containing the requested HelpRequest
+   * Retrieves a specific HelpRequest by ID.
    */
   @GetMapping("/{id}")
   public ResponseEntity<HelpRequest> getHelpRequestById(@PathVariable Long id) {
-    Optional<HelpRequest> request = helpRequestRepository.findById(id);
-    // If found, return the HelpRequest with OK if not, return Not Found.
-    return request.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    Optional<HelpRequest> helpRequest = helpRequestRepository.findById(id);
+
+    return helpRequest.map(ResponseEntity::ok) // If found, return HTTP 200 with the help request
+        .orElseGet(() -> ResponseEntity.notFound().build()); // If not found, return HTTP 404
   }
+
+
+
 
   /**
-   * Marks a specific HelpRequest as resolved.
-   *
-   * @param id the ID of the HelpRequest to resolve
-   * @return a ResponseEntity containing the updated HelpRequest
+   * Resolves a HelpRequest by ID.
    */
   @PutMapping("/{id}/resolve")
-  public ResponseEntity<HelpRequest> resolveHelpRequest(@PathVariable Long id) {
+  public ResponseEntity<?> resolveHelpRequest(@PathVariable Long id) {
     Optional<HelpRequest> optionalRequest = helpRequestRepository.findById(id);
     if (optionalRequest.isPresent()) {
-      HelpRequest request = optionalRequest.get();
-      request.setResolved(true);
-      helpRequestRepository.save(request);
-      return new ResponseEntity<>(request, HttpStatus.OK);
+      HelpRequest helpRequest = optionalRequest.get();
+      helpRequest.setResolved(true);
+      helpRequestRepository.save(helpRequest);
+      logger.info("HelpRequest {} marked as resolved.", id);
+      return ResponseEntity.ok(helpRequest);
     }
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    logger.error("ERROR: HelpRequest {} not found.", id);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Help request not found");
   }
-
 }
+
+
+
+
