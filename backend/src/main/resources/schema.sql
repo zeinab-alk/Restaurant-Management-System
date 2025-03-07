@@ -18,6 +18,7 @@ CREATE TABLE menu_item (
   allergy_information VARCHAR(50),
   popularity INT CHECK (popularity >= 0 AND popularity <= 5) NOT NULL,
   availability BOOLEAN DEFAULT TRUE,
+  image_url VARCHAR(255) NULL, --For the image
   PRIMARY KEY (item_id),
   FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
 );
