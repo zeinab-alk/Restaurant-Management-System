@@ -291,12 +291,6 @@ function Menu() {
         </Button>
       </Stack>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <Button component={RouterLink} to="/" variant="contained" color="success">
-          Back to Home
-        </Button>
-      </Stack>
-
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
         <Button variant="contained" color="primary" onClick={callWaiter}>
           Request Waiter
