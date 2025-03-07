@@ -64,4 +64,15 @@ public class MenuItemTest {
     // Verify that the availability is false
     assertFalse(item.isAvailable(), "The availability should be false.");
   }
+
+  @Test
+  void testGetImageUrl() {
+    // Set a value for imageUrl
+    String expectedImageUrl = "https://example.com/images/taco_deluxe.jpg";
+    item.setImageUrl(expectedImageUrl);
+
+    // Verify that getImageUrl() returns the correct value
+    assertEquals(expectedImageUrl, item.getImageUrl(),
+        "The getImageUrl method should return the correct image URL.");
+  }
 }
