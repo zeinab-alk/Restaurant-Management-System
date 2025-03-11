@@ -179,6 +179,42 @@ public class Waiter {
     return true;
   }
 
+  /**
+   * Retrieves a list of assigned tables where orders have been delivered but not yet paid.
+   *
+   * @param allOrders The list of all orders in the system.
+   * @return A list of table numbers where payment is still pending.
+   */
+  public List<Integer> getUnpaidTables(List<Order> allOrders) {
+    List<Integer> unpaidTables = new ArrayList<>();
+
+    if (assignedTables == null || assignedTables.isEmpty()) {
+      System.out.println("No tables assigned to waiter: " + this.name);
+      return unpaidTables;
+    }
+
+    for (Order order : allOrders) {
+      Customer customer = order.getCustomer();
+      if (customer != null) {
+        int tableNumber = (int) customer.getId();
+        if (assignedTables.contains(tableNumber) && order.getStatus() == OrderStatus.DELIVERED) {
+
+          unpaidTables.add(tableNumber);
+        }
+      }
+    }
+
+    if (unpaidTables.isEmpty()) {
+      System.out.println("All delivered orders have been paid.");
+    } else {
+      System.out
+          .println("Waiter " + this.name + " needs to check payment for tables: " + unpaidTables);
+    }
+
+    return unpaidTables;
+  }
+
+
   // Overloaded confirmOrder without parameters (just a stub)
   public void confirmOrder() {}
 
