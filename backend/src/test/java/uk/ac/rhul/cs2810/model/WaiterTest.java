@@ -541,6 +541,38 @@ public class WaiterTest {
         outContent.toString().contains("Waiter John needs to check payment for tables: [1]"));
   }
 
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_MultipleUnpaidOrders() {
+    Order mockOrder1 = mock(Order.class);
+    Order mockOrder2 = mock(Order.class);
+
+    when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+    when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer1 = mock(Customer.class);
+    when(mockCustomer1.getId()).thenReturn((long) 1);
+    when(mockOrder1.getCustomer()).thenReturn(mockCustomer1);
+
+    Customer mockCustomer2 = mock(Customer.class);
+    when(mockCustomer2.getId()).thenReturn((long) 2);
+    when(mockOrder2.getCustomer()).thenReturn(mockCustomer2);
+
+    List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+    // Assign table 1 and table 2 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1, 2));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that both table 1 and table 2 are returned as unpaid
+    assertEquals(2, result.size(), "Expected tables 1 and 2 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+    assertTrue(result.contains(2), "Expected unpaid table 2");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1, 2]"));
+  }
 
 
 
