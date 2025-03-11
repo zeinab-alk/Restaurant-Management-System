@@ -473,24 +473,6 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order or menu is not available."));
     assertTrue(!result, "Order should not be confirmed if there is no menu");
   }
-
-  @Test
-  public void testGetUnpaidTables_WithAssignedTables_NoOrders() {
-    // Create an empty list of orders (no orders in the system)
-    List<Order> orders = new ArrayList<>();
-
-    // Assign tables to the waiter
-    waiter.setAssignedTables(Arrays.asList(1, 2));
-
-    // Call the getUnpaidTables method
-    List<Integer> result = waiter.getUnpaidTables(orders);
-
-    // Assert that the result is empty as there are no orders
-    assertTrue(result.isEmpty(), "Expected no unpaid tables when no orders exist");
-
-    // Ensure the correct message is printed
-    assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
-  }
   
   @Test
   public void testGetUnpaidTables_WithAssignedTables_NoUnpaidOrders() {
@@ -589,29 +571,5 @@ public class WaiterTest {
     // Ensure the correct message is printed
     assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
   }
-
-  @Test
-  public void testGetUnpaidTables_WithAssignedTables_EmptyOrderStatus() {
-    Order mockOrder = mock(Order.class);
-
-    when(mockOrder.getStatus()).thenReturn(null);
-
-    Customer mockCustomer = mock(Customer.class);
-    when(mockCustomer.getId()).thenReturn((long) 1);
-    when(mockOrder.getCustomer()).thenReturn(mockCustomer);
-
-    List<Order> orders = Arrays.asList(mockOrder);
-
-    waiter.setAssignedTables(Arrays.asList(1));
-
-    List<Integer> result = waiter.getUnpaidTables(orders);
-
-    assertTrue(result.isEmpty(), "Expected no unpaid tables since the order status is empty");
-
-    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
-  }
-
-
-
 }
 

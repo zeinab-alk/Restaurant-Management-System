@@ -64,6 +64,47 @@ public class Waiter {
     this.busy = false;
   }
 
+
+  /**
+   * Overloaded method for confirming order without parameters (stub method).
+   */
+  public void confirmOrder() {
+    // Stub method for WaiterTest compilation
+    System.out.println("Confirming order...");
+  }
+
+  /**
+   * Confirms a customer order by checking if all items are available.
+   *
+   * @param order The order to confirm.
+   * @return true if all items are available, false otherwise.
+   */
+  public boolean confirmOrder(Order order) {
+    if (order == null || menu == null) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
+    List<MenuItem> orderedItems = order.getMenuItems();
+
+    if (orderedItems == null || orderedItems.isEmpty()) {
+      System.out.println("Order or menu is not available.");
+      return false;
+    }
+
+    for (MenuItem item : orderedItems) {
+      MenuItem menuItem = menu.getItemByName(item.getName());
+      if (menuItem == null || !menuItem.isAvailable()) {
+        System.out.println("Item unavailable: " + item.getName());
+        return false;
+      }
+    }
+
+    System.out.println("Order " + order.getOrderNumber() + " confirmed.");
+    return true;
+  }
+
+
   /**
    * Changes menu availability.
    *
@@ -103,7 +144,6 @@ public class Waiter {
       System.out.println("Order " + order.getOrderNumber() + " has been marked as Delivered.");
     }
   }
-
 
   /**
    * Notifies the waiter when a new order is placed with item details.
@@ -149,37 +189,6 @@ public class Waiter {
   }
 
   /**
-   * Confirms a customer order by checking if all items are available.
-   *
-   * @param order The order to confirm.
-   * @return true if all items are available, false otherwise.
-   */
-  public boolean confirmOrder(Order order) {
-    if (order == null || menu == null) {
-      System.out.println("Order or menu is not available.");
-      return false;
-    }
-
-    List<MenuItem> orderedItems = order.getMenuItems();
-
-    if (orderedItems == null || orderedItems.isEmpty()) {
-      System.out.println("Order or menu is not available.");
-      return false;
-    }
-
-    for (MenuItem item : orderedItems) {
-      MenuItem menuItem = menu.getItemByName(item.getName());
-      if (menuItem == null || !menuItem.isAvailable()) {
-        System.out.println("Item unavailable: " + item.getName());
-        return false;
-      }
-    }
-
-    System.out.println("Order " + order.getOrderNumber() + " confirmed.");
-    return true;
-  }
-
-  /**
    * Retrieves a list of assigned tables where orders have been delivered but not yet paid.
    *
    * @param allOrders The list of all orders in the system.
@@ -198,7 +207,6 @@ public class Waiter {
       if (customer != null) {
         int tableNumber = (int) customer.getId();
         if (assignedTables.contains(tableNumber) && order.getStatus() == OrderStatus.DELIVERED) {
-
           unpaidTables.add(tableNumber);
         }
       }
@@ -213,10 +221,6 @@ public class Waiter {
 
     return unpaidTables;
   }
-
-
-  // Overloaded confirmOrder without parameters (just a stub)
-  public void confirmOrder() {}
 
   public void trackOrder() {
     // Stub method for WaiterTest compilation
