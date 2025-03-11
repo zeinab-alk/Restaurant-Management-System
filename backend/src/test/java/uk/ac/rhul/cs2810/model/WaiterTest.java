@@ -514,6 +514,33 @@ public class WaiterTest {
       assertTrue(outContent.toString().contains("All delivered orders have been paid"));
   }
 
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_SingleUnpaidOrder() {
+    Order mockOrder = mock(Order.class);
+
+    // Mock the order status to DELIVERED but not paid
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer = mock(Customer.class);
+    when(mockCustomer.getId()).thenReturn((long) 1); // Table number 1
+    when(mockOrder.getCustomer()).thenReturn(mockCustomer);
+
+    List<Order> orders = Arrays.asList(mockOrder);
+
+    // Assign table 1 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that table 1 is returned as unpaid
+    assertEquals(1, result.size(), "Expected table 1 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1]"));
+  }
+
 
 
 
