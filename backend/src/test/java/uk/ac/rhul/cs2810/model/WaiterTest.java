@@ -574,6 +574,22 @@ public class WaiterTest {
         outContent.toString().contains("Waiter John needs to check payment for tables: [1, 2]"));
   }
 
+  @Test
+  public void testGetUnpaidTables_WithNoAssignedTables() {
+    List<Order> orders = new ArrayList<>();
+
+    // Set no assigned tables
+    waiter.setAssignedTables(new ArrayList<>());
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that the result is empty as there are no assigned tables
+    assertTrue(result.isEmpty(), "Expected no unpaid tables since no tables are assigned");
+
+    // Ensure the correct message is printed
+    assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
+  }
+
 
 
 }
