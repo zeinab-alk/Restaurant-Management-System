@@ -594,24 +594,20 @@ public class WaiterTest {
   public void testGetUnpaidTables_WithAssignedTables_EmptyOrderStatus() {
     Order mockOrder = mock(Order.class);
 
-    // Mock the order with an empty status (null or empty string)
     when(mockOrder.getStatus()).thenReturn(null);
 
     Customer mockCustomer = mock(Customer.class);
-    when(mockCustomer.getId()).thenReturn(1); // Table number 1
+    when(mockCustomer.getId()).thenReturn((long) 1);
     when(mockOrder.getCustomer()).thenReturn(mockCustomer);
 
     List<Order> orders = Arrays.asList(mockOrder);
 
-    // Assign table 1 to the waiter
     waiter.setAssignedTables(Arrays.asList(1));
 
     List<Integer> result = waiter.getUnpaidTables(orders);
 
-    // Assert that no tables are returned since the order status is empty
     assertTrue(result.isEmpty(), "Expected no unpaid tables since the order status is empty");
 
-    // Ensure the correct message is printed
     assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
