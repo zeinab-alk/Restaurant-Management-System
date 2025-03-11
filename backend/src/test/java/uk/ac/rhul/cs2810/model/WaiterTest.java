@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -472,6 +473,103 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order or menu is not available."));
     assertTrue(!result, "Order should not be confirmed if there is no menu");
   }
+  
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_NoUnpaidOrders() {
+      Order mockOrder1 = mock(Order.class);
+      Order mockOrder2 = mock(Order.class);
 
+      when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+      when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+      List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+      // Assign tables to the waiter
+      waiter.setAssignedTables(Arrays.asList(1, 2));
+
+      List<Integer> result = waiter.getUnpaidTables(orders);
+
+      // Assert that the result is empty since all orders are delivered and paid
+      assertTrue(result.isEmpty(), "Expected no unpaid tables since all orders are delivered");
+
+      // Ensure the correct message is printed
+      assertTrue(outContent.toString().contains("All delivered orders have been paid"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_SingleUnpaidOrder() {
+    Order mockOrder = mock(Order.class);
+
+    // Mock the order status to DELIVERED but not paid
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer = mock(Customer.class);
+    when(mockCustomer.getId()).thenReturn((long) 1); // Table number 1
+    when(mockOrder.getCustomer()).thenReturn(mockCustomer);
+
+    List<Order> orders = Arrays.asList(mockOrder);
+
+    // Assign table 1 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that table 1 is returned as unpaid
+    assertEquals(1, result.size(), "Expected table 1 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1]"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_MultipleUnpaidOrders() {
+    Order mockOrder1 = mock(Order.class);
+    Order mockOrder2 = mock(Order.class);
+
+    when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+    when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer1 = mock(Customer.class);
+    when(mockCustomer1.getId()).thenReturn((long) 1);
+    when(mockOrder1.getCustomer()).thenReturn(mockCustomer1);
+
+    Customer mockCustomer2 = mock(Customer.class);
+    when(mockCustomer2.getId()).thenReturn((long) 2);
+    when(mockOrder2.getCustomer()).thenReturn(mockCustomer2);
+
+    List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+    // Assign table 1 and table 2 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1, 2));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that both table 1 and table 2 are returned as unpaid
+    assertEquals(2, result.size(), "Expected tables 1 and 2 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+    assertTrue(result.contains(2), "Expected unpaid table 2");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1, 2]"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithNoAssignedTables() {
+    List<Order> orders = new ArrayList<>();
+
+    // Set no assigned tables
+    waiter.setAssignedTables(new ArrayList<>());
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that the result is empty as there are no assigned tables
+    assertTrue(result.isEmpty(), "Expected no unpaid tables since no tables are assigned");
+
+    // Ensure the correct message is printed
+    assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
+  }
 }
 
