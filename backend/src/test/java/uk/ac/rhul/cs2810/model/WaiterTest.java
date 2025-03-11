@@ -491,6 +491,29 @@ public class WaiterTest {
     // Ensure the correct message is printed
     assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
   }
+  
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_NoUnpaidOrders() {
+      Order mockOrder1 = mock(Order.class);
+      Order mockOrder2 = mock(Order.class);
+
+      when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+      when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+      List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+      // Assign tables to the waiter
+      waiter.setAssignedTables(Arrays.asList(1, 2));
+
+      List<Integer> result = waiter.getUnpaidTables(orders);
+
+      // Assert that the result is empty since all orders are delivered and paid
+      assertTrue(result.isEmpty(), "Expected no unpaid tables since all orders are delivered");
+
+      // Ensure the correct message is printed
+      assertTrue(outContent.toString().contains("All delivered orders have been paid"));
+  }
+
 
 
 
