@@ -20,6 +20,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
    * 
    *
    * @param orderNumber The order number to search for
+   *
    * @return Optional containing the order if found
    */
   Optional<Order> findByOrderNumber(int orderNumber);
@@ -30,6 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
   /**
    * Finds all orders and eagerly fetches menu items to avoid N+1 queries.
    * 
+   *
    * @return List of orders with their menu items
    */
   @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.menuItems")
@@ -38,6 +40,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
   /**
    * Finds the latest order and eagerly fetches menu items to avoid N+1 queries.
    * 
+   *
    * @return Optional containing the latest order with its menu items
    */
   @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.menuItems ORDER BY o.orderTime DESC")

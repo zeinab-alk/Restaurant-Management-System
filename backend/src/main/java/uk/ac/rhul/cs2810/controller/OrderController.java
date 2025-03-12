@@ -2,6 +2,8 @@ package uk.ac.rhul.cs2810.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Controller for handling orders.
@@ -71,7 +71,6 @@ public class OrderController {
   @GetMapping
   public ResponseEntity<List<Order>> getAllOrders() {
     try {
-      // Add debug logging
       long startTime = System.currentTimeMillis();
       logger.info("Fetching all orders...");
       
@@ -79,7 +78,7 @@ public class OrderController {
       
       long endTime = System.currentTimeMillis();
       logger.info("Orders fetched successfully in {} ms. Found {} orders.", 
-        (endTime - startTime), orders.size());
+          (endTime - startTime), orders.size());
       
       return ResponseEntity.ok(orders);
     } catch (Exception e) {

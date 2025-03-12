@@ -41,7 +41,7 @@ public class HelpRequestController {
    */
   @PostMapping
   public ResponseEntity<?> createHelpRequest(@RequestBody HelpRequest request) {
-    long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
     logger.info("Received HelpRequest: Table {}", request.getTableNumber());
 
     if (request.getTableNumber() <= 0) {
