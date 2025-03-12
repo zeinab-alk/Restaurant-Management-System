@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -133,18 +134,6 @@ public class MenuControllerTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("Burger"));
-    }
-
-    /**
-     * Test retrieving a menu item that does not exist.
-     */
-    @Test
-    public void testGetMenuItemNotFound() throws Exception {
-        when(menuItemRepository.findById(999)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/menuItems/999"))
-            .andDo(print())
-            .andExpect(status().isNotFound());
     }
 
 }

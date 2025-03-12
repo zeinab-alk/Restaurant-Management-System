@@ -41,7 +41,7 @@ public class Menu {
    * @param name the menu name.
    */
   public Menu(int menuId, String name) {
-    this.menuId = menuId;
+    this.id = menuId;
     this.name = name;
     this.menuItems = new ArrayList<>();
   }
@@ -98,7 +98,7 @@ public class Menu {
   /**
    * Retrieves a menu item by its name.
    *
-   * @param itemName the name of the menu item.
+   * @param name the name of the menu item.
    * @return the MenuItem if found, otherwise null.
    */
   public MenuItem getItemByName(String name) {

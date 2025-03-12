@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import axios from "axios";
 import { 
   Typography, 
@@ -37,6 +36,8 @@ import {
   DialogActions
 } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { styled } from '@mui/material/styles';
@@ -60,7 +61,7 @@ const useContainerWidth = () => {
   return [containerRef, width];
 };
 
-function Menu() {
+function Menu({ isEmbedded = false }) {
   const [menuItems, setMenuItems] = useState([]);
   const [error, setError] = useState();
   const theme = useTheme();
@@ -77,12 +78,10 @@ function Menu() {
   const [selectedAllergens, setSelectedAllergens] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [maxPriceValue, setMaxPriceValue] = useState(100);
+  const [caloriesRange, setCaloriesRange] = useState([0, 2000]);
+  const [maxCaloriesValue, setMaxCaloriesValue] = useState(2000);
   const [sortBy, setSortBy] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
-
-  const [openDialog, setOpenDialog] = useState(false);
-  const [tableNumber, setTableNumber] = useState("");
-  const [waiterSuccess, setWaiterSuccess] = useState(null);
 
   const PriceSlider = styled(Slider)({
     color: '#3a8589',
@@ -116,7 +115,7 @@ function Menu() {
 
   const [containerRef, containerWidth] = useContainerWidth();
 
-  React.useEffect(() => {
+  useEffect(() => {
     axios
       .get(`${API_ENDPOINT}/api/menuItems`)
       .then((response) => {
@@ -127,7 +126,7 @@ function Menu() {
       });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (menuItems.length > 0) {
       const maxPrice = Math.ceil(Math.max(...menuItems.map(item => item.price)));
       setMaxPriceValue(maxPrice);
@@ -151,7 +150,7 @@ function Menu() {
 
     const orderData = {
       orderTime: new Date().toISOString(),
-      status: "Pending",
+      status: "PENDING",
       menuItems: cart.map(item => ({
         itemId: item.itemId,
         name: item.name,
@@ -187,18 +186,8 @@ function Menu() {
       );
   
       setWaiterSuccess(`Waiter has been notified you need assistance at table #${tableNumber}`);
-      const response = await axios.post(
-        `${API_ENDPOINT}/api/help-requests`, 
-        { tableNumber: parseInt(tableNumber, 10), waiterId: 1 }, 
-        { headers: { "Content-Type": "application/json" } }
-      );
-  
-      setWaiterSuccess(`Waiter has been notified you need assistance at table #${tableNumber}`);
       setWaiterError(null);
     } catch (err) {
-      console.error("API Error:", err.response?.data || err.message);
-      setWaiterSuccess(null);
-      setWaiterError("Error notifying waiter. Please try again.");
       console.error("API Error:", err.response?.data || err.message);
       setWaiterSuccess(null);
       setWaiterError("Error notifying waiter. Please try again.");
@@ -211,11 +200,13 @@ function Menu() {
   const filteredMenuItems = menuItems
     .filter(item => {
       const price = item.price;
+      const calories = item.caloricInfo;
       const meetsPrice = price >= priceRange[0] && price <= priceRange[1];
+      const meetsCalories = calories >= caloriesRange[0] && calories <= caloriesRange[1];
       const hasDietary = selectedDietary.every(d => item.dietaryRestrictions.includes(d));
       const excludesAllergens = selectedAllergens.length === 0 || 
                                 !selectedAllergens.some(a => item.allergenInformation.includes(a));
-      return hasDietary && excludesAllergens && meetsPrice;
+      return hasDietary && excludesAllergens && meetsPrice && meetsCalories;
     })
     .sort((a, b) => {
       const availabilitySort = Number(b.available) - Number(a.available);
@@ -787,9 +778,5 @@ function Menu() {
     </Container>
   );
 }
-
-Menu.defaultProps = {
-  isEmbedded: false
-};
 
 export default Menu;
