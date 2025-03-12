@@ -33,14 +33,14 @@ public class WaiterController {
   private WaiterRepository waiterRepository;
 
   @Autowired
-  private OrderRepository orderRepository;
+  private OrderRepository orderRepository; // Inject order repo
 
   /**
-   * Notifies the waiter of a new order.
+   * Notifies a waiter of a new order.
    *
    * @param waiterId The ID of the waiter to notify.
-   * @param order The order that has been placed.
-   * @return ResponseEntity with the notification status.
+   * @param order The new order details.
+   * @return ResponseEntity with the status message.
    */
   @PostMapping("/{waiterId}/notify-new-order")
   public ResponseEntity<String> notifyWaiterNewOrder(@PathVariable int waiterId,

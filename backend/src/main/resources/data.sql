@@ -25,6 +25,12 @@ VALUES
 (1, 'Gluten'),
 (1, 'Dairy'),
 (2, 'Dairy'),
-(3, 'Gluten'); 
+(3, 'Gluten'),
+(3, 'Eggs'),
+(6, 'Fish'),
+(6, 'Shellfish'),
+(7, 'Dairy'),
+(7, 'Eggs');
+
 INSERT INTO waiters (waiter_name, email, status, is_busy) 
-VALUES ('Lana Shaheen', 'Lana@gmail.com', 'Available', false);
+VALUES ('Lana Shaheen', 'Lana@gmail.com', 'Available', false); 

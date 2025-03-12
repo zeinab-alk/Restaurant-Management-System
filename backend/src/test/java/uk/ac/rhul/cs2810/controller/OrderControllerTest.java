@@ -109,7 +109,7 @@ public class OrderControllerTest {
     Order order2 = new Order(2, null, "2025-02-14 13:00", 10, OrderStatus.COMPLETED);
     List<Order> mockOrders = Arrays.asList(order1, order2);
 
-    when(orderRepository.findAll()).thenReturn(mockOrders);
+    when(orderRepository.findAllWithMenuItems()).thenReturn(mockOrders);
 
     // Act & Assert
     mockMvc.perform(get("/api/orders")).andDo(print()).andExpect(status().isOk())
@@ -128,8 +128,10 @@ public class OrderControllerTest {
     // Arrange
     Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, OrderStatus.COMPLETED);
 
-    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime")))
-        .thenReturn(Arrays.asList(latestOrder));
+    when(orderRepository.findLatestOrderWithMenuItems())
+        .thenReturn(Optional.of(latestOrder));
+    when(orderRepository.findTopByOrderByOrderTimeDesc())
+        .thenReturn(Optional.of(latestOrder));
 
     // Act & Assert
     mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isOk())
@@ -143,10 +145,11 @@ public class OrderControllerTest {
   @Test
   public void testGetLatestOrder_NotFound() throws Exception {
     // Arrange
-    when(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime"))).thenReturn(List.of());
+    when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.empty());
+    when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.empty());
 
     // Act & Assert
-    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isNoContent());
   }
 
   @Test

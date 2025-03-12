@@ -2,6 +2,8 @@ package uk.ac.rhul.cs2810.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import uk.ac.rhul.cs2810.repository.OrderRepository;
 public class OrderController {
 
   private final OrderRepository orderRepository;
+  private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
   public OrderController(OrderRepository orderRepository) {
     this.orderRepository = orderRepository;
@@ -67,29 +70,68 @@ public class OrderController {
    */
   @GetMapping
   public ResponseEntity<List<Order>> getAllOrders() {
-    List<Order> orders = orderRepository.findAll();
-    return ResponseEntity.ok(orders);
+    try {
+      long startTime = System.currentTimeMillis();
+      logger.info("Fetching all orders...");
+      
+      List<Order> orders = orderRepository.findAllWithMenuItems();
+      
+      long endTime = System.currentTimeMillis();
+      logger.info("Orders fetched successfully in {} ms. Found {} orders.", 
+          (endTime - startTime), orders.size());
+      
+      return ResponseEntity.ok(orders);
+    } catch (Exception e) {
+      logger.error("Error fetching orders: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
   }
 
   /**
-   * Retrieves the latest order by order time.
+   * Retrieves the most recent order.
    *
-   * @return ResponseEntity with the latest order.
+   * @return ResponseEntity containing the latest Order if found, or a 204 No Content response
    */
   @GetMapping("/latest")
   public ResponseEntity<Order> getLatestOrder() {
-    List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderTime"));
-
-    if (!orders.isEmpty()) {
-      Order latestOrder = orders.get(0);
-
-      // Debugging: Log retrieved items
-      System.out.println("Latest Order Found: " + latestOrder.getOrderNumber());
-      System.out.println("Menu Items in Order: " + latestOrder.getItems());
-
-      return ResponseEntity.ok(latestOrder);
+    try {
+      long startTime = System.currentTimeMillis();
+      logger.info("Fetching latest order...");
+      
+      // First try with optimized query
+      Optional<Order> latestOrder = orderRepository.findLatestOrderWithMenuItems();
+      
+      // Fallback to simpler query if the optimized one doesn't work
+      if (latestOrder.isEmpty()) {
+        latestOrder = orderRepository.findTopByOrderByOrderTimeDesc();
+      }
+      
+      if (latestOrder.isPresent()) {
+        Order order = latestOrder.get();
+        logger.info("Latest Order Found: {}", order.getOrderNumber());
+        
+        // Only log detailed info at debug level to reduce console spam
+        if (logger.isDebugEnabled()) {
+          logger.debug("Menu Items in Order: {}", order.getMenuItems());
+        }
+        
+        long endTime = System.currentTimeMillis();
+        logger.info("Latest order fetched in {} ms", (endTime - startTime));
+        
+        // Add cache control headers to reduce load on frequent polling
+        return ResponseEntity
+            .ok()
+            .header("Cache-Control", "max-age=1") // Cache for 1 second
+            .body(order);
+      } else {
+        // Return an empty response with 204 No Content instead of 404
+        logger.info("No orders found in the system");
+        return ResponseEntity.noContent().build();
+      }
+    } catch (Exception e) {
+      logger.error("Error fetching latest order: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
   }
 
   /**

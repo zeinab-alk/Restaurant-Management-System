@@ -41,7 +41,8 @@ public class HelpRequestController {
    */
   @PostMapping
   public ResponseEntity<?> createHelpRequest(@RequestBody HelpRequest request) {
-    logger.info(" Received HelpRequest: Table {}", request.getTableNumber());
+    final long startTime = System.currentTimeMillis();
+    logger.info("Received HelpRequest: Table {}", request.getTableNumber());
 
     if (request.getTableNumber() <= 0) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid table number.");
@@ -60,13 +61,17 @@ public class HelpRequestController {
 
     // Save to DB
     helpRequestRepository.save(request);
-    logger.info("✅ Help request successfully saved for Table {}", request.getTableNumber());
+    long endTime = System.currentTimeMillis();
+    logger.info("✅ Help request successfully saved for Table {} in {} ms", 
+        request.getTableNumber(), (endTime - startTime));
 
     return new ResponseEntity<>(request, HttpStatus.CREATED);
   }
 
   /**
    * Retrieves all unresolved HelpRequests.
+   *
+   * @return ResponseEntity containing a list of unresolved help requests
    */
   @GetMapping
   public ResponseEntity<List<HelpRequest>> getActiveHelpRequests() {
@@ -85,11 +90,11 @@ public class HelpRequestController {
         .orElseGet(() -> ResponseEntity.notFound().build()); // If not found, return HTTP 404
   }
 
-
-
-
   /**
    * Resolves a HelpRequest by ID.
+   *
+   * @param id the ID of the help request to resolve
+   * @return ResponseEntity containing the updated help request if found, or a 404 response
    */
   @PutMapping("/{id}/resolve")
   public ResponseEntity<?> resolveHelpRequest(@PathVariable Long id) {

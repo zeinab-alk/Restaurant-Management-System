@@ -44,10 +44,12 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOriginPatterns(Arrays.asList("*")); // Allow all origins
+    config.addAllowedOrigin("http://localhost:5173"); // Explicitly allow frontend
     config.setAllowedHeaders(Arrays.asList("*"));        // Allow all headers
     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     config.setAllowCredentials(true); // Allow credentials (for authentication)
     config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+    config.setMaxAge(3600L); // Cache preflight requests for 1 hour
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);

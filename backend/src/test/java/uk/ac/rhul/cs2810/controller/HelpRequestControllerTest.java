@@ -8,7 +8,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,10 +22,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.ac.rhul.cs2810.model.HelpRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.HelpRequestRepository;
+import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,20 +42,70 @@ public class HelpRequestControllerTest {
 
   @MockBean
   private HelpRequestRepository helpRequestRepository;
+  
+  @MockBean
+  private WaiterRepository waiterRepository;
+  
+  private Waiter testWaiter;
+  private HelpRequest testHelpRequest;
+  
+  @BeforeEach
+  public void setup() {
+    testWaiter = new Waiter();
+    testWaiter.setId(1);
+    testWaiter.setName("Test Waiter");
+    
+    testHelpRequest = new HelpRequest(5, testWaiter);
+    testHelpRequest.setId(1L);
+    testHelpRequest.setResolved(false);
+  }
 
   /**
    * Test creating a help request.
    */
   @Test
   public void testCreateHelpRequest() throws Exception {
-    HelpRequest helpRequest = new HelpRequest(5, new Waiter());
-    when(helpRequestRepository.save(any(HelpRequest.class))).thenReturn(helpRequest);
+    // Set up mock repository behavior
+    when(waiterRepository.findAll()).thenReturn(Arrays.asList(testWaiter));
+    when(helpRequestRepository.save(any(HelpRequest.class))).thenReturn(testHelpRequest);
 
     mockMvc
-        .perform(post("/api/help-requests").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(helpRequest))) // Send JSON body
-        .andDo(print()).andExpect(status().isCreated())
-        .andExpect(jsonPath("$.tableNumber").value(5));
+        .perform(post("/api/help-requests")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"tableNumber\":5}"))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.tableNumber").value(5))
+        .andExpect(jsonPath("$.resolved").value(false));
+  }
+  
+  /**
+   * Test creating a help request with invalid table number.
+   */
+  @Test
+  public void testCreateHelpRequestWithInvalidTableNumber() throws Exception {
+    mockMvc
+        .perform(post("/api/help-requests")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"tableNumber\":-1}"))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+  
+  /**
+   * Test creating a help request when no waiters are available.
+   */
+  @Test
+  public void testCreateHelpRequestNoWaitersAvailable() throws Exception {
+    // Set up empty waiter list
+    when(waiterRepository.findAll()).thenReturn(Collections.emptyList());
+
+    mockMvc
+        .perform(post("/api/help-requests")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"tableNumber\":5}"))
+        .andDo(print())
+        .andExpect(status().isNotFound());
   }
 
   /**
@@ -54,11 +113,13 @@ public class HelpRequestControllerTest {
    */
   @Test
   public void testGetHelpRequestById() throws Exception {
-    HelpRequest helpRequest = new HelpRequest(3, new Waiter());
-    when(helpRequestRepository.findById(3L)).thenReturn(Optional.of(helpRequest));
+    when(helpRequestRepository.findById(1L)).thenReturn(Optional.of(testHelpRequest));
 
-    mockMvc.perform(get("/api/help-requests/3")).andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$.tableNumber").value(3));
+    mockMvc.perform(get("/api/help-requests/1"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tableNumber").value(5))
+        .andExpect(jsonPath("$.resolved").value(false));
   }
 
   /**
@@ -68,7 +129,9 @@ public class HelpRequestControllerTest {
   public void testGetHelpRequestByIdNotFound() throws Exception {
     when(helpRequestRepository.findById(99L)).thenReturn(Optional.empty());
 
-    mockMvc.perform(get("/api/help-requests/99")).andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/help-requests/99"))
+        .andDo(print())
+        .andExpect(status().isNotFound());
   }
 
   /**
@@ -76,13 +139,18 @@ public class HelpRequestControllerTest {
    */
   @Test
   public void testResolveHelpRequest() throws Exception {
-    HelpRequest helpRequest = new HelpRequest(4, new Waiter());
-    helpRequest.setResolved(false);
-    when(helpRequestRepository.findById(4L)).thenReturn(Optional.of(helpRequest));
-    when(helpRequestRepository.save(helpRequest)).thenReturn(helpRequest);
+    HelpRequest resolvedRequest = new HelpRequest(5, testWaiter);
+    resolvedRequest.setId(1L);
+    resolvedRequest.setResolved(true);
+    
+    when(helpRequestRepository.findById(1L)).thenReturn(Optional.of(testHelpRequest));
+    when(helpRequestRepository.save(any(HelpRequest.class))).thenReturn(resolvedRequest);
 
-    mockMvc.perform(put("/api/help-requests/4/resolve").contentType(MediaType.APPLICATION_JSON))
-        .andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.resolved").value(true));
+    mockMvc.perform(put("/api/help-requests/1/resolve")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resolved").value(true));
   }
 
   /**
@@ -92,18 +160,39 @@ public class HelpRequestControllerTest {
   public void testResolveHelpRequestNotFound() throws Exception {
     when(helpRequestRepository.findById(99L)).thenReturn(Optional.empty());
 
-    mockMvc.perform(put("/api/help-requests/99/resolve").contentType(MediaType.APPLICATION_JSON))
-        .andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(put("/api/help-requests/99/resolve")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isNotFound());
   }
 
   /**
-   * Test retrieving all help requests.
+   * Test retrieving all active (unresolved) help requests.
    */
   @Test
-  public void testGetAllHelpRequests() throws Exception {
-    when(helpRequestRepository.findByResolvedFalse()).thenReturn(java.util.Collections.emptyList());
+  public void testGetActiveHelpRequests() throws Exception {
+    List<HelpRequest> activeRequests = Arrays.asList(testHelpRequest);
+    when(helpRequestRepository.findByResolvedFalse()).thenReturn(activeRequests);
 
-    mockMvc.perform(get("/api/help-requests")).andDo(print()).andExpect(status().isOk());
+    mockMvc.perform(get("/api/help-requests"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].tableNumber").value(5))
+        .andExpect(jsonPath("$[0].resolved").value(false));
+  }
+  
+  /**
+   * Test retrieving all help requests when none are active.
+   */
+  @Test
+  public void testGetActiveHelpRequestsEmpty() throws Exception {
+    when(helpRequestRepository.findByResolvedFalse()).thenReturn(Collections.emptyList());
+
+    mockMvc.perform(get("/api/help-requests"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$").isEmpty());
   }
 }
 

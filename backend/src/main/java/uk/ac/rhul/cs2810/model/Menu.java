@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs2810.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a restaurant menu.
@@ -15,10 +17,10 @@ import java.util.List;
 @Entity
 public class Menu {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id  // Marks this field as the primary key
+  @GeneratedValue(strategy = GenerationType.IDENTITY)  // Configures auto-generation of IDs
   @Column(name = "menu_id")
-  private Integer menuId;
+  private Integer id;
 
   private String name;
 
@@ -39,44 +41,73 @@ public class Menu {
    * @param name the menu name.
    */
   public Menu(int menuId, String name) {
-    this.menuId = menuId;
+    this.id = menuId;
     this.name = name;
     this.menuItems = new ArrayList<>();
   }
 
-  public Integer getMenuId() {
-    return menuId;
+  /**
+   * Gets the menu's unique identifier.
+   *
+   * @return The menu's ID
+   */
+  public Integer getId() {
+    return id;
   }
 
-  public void setMenuId(Integer menuId) {
-    this.menuId = menuId;
+  /**
+   * Sets the menu's unique identifier.
+   *
+   * @param id The ID to set
+   */
+  public void setId(Integer id) {
+    this.id = id;
   }
 
+  /**
+   * Gets the menu name.
+   *
+   * @return The menu name
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Sets the menu name.
+   *
+   * @param name The name to set
+   */
   public void setName(String name) {
     this.name = name;
   }
 
+  /**
+   * Gets the list of menu items.
+   *
+   * @return List of menu items
+   */
   public List<MenuItem> getMenuItems() {
     return menuItems;
   }
 
   public void setMenuItems(List<MenuItem> menuItems) {
-    this.menuItems = menuItems;
+    this.menuItems = menuItems != null ? menuItems : new ArrayList<>();
   }
 
   /**
    * Retrieves a menu item by its name.
    *
-   * @param itemName the name of the menu item.
+   * @param name the name of the menu item.
    * @return the MenuItem if found, otherwise null.
    */
-  public MenuItem getItemByName(String itemName) {
+  public MenuItem getItemByName(String name) {
+    if (name == null || menuItems == null) {
+      return null;
+    }
+    
     for (MenuItem item : menuItems) {
-      if (item.getName().equalsIgnoreCase(itemName)) {
+      if (item != null && name.equalsIgnoreCase(item.getName())) {
         return item;
       }
     }
@@ -89,7 +120,29 @@ public class Menu {
    * @param item the menu item to add.
    */
   public void addMenuItem(MenuItem item) {
-    this.menuItems.add(item);
+    if (item != null) {
+      if (menuItems == null) {
+        menuItems = new ArrayList<>();
+      }
+      menuItems.add(item);
+    }
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    Menu menu = (Menu) obj;
+    return Objects.equals(id, menu.id);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 }
 
