@@ -116,4 +116,12 @@ CREATE TABLE payment (
     payment_status payment_status,
     PRIMARY KEY (payment_id),
     FOREIGN KEY (order_id) REFERENCES "order"(order_id)
+    
+CREATE TABLE waiter_tables (
+    waiter_id INT NOT NULL,
+    table_number INT NOT NULL,
+    PRIMARY KEY (waiter_id, table_number),
+    FOREIGN KEY (waiter_id) REFERENCES waiters(waiter_id) ON DELETE CASCADE
+);
+    
 );
