@@ -1,5 +1,8 @@
 package uk.ac.rhul.cs2810.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -8,9 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Waiter entity class.
@@ -31,7 +33,7 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTables;
+  private List<Integer> assignedTablesLegacy; // Renamed to keep old data
 
   @ElementCollection
   private List<String> currentOrders;
@@ -42,6 +44,14 @@ public class Waiter {
 
   @Column(name = "is_busy")
   private boolean busy = false;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "waiter_id")
+  private List<TableAssignment> assignedTables = new ArrayList<>();
+
+  public void assignTable(int tableNumber) {
+    assignedTables.add(new TableAssignment(tableNumber));
+  }
 
   /**
    * Default constructor required by JPA.
@@ -69,7 +79,6 @@ public class Waiter {
    * Overloaded method for confirming order without parameters (stub method).
    */
   public void confirmOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Confirming order...");
   }
 
@@ -103,7 +112,6 @@ public class Waiter {
     System.out.println("Order " + order.getOrderNumber() + " confirmed.");
     return true;
   }
-
 
   /**
    * Changes menu availability.
@@ -161,18 +169,15 @@ public class Waiter {
         this.currentOrders = new ArrayList<>();
       }
 
-      // Add the order number
       String orderId = String.valueOf(order.getOrderNumber());
       if (!this.currentOrders.contains(orderId)) {
         this.currentOrders.add(orderId);
       }
 
-      // Print exactly what the test expects
       String notificationMessage =
           "Waiter " + this.name + " has been notified of new order: " + orderId;
       System.out.println(notificationMessage);
 
-      // Extracting ordered items
       List<MenuItem> orderedItems = order.getMenuItems();
       StringBuilder orderDetails = new StringBuilder("Order " + order.getOrderNumber() + ": ");
 
@@ -180,12 +185,10 @@ public class Waiter {
         orderDetails.append(item.getName()).append(", ");
       }
 
-      // Remove trailing comma
       if (!orderedItems.isEmpty()) {
         orderDetails.setLength(orderDetails.length() - 2);
       }
 
-      // Add the formatted order details to currentOrders
       this.currentOrders.add(orderDetails.toString());
 
       System.out
@@ -193,12 +196,6 @@ public class Waiter {
     }
   }
 
-  /**
-   * Retrieves a list of assigned tables where orders have been delivered but not yet paid.
-   *
-   * @param allOrders The list of all orders in the system.
-   * @return A list of table numbers where payment is still pending.
-   */
   public List<Integer> getUnpaidTables(List<Order> allOrders) {
     List<Integer> unpaidTables = new ArrayList<>();
 
@@ -211,7 +208,8 @@ public class Waiter {
       Customer customer = order.getCustomer();
       if (customer != null) {
         int tableNumber = (int) customer.getId();
-        if (assignedTables.contains(tableNumber) && order.getStatus() == OrderStatus.DELIVERED) {
+        if (getAssignedTableNumbers().contains(tableNumber)
+            && order.getStatus() == OrderStatus.DELIVERED) {
           unpaidTables.add(tableNumber);
         }
       }
@@ -228,22 +226,18 @@ public class Waiter {
   }
 
   public void trackOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Tracking order...");
   }
 
   public void updateOrderStatus() {
-    // Stub method for WaiterTest compilation
     System.out.println("Updating order status...");
   }
 
   public void cancelOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Cancelling order...");
   }
 
   public void notifyTeam() {
-    // Stub method for WaiterTest compilation
     System.out.println("Notifying the team...");
   }
 
@@ -289,11 +283,19 @@ public class Waiter {
     this.menu = menu;
   }
 
-  public List<Integer> getAssignedTables() {
+  public List<Integer> getAssignedTableNumbers() {
+    List<Integer> tableNumbers = new ArrayList<>();
+    for (TableAssignment ta : assignedTables) {
+      tableNumbers.add(ta.getTableNumber());
+    }
+    return tableNumbers;
+  }
+
+  public List<TableAssignment> getAssignedTables() {
     return assignedTables;
   }
 
-  public void setAssignedTables(List<Integer> assignedTables) {
+  public void setAssignedTables(List<TableAssignment> assignedTables) {
     this.assignedTables = assignedTables;
   }
 
@@ -305,3 +307,4 @@ public class Waiter {
     this.currentOrders = currentOrders;
   }
 }
+
