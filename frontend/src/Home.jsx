@@ -41,6 +41,20 @@ function Home() {
         >
           Waiter Access
         </Button>
+
+        <Button
+            component={RouterLink}
+            to="/kitchen"
+            variant="contained"
+            color="success"
+            size="large"
+            sx={{
+                py: 2,
+                fontSize: '1.2rem'
+            }}
+        >
+            Kitchen Access
+        </Button>
       </Stack>
     </Box>
   );

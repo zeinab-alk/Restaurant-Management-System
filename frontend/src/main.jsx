@@ -9,6 +9,7 @@ import App from "./App";
 import Home from "./Home";
 import Menu from "./menu/Menu";
 import WaiterPage from "./waiter/Waiter";
+import KitchenPage from "./Kitchen/KitchenPage";
 import AddMenuItem from "./menuitem/AddMenuItem";
 import ChangeMenuItem from "./menuitem/ChangeMenuItem";
 import EditMenuItem from "./menuitem/EditMenuItem";
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/waiter/edit-item/:id",
     element: <App><EditMenuItem /></App>,
+  },
+  {
+    path: "/kitchen",
+    element: <App><KitchenPage /></App>,
   },
 ]);
 

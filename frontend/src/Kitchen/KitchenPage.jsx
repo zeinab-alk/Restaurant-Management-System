@@ -11,8 +11,11 @@ const KitchenPage = () => {
 
     const fetchPreparingOrders = async () => {
         try {
-            const response = await axios.get("/api/orders?status=Preparing"); // Fetch orders with "Preparing" status
-            setOrders(response.data);
+            const response = await axios.get("/api/orders");
+            // Filter orders that have status "Preparing"
+            const preparingOrders = Array.isArray(response.data)
+                ? response.data.filter(order => order.status === "Pending")
+                : [];
         } catch (error) {
             console.error("Error fetching orders:", error);
         }
