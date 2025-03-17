@@ -16,6 +16,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -43,15 +44,21 @@ public class Order {
   private Customer customer;
 
   @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "order_menu_item",
-      joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "item_id")
-  )
+  @JoinTable(name = "order_menu_item", joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "item_id"))
   private List<MenuItem> menuItems;
 
-  private String orderTime;
-  private int waitingTime;
+  @Column(name = "order_placed_time", nullable = false)
+  private LocalDateTime orderPlacedTime;
+
+  @Column(name = "order_updated_time")
+  private LocalDateTime orderUpdatedTime;
+
+  @Column(name = "estimated_completion_time")
+  private LocalDateTime estimatedCompletionTime;
+
+  // private String orderTime;
+  // private int waitingTime;
 
   @Enumerated(EnumType.STRING)
   @JsonProperty("status")
@@ -70,8 +77,9 @@ public class Order {
       OrderStatus status) {
     this.orderNumber = orderNumber;
     this.customer = customer;
-    this.orderTime = orderTime;
-    this.waitingTime = waitingTime;
+    this.orderPlacedTime = LocalDateTime.now();
+    // this.orderTime = orderTime;
+    // this.waitingTime = waitingTime;
     this.status = status;
     this.menuItems = new ArrayList<>();
   }
@@ -103,20 +111,16 @@ public class Order {
     this.menuItems = (items != null) ? items : new ArrayList<>();
   }
 
-  public String getOrderTime() {
-    return orderTime;
+  public LocalDateTime getOrderPlacedTime() {
+    return orderPlacedTime;
   }
 
-  public void setOrderTime(String orderTime) {
-    this.orderTime = orderTime;
+  public LocalDateTime getOrderUpdatedTime() {
+    return orderUpdatedTime;
   }
 
-  public int getWaitingTime() {
-    return waitingTime;
-  }
-
-  public void setWaitingTime(int waitingTime) {
-    this.waitingTime = waitingTime;
+  public LocalDateTime getEstimatedCompletionTime() {
+    return estimatedCompletionTime;
   }
 
   public OrderStatus getStatus() {
@@ -185,13 +189,21 @@ public class Order {
    *
    * @param newStatus The new status to set.
    */
-  public void updateStatus(OrderStatus newStatus) {
+  public void updateOrderStatus(OrderStatus newStatus) {
     // Prevent skipping key order statuses
     if (this.status == OrderStatus.PENDING && newStatus == OrderStatus.DELIVERED) {
       throw new InvalidOrderStateException("Order cannot skip directly from PENDING to DELIVERED.");
     }
-    logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
+
     this.status = newStatus;
+    this.orderUpdatedTime = LocalDateTime.now();
+
+    // If moving to IN_PROGRESS, estimate completion time
+    if (newStatus == OrderStatus.IN_PROGRESS) {
+      this.estimatedCompletionTime = LocalDateTime.now().plusMinutes(15);
+    }
+
+    logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
   }
 
   /**
