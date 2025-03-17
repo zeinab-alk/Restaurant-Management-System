@@ -224,6 +224,7 @@ public class WaiterController {
   }
 
 
+
   /**
    * Assigns a table to a waiter.
    *
@@ -256,6 +257,15 @@ public class WaiterController {
     List<Waiter> waiters = (List<Waiter>) waiterRepository.findAll();
     return ResponseEntity.ok(waiters);
   }
+
+
+  /**
+   * Retrieves a list of tables with orders that have been delivered but not yet paid.
+   *
+   * @param waiterId The ID of the waiter to check.
+   * @return ResponseEntity containing a list of table numbers with unpaid orders or a message
+   *         indicating all orders are paid.
+   */
 
   @GetMapping("/{waiterId}/unpaid-tables")
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
@@ -296,8 +306,6 @@ public class WaiterController {
           + " needs to check payment for the following tables: " + unpaidTables);
     }
   }
-
-
 
 }
 
