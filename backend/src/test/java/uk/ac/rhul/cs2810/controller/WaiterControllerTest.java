@@ -552,5 +552,26 @@ public class WaiterControllerTest {
         .contains("Waiter John needs to check payment for the following tables: [10, 20]"));
   }
 
+  @Test
+  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ShouldReturnBadRequest()
+      throws Exception {
+    // Arrange
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    waiter.setAssignedTables(null); // No assigned tables
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+    // Act
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+    // Assert
+    assertNotNull(response);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("No tables assigned to waiter John.", response.getBody());
+  }
+
 
 }
