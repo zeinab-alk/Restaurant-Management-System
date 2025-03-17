@@ -553,25 +553,33 @@ public class WaiterControllerTest {
   }
 
   @Test
-  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ShouldReturnBadRequest()
+  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput()
       throws Exception {
-    // Arrange
     int waiterId = 1;
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
     waiter.setName("John");
-    waiter.setAssignedTables(null); // No assigned tables
+    waiter.setAssignedTables(null); // Waiter john has no tables assigned to him should output error
+                                    // message
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
-    // Act
     ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
 
-    // Assert
     assertNotNull(response);
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertEquals("No tables assigned to waiter John.", response.getBody());
   }
 
+  @Test
+  public void getUnpaidTables_WhenWaiterDoesNotExist_ErrorOutput() throws Exception {
+    int waiterId = 80;
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+    assertNotNull(response);
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Waiter with ID 80 not found.", response.getBody());
+  }
 
 }
