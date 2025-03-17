@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.rhul.cs2810.model.Customer;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -221,6 +223,13 @@ public class WaiterController {
     return ResponseEntity.ok(readyOrders);
   }
 
+  /**
+   * Retrieves a list of tables with orders that have been delivered but not yet paid.
+   *
+   * @param waiterId The ID of the waiter to check.
+   * @return ResponseEntity containing a list of table numbers with unpaid orders or a message
+   *         indicating all orders are paid.
+   */
   @GetMapping("/{waiterId}/unpaid-tables")
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
     Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
@@ -249,7 +258,7 @@ public class WaiterController {
           unpaidTables.add(tableNumber);
         }
       }
-    }
+      }
 
     // Respond based on whether there are unpaid tables
     if (unpaidTables.isEmpty()) {
@@ -260,8 +269,6 @@ public class WaiterController {
           + " needs to check payment for the following tables: " + unpaidTables);
     }
   }
-
-
 
 }
 
