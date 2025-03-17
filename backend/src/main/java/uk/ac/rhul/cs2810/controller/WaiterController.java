@@ -240,7 +240,7 @@ public class WaiterController {
     }
 
     Waiter waiter = optionalWaiter.get();
-    List<Order> allOrders = orderRepository.findAll(); // Fetch all orders in the system
+    List<Order> allOrders = orderRepository.findAll();
     List<Integer> unpaidTables = new ArrayList<>();
 
     if (waiter.getAssignedTables() == null || waiter.getAssignedTables().isEmpty()) {
@@ -248,7 +248,7 @@ public class WaiterController {
           .body("No tables assigned to waiter " + waiter.getName() + ".");
     }
 
-    // Iterate over orders to find unpaid tables
+    // Check every orders to find unpaid tables
     for (Order order : allOrders) {
       Customer customer = order.getCustomer();
       if (customer != null) {
@@ -258,9 +258,8 @@ public class WaiterController {
           unpaidTables.add(tableNumber);
         }
       }
-      }
-
-    // Respond based on whether there are unpaid tables
+    }
+    // Message will be outputtted based on if tables have or have not paid
     if (unpaidTables.isEmpty()) {
       return ResponseEntity
           .ok("All delivered orders for waiter " + waiter.getName() + " have been paid.");
