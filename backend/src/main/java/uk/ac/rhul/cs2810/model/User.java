@@ -1,8 +1,14 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
+/**
+ * This represents a user who is associated with Oaxaca restaurant.
+ */
+
+@Entity
 public class User {
   
   @Id
