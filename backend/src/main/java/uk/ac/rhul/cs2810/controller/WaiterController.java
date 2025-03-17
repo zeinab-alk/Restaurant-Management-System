@@ -220,6 +220,49 @@ public class WaiterController {
     }
     return ResponseEntity.ok(readyOrders);
   }
+
+  @GetMapping("/{waiterId}/unpaid-tables")
+  public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("Waiter with ID " + waiterId + " not found.");
+    }
+
+    Waiter waiter = optionalWaiter.get();
+    List<Order> allOrders = orderRepository.findAll(); // Fetch all orders in the system
+    List<Integer> unpaidTables = new ArrayList<>();
+
+    if (waiter.getAssignedTables() == null || waiter.getAssignedTables().isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("No tables assigned to waiter " + waiter.getName() + ".");
+    }
+
+    // Iterate over orders to find unpaid tables
+    for (Order order : allOrders) {
+      Customer customer = order.getCustomer();
+      if (customer != null) {
+        int tableNumber = (int) customer.getId();
+        if (waiter.getAssignedTables().contains(tableNumber)
+            && order.getStatus() == OrderStatus.DELIVERED) {
+          unpaidTables.add(tableNumber);
+        }
+      }
+    }
+
+    // Respond based on whether there are unpaid tables
+    if (unpaidTables.isEmpty()) {
+      return ResponseEntity
+          .ok("All delivered orders for waiter " + waiter.getName() + " have been paid.");
+    } else {
+      return ResponseEntity.ok("Waiter " + waiter.getName()
+          + " needs to check payment for the following tables: " + unpaidTables);
+    }
+  }
+
+
+
 }
 
 
