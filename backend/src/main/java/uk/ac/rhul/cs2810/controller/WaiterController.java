@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.rhul.cs2810.model.Customer;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -220,6 +222,53 @@ public class WaiterController {
     }
     return ResponseEntity.ok(readyOrders);
   }
+
+  /**
+   * Retrieves a list of tables with orders that have been delivered but not yet paid.
+   *
+   * @param waiterId The ID of the waiter to check.
+   * @return ResponseEntity containing a list of table numbers with unpaid orders or a message
+   *         indicating all orders are paid.
+   */
+  @GetMapping("/{waiterId}/unpaid-tables")
+  public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("Waiter with ID " + waiterId + " not found.");
+    }
+
+    Waiter waiter = optionalWaiter.get();
+    List<Order> allOrders = orderRepository.findAll();
+    List<Integer> unpaidTables = new ArrayList<>();
+
+    if (waiter.getAssignedTables() == null || waiter.getAssignedTables().isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("No tables assigned to waiter " + waiter.getName() + ".");
+    }
+
+    // Check every orders to find unpaid tables
+    for (Order order : allOrders) {
+      Customer customer = order.getCustomer();
+      if (customer != null) {
+        int tableNumber = (int) customer.getId();
+        if (waiter.getAssignedTables().contains(tableNumber)
+            && order.getStatus() == OrderStatus.DELIVERED) {
+          unpaidTables.add(tableNumber);
+        }
+      }
+    }
+    // Message will be outputtted based on if tables have or have not paid
+    if (unpaidTables.isEmpty()) {
+      return ResponseEntity
+          .ok("All delivered orders for waiter " + waiter.getName() + " have been paid.");
+    } else {
+      return ResponseEntity.ok("Waiter " + waiter.getName()
+          + " needs to check payment for the following tables: " + unpaidTables);
+    }
+  }
+
 }
 
 

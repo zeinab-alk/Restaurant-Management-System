@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import uk.ac.rhul.cs2810.model.Customer;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -472,5 +474,95 @@ public class WaiterControllerTest {
         .andExpect(jsonPath("$[0].orderNumber").value(1))
         .andExpect(jsonPath("$[1].orderNumber").value(2));
   }
+  
+  @Test
+  public void getUnpaidTables_WhenWaiterExistsAndHasAssignedTables_ValidResponse_ShouldOutputTables()
+      throws Exception {
+      // Arrange
+      int waiterId = 1;
+      Waiter waiter = new Waiter();
+      waiter.setId(waiterId);
+      waiter.setName("John");
+      waiter.setAssignedTables(Arrays.asList(10, 20));
+
+      Customer customer1 = new Customer();
+      customer1.setId(10);
+
+      Customer customer2 = new Customer();
+      customer2.setId(20);
+
+      Customer customer3 = new Customer();
+      customer3.setId(30); // Has not waiiter assigned to customer
+
+      Order order1 = new Order();
+      order1.setStatus(OrderStatus.DELIVERED);
+      order1.setCustomer(customer1);
+
+      Order order2 = new Order();
+      order2.setStatus(OrderStatus.DELIVERED);
+      order2.setCustomer(customer2);
+
+      Order order3 = new Order();
+      order3.setStatus(OrderStatus.DELIVERED);
+      order3.setCustomer(customer3);
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+      when(orderRepository.findAll()).thenReturn(Arrays.asList(order1, order2, order3));
+
+      ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+      assertNotNull(response);
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertTrue(response.getBody().contains("Waiter John needs to check payment for the following tables: [10, 20]"));
+  }
+
+  @Test
+  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput()
+      throws Exception {
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    waiter.setAssignedTables(null); // Waiter john has no tables assigned to him should output error
+                                    // message
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("No tables assigned to waiter John.", response.getBody());
+  }
+
+  @Test
+  public void getUnpaidTables_WhenWaiterDoesNotExist_ErrorOutput() throws Exception {
+    int waiterId = 80;
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+    assertNotNull(response);
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Waiter with ID 80 not found.", response.getBody());
+  }
+
+  @Test
+  public void getUnpaidTables_WhenAllOrderHaveBeenPaid_ValidMessage() throws Exception {
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    waiter.setAssignedTables(Arrays.asList(10, 20));
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findAll()).thenReturn(Collections.emptyList());
+
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("All delivered orders for waiter John have been paid.", response.getBody());
+  }
+
 
 }
