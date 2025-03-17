@@ -545,4 +545,33 @@ public class WaiterControllerTest {
     assertEquals("Waiter with ID 80 not found.", response.getBody());
   }
 
+  @Test
+  public void getUnpaidTables_WhenAllOrderHaveBeenPaid_ValidMessage() throws Exception {
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    waiter.setAssignedTables(Arrays.asList(10, 20));
+
+    Customer customer1 = new Customer();
+    customer1.setId(10);
+    Customer customer2 = new Customer();
+    customer2.setId(20);
+    Order order1 = new Order();
+    order1.setStatus(OrderStatus.DELIVERED);
+    order1.setCustomer(customer1);
+    Order order2 = new Order();
+    order2.setStatus(OrderStatus.DELIVERED);
+    order2.setCustomer(customer2);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findAll()).thenReturn(Arrays.asList(order1, order2));
+
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("All delivered orders for waiter John have been paid.", response.getBody());
+  }
+
 }
