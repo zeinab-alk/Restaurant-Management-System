@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Button, Stack } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+
 
 const KitchenPage = () => {
     const [orders, setOrders] = useState([]);
@@ -28,7 +31,20 @@ const KitchenPage = () => {
     };
 
     return (
-        <div>
+
+        <div style={{padding: "1rem"}}>
+            {/* Add a row with the Back to Home button */}
+            <Stack direction="row" spacing={2} sx={{mb: 4}}>
+                <Button
+                    component={RouterLink}
+                    to="/"
+                    variant="contained"
+                    color="success"
+                >
+                    Back to Home
+                </Button>
+            </Stack>
+
             <h1>Kitchen Dashboard</h1>
             <h2>Orders in Preparation</h2>
             {orders.length === 0 ? (
@@ -43,6 +59,7 @@ const KitchenPage = () => {
                     ))}
                 </ul>
             )}
+
         </div>
     );
 };
