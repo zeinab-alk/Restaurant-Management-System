@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Button, Container, Stack, Typography, Alert, Table, TableBody, TableCell, TableRow, TableContainer, TableHead, Paper, Box, Chip } from "@mui/material";
 import axios from "axios";
@@ -14,6 +14,8 @@ const WaiterPage = () => {
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
+
+  const prevStatusesRef = useRef({});
 
   // Poll for latest order every 5 seconds
   useEffect(() => {
@@ -41,7 +43,27 @@ const WaiterPage = () => {
         const filtered = res.data.filter(order => 
           order.status !== 'Delivered'
         );
+
+        // Build a map of new statuses (key: orderNumber, value: status)
+        const newStatuses = {};
+        filtered.forEach(order => {
+          newStatuses[order.orderNumber] = order.status;
+        });
+
+        // Compare new statuses to old statuses
+        for (let order of filtered) {
+          const oldStatus = prevStatusesRef.current[order.orderNumber];
+          const newStatus = order.status;
+          // If an order has changed from 'Pending' to 'Ready'
+          if (oldStatus === 'Pending' && newStatus === 'Ready') {
+            setOrderNotification(`Order #${order.orderNumber} is now READY!`);
+            break; // Show one notification at a time
+          }
+        }
+
         setOrders(filtered);
+
+        prevStatusesRef.current = newStatuses;
       })
       .catch(err => {
         setError('Failed to load orders');
@@ -187,7 +209,7 @@ const WaiterPage = () => {
                     <TableCell>
                       <Chip 
                         label={order.status} 
-                        color={order.status === 'Pending' ? 'warning' : 'success'}
+                        color={order.status === 'Pending' ? 'warning' :  order.status === 'Ready' ? 'info' : 'success'}
                         size="small"
                       />
                     </TableCell>

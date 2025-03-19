@@ -393,6 +393,36 @@ public class WaiterControllerTest {
     assertEquals("Item unavailable: Steak", response.getBody());
   }
 
+  @Test
+  void testGetReadyOrders_ReturnsListOfReadyOrders() {
+    // Arrange
+    Order order1 = new Order();
+    order1.setOrderNumber(1);
+    order1.setStatus(Order.STATUS_READY);
+
+    Order order2 = new Order();
+    order2.setOrderNumber(2);
+    order2.setStatus(Order.STATUS_READY);
+
+    List<Order> mockReadyOrders = Arrays.asList(order1, order2);
+
+    // return these two 'ready' orders.
+    when(orderRepository.findByStatus(Order.STATUS_READY)).thenReturn(mockReadyOrders);
+
+    // Act
+    ResponseEntity<List<Order>> response = waiterController.getReadyOrders();
+
+    // Assert
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(2, response.getBody().size());
+    assertTrue(response.getBody().contains(order1));
+    assertTrue(response.getBody().contains(order2));
+
+    verify(orderRepository).findByStatus(Order.STATUS_READY);
+  }
+
 
 }
 
