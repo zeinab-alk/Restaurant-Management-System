@@ -38,6 +38,15 @@ const WaiterPage = () => {
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [newOrderAlert, setNewOrderAlert] = useState(false);
+  const [assignedTables, setAssignedTables] = useState({});
+  const [selectedWaiter, setSelectedWaiter] = useState(null);
+  const [newTable, setNewTable] = useState("");
+  const [waiters, setWaiters] = useState([]);
+  const [editingWaiter, setEditingWaiter] = useState(null);
+  const [editedTable, setEditedTable] = useState("");
+  const [editingWaiters, setEditingWaiters] = useState({});
+  const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
+  
 
   // Define available order statuses
   const orderStatuses = [
