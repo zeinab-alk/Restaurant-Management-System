@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,4 +153,42 @@ class OrderTest {
 
     assertEquals("Order cannot skip directly from PENDING to DELIVERED.", exception.getMessage());
   }
+
+  @Test
+  void testOrderPlacedTimeIsSetOnCreation() {
+    assertNotNull(order.getOrderPlacedTime(), "Order placed time should be set on creation.");
+    assertNotNull(order.getOrderUpdatedTime(), "Order updated time should be set on creation.");
+  }
+
+  @Test
+  void testOrderUpdatedTimeChangesOnUpdate() {
+    LocalDateTime initialUpdateTime = order.getOrderUpdatedTime();
+
+    // Ensure some time passes before updating
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      fail("Test interrupted unexpectedly");
+    } // Small delay to ensure timestamp changes
+
+    order.setStatus(OrderStatus.IN_PROGRESS);
+    order.updateOrderStatus(OrderStatus.COMPLETED);
+
+    assertTrue(order.getOrderUpdatedTime().isAfter(initialUpdateTime),
+        "Order updated time should change when order is updated.");
+  }
+
+  @Test
+  void testEstimatedCompletionTimeSetOnInProgress() {
+    order.setWaitingTime(30);
+    order.updateOrderStatus(OrderStatus.IN_PROGRESS);
+
+    assertNotNull(order.getEstimatedCompletionTime(),
+        "Estimated completion time should be set when order is IN_PROGRESS.");
+    assertEquals(order.getOrderUpdatedTime().plusMinutes(30), order.getEstimatedCompletionTime(),
+        "Estimated completion time should be calculated correctly.");
+  }
+
+
 }
