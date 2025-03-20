@@ -169,6 +169,25 @@ public class OrderControllerTest {
         .andExpect(jsonPath("$.status").value(OrderStatus.READY_FOR_DELIVERY.toString()));
   }
 
+  /**
+   * Test updating order status when the order is not found.
+   */
+  @Test
+  public void testUpdateOrderStatus_OrderNotFound() throws Exception {
+    // Arrange: mock the repository to return an empty Optional when searching for the order
+    when(orderRepository.findById(999)).thenReturn(Optional.empty());
+
+    // Create the DTO request object
+    OrderStatusUpdateRequest updateRequest = new OrderStatusUpdateRequest();
+    updateRequest.setStatus(OrderStatus.READY_FOR_DELIVERY);
+
+    // Act & Assert: verify we get NOT_FOUND when the order is not found
+    mockMvc
+        .perform(put("/api/orders/999/status").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateRequest)))
+        .andDo(print()).andExpect(status().isNotFound());
+  }
+
 
 }
 
