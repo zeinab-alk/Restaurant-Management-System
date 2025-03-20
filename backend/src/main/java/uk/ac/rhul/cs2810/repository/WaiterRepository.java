@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import uk.ac.rhul.cs2810.model.Waiter;
 
 /**
@@ -62,4 +63,14 @@ public interface WaiterRepository extends CrudRepository<Waiter, Integer> {
   @Query(value = "SELECT * FROM waiters w WHERE w.status='Available' AND w.busy=false "
       + "ORDER BY w.id ASC LIMIT 1", nativeQuery = true)
   Optional<Waiter> findAvailableWaiter();
+
+  /**
+   * Finds all waiters assigned to a specific table.
+   *
+   * @param tableNumber The table number.
+   * @return List of waiters assigned to the given table.
+   */
+  @Query("SELECT w FROM Waiter w JOIN w.assignedTables ta WHERE ta.tableNumber = :tableNumber")
+  List<Waiter> findWaitersByAssignedTable(@Param("tableNumber") int tableNumber);
+
 }
