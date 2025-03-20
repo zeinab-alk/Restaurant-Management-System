@@ -1,7 +1,5 @@
 package uk.ac.rhul.cs2810.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,9 +11,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 /**
- * Waiter entity class.
+ * Represents a waiter entity in the system.
  */
 @Entity
 @Table(name = "waiters")
@@ -57,9 +59,11 @@ public class Waiter {
    * Default constructor required by JPA.
    */
   public Waiter() {}
-
+  
   /**
-   * Waiter constructor.
+   * {@link TableAssignment}
+   *
+   * <p>Waiter constructor.
    *
    * @param id the waiter ID.
    * @param name the waiter name.
@@ -196,6 +200,13 @@ public class Waiter {
     }
   }
 
+  /**
+   * Gets a list of tables assigned to this waiter that have been delivered
+   * but remain unpaid.
+   *
+   * @param allOrders the list of all orders
+   * @return a list of unpaid table numbers
+   */
   public List<Integer> getUnpaidTables(List<Order> allOrders) {
     List<Integer> unpaidTables = new ArrayList<>();
 
@@ -225,64 +236,130 @@ public class Waiter {
     return unpaidTables;
   }
 
+  /**
+   * Tracks the order status.
+   */
   public void trackOrder() {
     System.out.println("Tracking order...");
   }
 
+  /**
+   * Updates the order status.
+   */
   public void updateOrderStatus() {
     System.out.println("Updating order status...");
   }
 
+  /**
+   * Cancels an order.
+   */
   public void cancelOrder() {
     System.out.println("Cancelling order...");
   }
 
+
+  /**
+   * Notifies the team about the order status.
+   */
   public void notifyTeam() {
     System.out.println("Notifying the team...");
   }
 
-  // =============== GETTERS & SETTERS ===============
-
+  /**
+   * Checks if the waiter is busy.
+   *
+   * @return true if busy, false otherwise
+   */
   public boolean isBusy() {
     return busy;
   }
 
+  /**
+   * Sets the waiter’s busy status.
+   *
+   * @param busy true if the waiter is busy, false otherwise
+   */
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
 
+  /**
+   * Retrieves the waiter's ID.
+   *
+   * @return the waiter's ID.
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Sets the waiter's ID.
+   *
+   * @param id the new waiter ID.
+   */
   public void setId(int id) {
     this.id = id;
   }
 
+  /**
+   * Retrieves the waiter's name.
+   *
+   * @return the waiter's name.
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Sets the waiter's name.
+   *
+   * @param name the new name of the waiter.
+   */
   public void setName(String name) {
     this.name = name;
   }
-
+  
+  /**
+   * Retrieves the current status of the waiter.
+   *
+   * @return the status of the waiter.
+   */
   public String getStatus() {
     return status;
   }
 
+  /**
+   * Sets the status of the waiter.
+   *
+   * @param status the new status of the waiter.
+   */
   public void setStatus(String status) {
     this.status = status;
   }
 
+  /**
+   * Retrieves the menu assigned to the waiter.
+   *
+   * @return the assigned menu.
+   */
   public Menu getMenu() {
     return menu;
   }
 
+  /**
+   * Sets the menu assigned to the waiter.
+   *
+   * @param menu the new assigned menu.
+   */
   public void setMenu(Menu menu) {
     this.menu = menu;
   }
 
+  /**
+   * Retrieves a list of table numbers assigned to the waiter.
+   *
+   * @return a list of assigned table numbers.
+   */
   public List<Integer> getAssignedTableNumbers() {
     List<Integer> tableNumbers = new ArrayList<>();
     for (TableAssignment ta : assignedTables) {
@@ -291,20 +368,50 @@ public class Waiter {
     return tableNumbers;
   }
 
-  public List<TableAssignment> getAssignedTables() {
-    return assignedTables;
+  /**
+   * Returns a list of assigned table numbers.
+   *
+   * @return List of assigned table numbers.
+   */
+  public List<Integer> getAssignedTables() {
+    List<Integer> tableNumbers = new ArrayList<>();
+    for (TableAssignment ta : assignedTables) {
+      tableNumbers.add(ta.getTableNumber());
+    }
+    return tableNumbers;
   }
 
-  public void setAssignedTables(List<TableAssignment> assignedTables) {
-    this.assignedTables = assignedTables;
+
+  /**
+   * Sets assigned tables by converting List&lt;Integer&gt; to List&lt;TableAssignment&gt;.
+   *
+   * @param tableNumbers A list of table numbers to assign.
+   */
+  public void setAssignedTables(List<Integer> tableNumbers) {
+    assignedTables = new ArrayList<>();
+    for (int tableNumber : tableNumbers) {
+      assignedTables.add(new TableAssignment(tableNumber));
+    }
   }
 
+
+  /**
+   * Retrieves the list of current orders assigned to the waiter.
+   *
+   * @return A list of current order IDs.
+   */
   public List<String> getCurrentOrders() {
     return currentOrders;
   }
 
+  /**
+   * Updates the list of current orders assigned to the waiter.
+   *
+   * @param currentOrders The new list of current order IDs.
+   */
   public void setCurrentOrders(List<String> currentOrders) {
     this.currentOrders = currentOrders;
   }
+
 }
 
