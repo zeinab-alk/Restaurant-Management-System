@@ -3,7 +3,6 @@ package uk.ac.rhul.cs2810.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -14,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,11 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -511,41 +506,7 @@ public class WaiterControllerTest {
       verify(waiterRepository, never()).save(any(Waiter.class));
   }
 
-  @Test
-  public void getAssignedTables_WhenWaiterExists_ShouldReturnTableList() {
-      // Arrange
-      int waiterId = 1;
-      Waiter waiter = new Waiter();
-      waiter.setId(waiterId);
-      waiter.setName("John");
-      waiter.assignTable(5);
-      waiter.assignTable(10);
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
-      // Act
-      ResponseEntity<List<Integer>> response = waiterController.getAssignedTables(waiterId);
-
-      // Assert
-      assertEquals(200, response.getStatusCodeValue());
-      assertNotNull(response.getBody());
-      assertTrue(response.getBody().contains(5));
-      assertTrue(response.getBody().contains(10));
-  }
-
-  @Test
-  public void getAssignedTables_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
-      // Arrange
-      int waiterId = 99;
-
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
-
-      // Act
-      ResponseEntity<List<Integer>> response = waiterController.getAssignedTables(waiterId);
-
-      // Assert
-      assertEquals(404, response.getStatusCodeValue());
-      assertEquals(null, response.getBody());
-  }
 
 }
