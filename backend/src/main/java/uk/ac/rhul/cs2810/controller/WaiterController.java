@@ -224,11 +224,44 @@ public class WaiterController {
   }
 
   /**
-   * Retrieves a list of tables with orders that have been delivered but not yet paid.
+   * Assigns a table to a waiter.
    *
-   * @param waiterId The ID of the waiter to check.
-   * @return ResponseEntity containing a list of table numbers with unpaid orders or a message
-   *         indicating all orders are paid.
+   * @param waiterId The ID of the waiter.
+   * @param tableNumber The table number to assign.
+   * @return ResponseEntity with success or error message.
+   */
+  @PostMapping("/{waiterId}/assign-table/{tableNumber}")
+  public ResponseEntity<String> assignTableToWaiter(@PathVariable int waiterId,
+      @PathVariable int tableNumber) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isPresent()) {
+      Waiter waiter = optionalWaiter.get();
+      waiter.assignTable(tableNumber);
+      waiterRepository.save(waiter);
+      return ResponseEntity.ok("Table " + tableNumber + " assigned to waiter " + waiter.getName());
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body("Waiter with ID " + waiterId + " not found.");
+  }
+
+  /**
+   * Retrieves all waiters along with their assigned tables.
+   *
+   * @return List of waiters with assigned tables.
+   */
+  @GetMapping
+  public ResponseEntity<List<Waiter>> getAllWaiters() {
+    List<Waiter> waiters = (List<Waiter>) waiterRepository.findAll();
+    return ResponseEntity.ok(waiters);
+  }
+
+  /**
+   * Retrieves a list of tables that have received their orders but have not yet paid.
+   *
+   * @param waiterId The ID of the waiter responsible for the tables.
+   * @return ResponseEntity containing a list of unpaid tables or a message indicating all orders
+   *         have been paid.
    */
   @GetMapping("/{waiterId}/unpaid-tables")
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
@@ -243,7 +276,11 @@ public class WaiterController {
     List<Order> allOrders = orderRepository.findAll();
     List<Integer> unpaidTables = new ArrayList<>();
 
-    if (waiter.getAssignedTables() == null || waiter.getAssignedTables().isEmpty()) {
+    if (waiter.getAssignedTables() == null) {
+      waiter.setAssignedTables(new ArrayList<>()); // Prevent NullPointerException
+    }
+
+    if (waiter.getAssignedTables().isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body("No tables assigned to waiter " + waiter.getName() + ".");
     }
@@ -268,7 +305,5 @@ public class WaiterController {
           + " needs to check payment for the following tables: " + unpaidTables);
     }
   }
-
 }
-
 

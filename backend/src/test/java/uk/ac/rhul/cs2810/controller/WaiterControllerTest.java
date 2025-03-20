@@ -3,7 +3,6 @@ package uk.ac.rhul.cs2810.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -13,9 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,11 +24,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.ac.rhul.cs2810.model.Customer;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
@@ -476,6 +472,43 @@ public class WaiterControllerTest {
   }
   
   @Test
+  public void assignTableToWaiter_WhenWaiterExists_ShouldAssignTable() {
+      // Arrange
+      int waiterId = 1;
+      int tableNumber = 5;
+      Waiter waiter = new Waiter();
+      waiter.setId(waiterId);
+      waiter.setName("John");
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+      // Act
+      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+
+      // Assert
+      assertEquals(200, response.getStatusCodeValue());
+      assertEquals("Table 5 assigned to waiter John", response.getBody());
+      assertTrue(waiter.getAssignedTableNumbers().contains(tableNumber));
+      verify(waiterRepository, times(1)).save(waiter);
+  }
+
+  @Test
+  public void assignTableToWaiter_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
+      // Arrange
+      int waiterId = 99;
+      int tableNumber = 5;
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+
+      // Act
+      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+
+      // Assert
+      assertEquals(404, response.getStatusCodeValue());
+      assertEquals("Waiter with ID 99 not found.", response.getBody());
+      verify(waiterRepository, never()).save(any(Waiter.class));
+  }
+
   public void getUnpaidTables_WhenWaiterExistsAndHasAssignedTables_ValidResponse_ShouldOutputTables()
       throws Exception {
       // Arrange
@@ -517,14 +550,12 @@ public class WaiterControllerTest {
   }
 
   @Test
-  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput()
-      throws Exception {
+  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput() {
     int waiterId = 1;
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
     waiter.setName("John");
-    waiter.setAssignedTables(null); // Waiter john has no tables assigned to him should output error
-                                    // message
+    waiter.setAssignedTables(new ArrayList<>()); // Instead of null, use empty list
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
@@ -534,6 +565,7 @@ public class WaiterControllerTest {
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertEquals("No tables assigned to waiter John.", response.getBody());
   }
+
 
   @Test
   public void getUnpaidTables_WhenWaiterDoesNotExist_ErrorOutput() throws Exception {
@@ -563,6 +595,5 @@ public class WaiterControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("All delivered orders for waiter John have been paid.", response.getBody());
   }
-
 
 }

@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -8,12 +9,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 /**
- * Waiter entity class.
+ * Represents a waiter entity in the system.
  */
 @Entity
 @Table(name = "waiters")
@@ -31,7 +35,7 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTables;
+  private List<Integer> assignedTablesLegacy; // Renamed to keep old data
 
   @ElementCollection
   private List<String> currentOrders;
@@ -43,13 +47,23 @@ public class Waiter {
   @Column(name = "is_busy")
   private boolean busy = false;
 
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "waiter_id")
+  private List<TableAssignment> assignedTables = new ArrayList<>();
+
+  public void assignTable(int tableNumber) {
+    assignedTables.add(new TableAssignment(tableNumber));
+  }
+
   /**
    * Default constructor required by JPA.
    */
   public Waiter() {}
-
+  
   /**
-   * Waiter constructor.
+   * {@link TableAssignment}
+   *
+   * <p>Waiter constructor.
    *
    * @param id the waiter ID.
    * @param name the waiter name.
@@ -69,7 +83,6 @@ public class Waiter {
    * Overloaded method for confirming order without parameters (stub method).
    */
   public void confirmOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Confirming order...");
   }
 
@@ -103,7 +116,6 @@ public class Waiter {
     System.out.println("Order " + order.getOrderNumber() + " confirmed.");
     return true;
   }
-
 
   /**
    * Changes menu availability.
@@ -161,18 +173,15 @@ public class Waiter {
         this.currentOrders = new ArrayList<>();
       }
 
-      // Add the order number
       String orderId = String.valueOf(order.getOrderNumber());
       if (!this.currentOrders.contains(orderId)) {
         this.currentOrders.add(orderId);
       }
 
-      // Print exactly what the test expects
       String notificationMessage =
           "Waiter " + this.name + " has been notified of new order: " + orderId;
       System.out.println(notificationMessage);
 
-      // Extracting ordered items
       List<MenuItem> orderedItems = order.getMenuItems();
       StringBuilder orderDetails = new StringBuilder("Order " + order.getOrderNumber() + ": ");
 
@@ -180,12 +189,10 @@ public class Waiter {
         orderDetails.append(item.getName()).append(", ");
       }
 
-      // Remove trailing comma
       if (!orderedItems.isEmpty()) {
         orderDetails.setLength(orderDetails.length() - 2);
       }
 
-      // Add the formatted order details to currentOrders
       this.currentOrders.add(orderDetails.toString());
 
       System.out
@@ -194,10 +201,11 @@ public class Waiter {
   }
 
   /**
-   * Retrieves a list of assigned tables where orders have been delivered but not yet paid.
+   * Gets a list of tables assigned to this waiter that have been delivered
+   * but remain unpaid.
    *
-   * @param allOrders The list of all orders in the system.
-   * @return A list of table numbers where payment is still pending.
+   * @param allOrders the list of all orders
+   * @return a list of unpaid table numbers
    */
   public List<Integer> getUnpaidTables(List<Order> allOrders) {
     List<Integer> unpaidTables = new ArrayList<>();
@@ -211,7 +219,8 @@ public class Waiter {
       Customer customer = order.getCustomer();
       if (customer != null) {
         int tableNumber = (int) customer.getId();
-        if (assignedTables.contains(tableNumber) && order.getStatus() == OrderStatus.DELIVERED) {
+        if (getAssignedTableNumbers().contains(tableNumber)
+            && order.getStatus() == OrderStatus.DELIVERED) {
           unpaidTables.add(tableNumber);
         }
       }
@@ -227,81 +236,182 @@ public class Waiter {
     return unpaidTables;
   }
 
+  /**
+   * Tracks the order status.
+   */
   public void trackOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Tracking order...");
   }
 
+  /**
+   * Updates the order status.
+   */
   public void updateOrderStatus() {
-    // Stub method for WaiterTest compilation
     System.out.println("Updating order status...");
   }
 
+  /**
+   * Cancels an order.
+   */
   public void cancelOrder() {
-    // Stub method for WaiterTest compilation
     System.out.println("Cancelling order...");
   }
 
+
+  /**
+   * Notifies the team about the order status.
+   */
   public void notifyTeam() {
-    // Stub method for WaiterTest compilation
     System.out.println("Notifying the team...");
   }
 
-  // =============== GETTERS & SETTERS ===============
-
+  /**
+   * Checks if the waiter is busy.
+   *
+   * @return true if busy, false otherwise
+   */
   public boolean isBusy() {
     return busy;
   }
 
+  /**
+   * Sets the waiter’s busy status.
+   *
+   * @param busy true if the waiter is busy, false otherwise
+   */
   public void setBusy(boolean busy) {
     this.busy = busy;
   }
 
+  /**
+   * Retrieves the waiter's ID.
+   *
+   * @return the waiter's ID.
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Sets the waiter's ID.
+   *
+   * @param id the new waiter ID.
+   */
   public void setId(int id) {
     this.id = id;
   }
 
+  /**
+   * Retrieves the waiter's name.
+   *
+   * @return the waiter's name.
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Sets the waiter's name.
+   *
+   * @param name the new name of the waiter.
+   */
   public void setName(String name) {
     this.name = name;
   }
-
+  
+  /**
+   * Retrieves the current status of the waiter.
+   *
+   * @return the status of the waiter.
+   */
   public String getStatus() {
     return status;
   }
 
+  /**
+   * Sets the status of the waiter.
+   *
+   * @param status the new status of the waiter.
+   */
   public void setStatus(String status) {
     this.status = status;
   }
 
+  /**
+   * Retrieves the menu assigned to the waiter.
+   *
+   * @return the assigned menu.
+   */
   public Menu getMenu() {
     return menu;
   }
 
+  /**
+   * Sets the menu assigned to the waiter.
+   *
+   * @param menu the new assigned menu.
+   */
   public void setMenu(Menu menu) {
     this.menu = menu;
   }
 
+  /**
+   * Retrieves a list of table numbers assigned to the waiter.
+   *
+   * @return a list of assigned table numbers.
+   */
+  public List<Integer> getAssignedTableNumbers() {
+    List<Integer> tableNumbers = new ArrayList<>();
+    for (TableAssignment ta : assignedTables) {
+      tableNumbers.add(ta.getTableNumber());
+    }
+    return tableNumbers;
+  }
+
+  /**
+   * Returns a list of assigned table numbers.
+   *
+   * @return List of assigned table numbers.
+   */
   public List<Integer> getAssignedTables() {
-    return assignedTables;
+    List<Integer> tableNumbers = new ArrayList<>();
+    for (TableAssignment ta : assignedTables) {
+      tableNumbers.add(ta.getTableNumber());
+    }
+    return tableNumbers;
   }
 
-  public void setAssignedTables(List<Integer> assignedTables) {
-    this.assignedTables = assignedTables;
+
+  /**
+   * Sets assigned tables by converting List&lt;Integer&gt; to List&lt;TableAssignment&gt;.
+   *
+   * @param tableNumbers A list of table numbers to assign.
+   */
+  public void setAssignedTables(List<Integer> tableNumbers) {
+    assignedTables = new ArrayList<>();
+    for (int tableNumber : tableNumbers) {
+      assignedTables.add(new TableAssignment(tableNumber));
+    }
   }
 
+
+  /**
+   * Retrieves the list of current orders assigned to the waiter.
+   *
+   * @return A list of current order IDs.
+   */
   public List<String> getCurrentOrders() {
     return currentOrders;
   }
 
+  /**
+   * Updates the list of current orders assigned to the waiter.
+   *
+   * @param currentOrders The new list of current order IDs.
+   */
   public void setCurrentOrders(List<String> currentOrders) {
     this.currentOrders = currentOrders;
   }
+
 }
+
