@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs2810.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
+import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 
@@ -151,6 +153,10 @@ public class OrderController {
 
     Order order = optionalOrder.get();
     order.setStatus(request.getStatus());
+    // @PreUpdate in Order entity will automatically update orderUpdatedTime
+    if (request.getStatus() == OrderStatus.IN_PROGRESS) {
+      order.setEstimatedCompletionTime(LocalDateTime.now().plusMinutes(order.getWaitingTime()));
+    }
     orderRepository.save(order);
 
     return ResponseEntity.ok(order);

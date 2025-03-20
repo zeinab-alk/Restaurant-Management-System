@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,12 +14,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
+
+
 
 /**
  * Represents an order placed by a customer at a restaurant. Contains details about the order,
@@ -55,6 +61,48 @@ public class Order {
   @JsonProperty("status")
   private OrderStatus status;
 
+  @Column(nullable = false)
+  private LocalDateTime orderPlacedTime;
+
+  private LocalDateTime orderUpdatedTime;
+  private LocalDateTime estimatedCompletionTime;
+
+  @PrePersist
+  protected void onCreate() {
+    this.orderPlacedTime = LocalDateTime.now();
+    this.orderUpdatedTime = LocalDateTime.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    this.orderUpdatedTime = LocalDateTime.now();
+  }
+
+  public LocalDateTime getOrderPlacedTime() {
+    return orderPlacedTime;
+  }
+
+  public void setOrderPlacedTime(LocalDateTime orderPlacedTime) {
+    this.orderPlacedTime = orderPlacedTime;
+  }
+
+  public LocalDateTime getOrderUpdatedTime() {
+    return orderUpdatedTime;
+  }
+
+  public void setOrderUpdatedTime(LocalDateTime orderUpdatedTime) {
+    this.orderUpdatedTime = orderUpdatedTime;
+  }
+
+  public LocalDateTime getEstimatedCompletionTime() {
+    return estimatedCompletionTime;
+  }
+
+  public void setEstimatedCompletionTime(LocalDateTime estimatedCompletionTime) {
+    this.estimatedCompletionTime = estimatedCompletionTime;
+  }
+
+
   /**
    * Constructs an Order with the given parameters.
    *
@@ -72,6 +120,8 @@ public class Order {
     this.waitingTime = waitingTime;
     this.status = status;
     this.menuItems = new ArrayList<>();
+    this.orderPlacedTime = LocalDateTime.now();
+    this.orderUpdatedTime = LocalDateTime.now();
   }
 
   /**
@@ -190,6 +240,12 @@ public class Order {
     }
     logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
     this.status = newStatus;
+    this.orderUpdatedTime = LocalDateTime.now();
+
+    // If order is now in progress, calculate estimated completion time
+    if (newStatus == OrderStatus.IN_PROGRESS) {
+      this.estimatedCompletionTime = this.orderUpdatedTime.plusMinutes(waitingTime);
+    }
   }
 
   /**
