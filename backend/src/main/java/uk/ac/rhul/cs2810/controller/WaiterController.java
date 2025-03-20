@@ -220,6 +220,46 @@ public class WaiterController {
     }
     return ResponseEntity.ok(readyOrders);
   }
-}
 
+  /**
+   * Assigns a table to a waiter.
+   *
+   * @param waiterId The ID of the waiter.
+   * @param tableNumber The table number to assign.
+   * @return ResponseEntity with success or error message.
+   */
+  @PostMapping("/{waiterId}/assign-table/{tableNumber}")
+  public ResponseEntity<String> assignTableToWaiter(@PathVariable int waiterId,
+      @PathVariable int tableNumber) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isPresent()) {
+      Waiter waiter = optionalWaiter.get();
+      waiter.assignTable(tableNumber);
+      waiterRepository.save(waiter);
+      return ResponseEntity.ok("Table " + tableNumber + " assigned to waiter " + waiter.getName());
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body("Waiter with ID " + waiterId + " not found.");
+  }
+
+  /**
+   * Retrieves tables assigned to a specific waiter.
+   *
+   * @param waiterId The ID of the waiter.
+   * @return ResponseEntity with a list of assigned tables.
+   */
+  @GetMapping("/{waiterId}/assigned-tables")
+  public ResponseEntity<List<Integer>> getAssignedTables(@PathVariable int waiterId) {
+    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
+
+    if (optionalWaiter.isPresent()) {
+      Waiter waiter = optionalWaiter.get();
+      return ResponseEntity.ok(waiter.getAssignedTableNumbers());
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+  }
+
+
+}
 
