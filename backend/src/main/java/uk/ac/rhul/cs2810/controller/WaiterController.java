@@ -244,22 +244,14 @@ public class WaiterController {
   }
 
   /**
-   * Retrieves tables assigned to a specific waiter.
+   * Retrieves all waiters along with their assigned tables.
    *
-   * @param waiterId The ID of the waiter.
-   * @return ResponseEntity with a list of assigned tables.
+   * @return List of waiters with assigned tables.
    */
-  @GetMapping("/{waiterId}/assigned-tables")
-  public ResponseEntity<List<Integer>> getAssignedTables(@PathVariable int waiterId) {
-    Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
-
-    if (optionalWaiter.isPresent()) {
-      Waiter waiter = optionalWaiter.get();
-      return ResponseEntity.ok(waiter.getAssignedTableNumbers());
-    }
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+  @GetMapping
+  public ResponseEntity<List<Waiter>> getAllWaiters() {
+    List<Waiter> waiters = (List<Waiter>) waiterRepository.findAll();
+    return ResponseEntity.ok(waiters);
   }
-
-
 }
 
