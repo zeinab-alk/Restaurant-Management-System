@@ -130,6 +130,37 @@ const WaiterPage = () => {
     return () => clearInterval(interval);
   }, [lastOrderId, fetchOrders]);
 
+
+  const fetchWaiters = async () => {
+    try {
+      const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
+      const waitersData = response.data;
+  
+      // Fetch assigned tables for each waiter
+      const tablesData = await Promise.all(
+        waitersData.map(async (waiter) => {
+          try {
+            const tablesRes = await axios.get(`${API_ENDPOINT}/api/waiters/${waiter.id}/assigned-tables`);
+            return { ...waiter, assignedTables: tablesRes.data || [] };
+          } catch (error) {
+            console.error(`Error fetching tables for waiter ${waiter.id}:`, error);
+            return { ...waiter, assignedTables: [] }; // Fail gracefully
+          }
+        })
+      );
+  
+      setWaiters(tablesData);
+    } catch (error) {
+      console.error("Error fetching waiters:", error);
+      setWaiters([]); // Ensure state is updated even on failure
+    }
+  };
+  
+  // Call fetchWaiters properly
+  useEffect(() => {
+    fetchWaiters();
+  }, []);
+
   // Also set the help requests polling interval to 2 seconds
   useEffect(() => {
     const fetchHelpRequests = async () => {
