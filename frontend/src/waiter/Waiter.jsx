@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { 
@@ -38,6 +40,7 @@ const WaiterPage = () => {
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [newOrderAlert, setNewOrderAlert] = useState(false);
+  //new
   const [assignedTables, setAssignedTables] = useState({});
   const [selectedWaiter, setSelectedWaiter] = useState(null);
   const [newTable, setNewTable] = useState("");
@@ -46,7 +49,8 @@ const WaiterPage = () => {
   const [editedTable, setEditedTable] = useState("");
   const [editingWaiters, setEditingWaiters] = useState({});
   const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
-  
+//end new
+
 
   // Define available order statuses
   const orderStatuses = [
@@ -62,7 +66,21 @@ const WaiterPage = () => {
   // Define fetchOrders first using useCallback
   const fetchOrders = useCallback(() => {
     setError(''); // Clear any previous errors
-    
+    //new
+    const fetchAssignedTables = async (waiterId) => {
+      try {
+        const response = await axios.get(`${API_ENDPOINT}/${waiterId}/assigned-tables`);
+        setAssignedTables((prevTables) => ({
+          ...prevTables,
+          [waiterId]: response.data,
+        }));
+        setSelectedWaiter(waiterId);
+      } catch (error) {
+        console.error("Error fetching assigned tables:", error);
+      }
+    };    
+    //end new 
+
     axios.get(`${API_ENDPOINT}/api/orders`)
       .then(res => {
         if (Array.isArray(res.data)) {
@@ -130,36 +148,39 @@ const WaiterPage = () => {
     return () => clearInterval(interval);
   }, [lastOrderId, fetchOrders]);
 
+  //new
+    const fetchWaiters = async () => {
+      try {
+        const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
+        const waitersData = response.data;
+    
+        // Fetch assigned tables for each waiter
+        const tablesData = await Promise.all(
+          waitersData.map(async (waiter) => {
+            try {
+              const tablesRes = await axios.get(`${API_ENDPOINT}/api/waiters/${waiter.id}/assigned-tables`);
+              return { ...waiter, assignedTables: tablesRes.data || [] };
+            } catch (error) {
+              console.error(`Error fetching tables for waiter ${waiter.id}:`, error);
+              return { ...waiter, assignedTables: [] }; // Fail gracefully
+            }
+          })
+        );
+    
+        setWaiters(tablesData);
+      } catch (error) {
+        console.error("Error fetching waiters:", error);
+        setWaiters([]); // Ensure state is updated even on failure
+      }
+    };
+    
+    // Call fetchWaiters properly
+    useEffect(() => {
+      fetchWaiters();
+    }, []); // Empty dependency array ensures it runs once on mount
+    // endnew
 
-  const fetchWaiters = async () => {
-    try {
-      const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
-      const waitersData = response.data;
-  
-      // Fetch assigned tables for each waiter
-      const tablesData = await Promise.all(
-        waitersData.map(async (waiter) => {
-          try {
-            const tablesRes = await axios.get(`${API_ENDPOINT}/api/waiters/${waiter.id}/assigned-tables`);
-            return { ...waiter, assignedTables: tablesRes.data || [] };
-          } catch (error) {
-            console.error(`Error fetching tables for waiter ${waiter.id}:`, error);
-            return { ...waiter, assignedTables: [] }; // Fail gracefully
-          }
-        })
-      );
-  
-      setWaiters(tablesData);
-    } catch (error) {
-      console.error("Error fetching waiters:", error);
-      setWaiters([]); // Ensure state is updated even on failure
-    }
-  };
-  
-  // Call fetchWaiters properly
-  useEffect(() => {
-    fetchWaiters();
-  }, []);
+
 
   // Also set the help requests polling interval to 2 seconds
   useEffect(() => {
@@ -330,7 +351,132 @@ const WaiterPage = () => {
             Add Menu Item
           </Button>
         </Box>
-        
+        <Typography 
+        variant="h5" 
+        gutterBottom 
+        sx={{ 
+          mb: 2, fontWeight: 'medium' }}>
+
+          //new
+        Waiter Table Assignments
+</Typography>
+<Button
+  onClick={() => setWaiters([...waiters, { ...newWaiter, id: waiters.length + 1 }])}
+  variant="contained"
+  color="primary"
+  sx={{ mb: 2 }}
+>
+  Add New Waiter
+</Button>
+<Paper sx={{ overflow: 'hidden', mb: 4, boxShadow: 2, borderRadius: 1 }} elevation={3}>
+  <Box sx={{ overflowX: 'auto', width: '100%' }}>
+    <Table>
+      <TableHead>
+        <TableRow sx={{ backgroundColor: 'primary.main' }}>
+          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Waiter ID</TableCell>
+          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
+          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Assigned Tables</TableCell>
+          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {waiters.map((waiter) => (
+          <TableRow key={waiter.id}>
+
+
+<TableCell>
+  {editingWaiter === waiter.id ? (
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+      {/* Display assigned tables with remove option */}
+      {waiter.assignedTables.map((table, index) => (
+        <Chip
+          key={index}
+          label={`Table ${table}`}
+          onDelete={() => removeAssignedTable(waiter.id, table)} // Enables removal
+          color="primary"
+          sx={{ cursor: "pointer" }}
+        />
+      ))}
+      {/* Dropdown for adding new tables */}
+      <FormControl size="small">
+        <Select
+          value={editedTable}
+          onChange={(e) => setEditedTable(e.target.value)}
+          displayEmpty
+        >
+          <MenuItem value="" disabled>Select Table</MenuItem>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((table) => (
+            <MenuItem key={table} value={table}>{table}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Button 
+        onClick={() => assignTableToWaiter(waiter.id, editedTable)} 
+        variant="contained" 
+        color="success"
+        sx={{ ml: 1 }}
+      >
+        Add
+      </Button>
+    </Box>
+  ) : (
+    waiter.assignedTables.length > 0 ? waiter.assignedTables.join(", ") : "No tables assigned"
+  )}
+</TableCell>
+
+
+            <TableCell>
+              <FormControl size="small">
+                <Select 
+                  value={newTable} 
+                  onChange={(e) => setNewTable(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="" disabled>Select Table</MenuItem>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((table) => (
+                    <MenuItem key={table} value={table}>{table}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {editingWaiter === waiter.id ? (
+  <Button 
+    onClick={() => saveEditedTable(waiter.id)} 
+    variant="contained" 
+    color="success"
+    sx={{ ml: 1 }}
+  >
+    Save
+  </Button>
+) : (
+  <>
+    <Button 
+      onClick={() => assignTableToWaiter(waiter.id)} 
+      variant="contained" 
+      color="primary"
+      sx={{ ml: 1 }}
+    >
+      Assign
+    </Button>
+    {editingWaiters[waiter.id] ? (
+  <Button 
+    onClick={() => saveEditedWaiter(waiter.id)} 
+    variant="contained" 
+    color="success"
+    sx={{ ml: 1 }}
+  >
+    Save
+        </Button>
+      ) : null} {}
+    </>
+  )}
+
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </Box>
+</Paper>
         <Typography 
           variant="h3" 
           component="h1" 
@@ -596,6 +742,7 @@ const WaiterPage = () => {
         ))
       )}
     </Container>
+    
   );
 };
 
