@@ -64,4 +64,16 @@ public class MenuItemTest {
     // Verify that the availability is false
     assertFalse(item.isAvailable(), "The availability should be false.");
   }
+
+  @Test
+  void testGetImageUrl() {
+    // Set a value for imageUrl
+    String expectedImageUrl =
+        "https://uk.ooni.com/cdn/shop/articles/20220211142645-margherita-9920_e41233d5-dcec-461c-b07e-03245f031dfe.jpg";
+    item.setImageUrl(expectedImageUrl);
+
+    // Verify that getImageUrl() returns the correct value
+    assertEquals(expectedImageUrl, item.getImageUrl(),
+        "The getImageUrl method should return the correct image URL.");
+  }
 }

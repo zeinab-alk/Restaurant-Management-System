@@ -40,8 +40,16 @@ const router = createBrowserRouter([
     element: <App><EditMenuItem /></App>,
   },
   {
-    path: "/kitchen",
-    element: <App><KitchenPage /></App>,
+    path: "/menuitem/add",
+    element: <App><AddMenuItem /></App>,
+  },
+  {
+    path: "/menuitem/change",
+    element: <App><ChangeMenuItem /></App>,
+  },
+  {
+    path: "/menuitem/edit/:id",
+    element: <App><EditMenuItem /></App>,
   },
 ]);
 

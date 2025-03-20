@@ -1,62 +1,94 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Button, Stack, Box } from "@mui/material";
+import { Button, Stack, Box, Typography, Container } from "@mui/material";
 
 function Home() {
   return (
-    <Box
-      sx={{
-        height: '70vh',
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Box sx={{ 
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%',
-        mt: -4
-      }}
-    >
-      <Stack spacing={3} direction="column" sx={{ width: '33.33%', minWidth: '33.33%' }}>
-        <Button
-          component={RouterLink}
-          to="/menu"
-          variant="contained"
-          color="primary"
-          size="large"
+        minHeight: '80vh',
+        textAlign: 'center',
+        px: 2
+      }}>
+        <Typography 
+          variant="h2" 
+          component="h1" 
+          gutterBottom 
           sx={{ 
-            py: 2,
-            fontSize: '1.2rem'
+            mb: 4,
+            fontWeight: 'bold',
+            fontSize: { xs: '2rem', sm: '3rem', md: '4rem' },
+            color: 'primary.main'
           }}
         >
-          View Menu
-        </Button>
-        <Button
-          component={RouterLink}
-          to="/waiter"
-          variant="contained"
-          color="secondary"
-          size="large"
+          OAXACA Restaurant
+        </Typography>
+        
+        <Typography 
+          variant="h5" 
+          color="text.secondary" 
           sx={{ 
-            py: 2,
-            fontSize: '1.2rem'
+            mb: 6,
+            maxWidth: '800px',
+            fontSize: { xs: '1rem', sm: '1.25rem' }
           }}
         >
-          Waiter Access
-        </Button>
-
-        <Button
+          Welcome to our restaurant management system. Please select an option below to get started.
+        </Typography>
+        
+        <Stack 
+          spacing={3} 
+          direction={{ xs: 'column', sm: 'row' }} 
+          sx={{ 
+            width: '100%',
+            maxWidth: '600px',
+            justifyContent: 'center',
+            px: 2
+          }}
+        >
+          <Button
             component={RouterLink}
-            to="/kitchen"
+            to="/menu"
             variant="contained"
-            color="success"
+            color="primary"
             size="large"
-            sx={{
-                py: 2,
-                fontSize: '1.2rem'
+            startIcon={<span role="img" aria-label="menu">🍽️</span>}
+            sx={{ 
+              py: 2,
+              px: 4,
+              fontSize: { xs: '1rem', sm: '1.2rem' },
+              borderRadius: '8px',
+              fontWeight: 'medium',
+              width: '100%'
             }}
-        >
-            Kitchen Access
-        </Button>
-      </Stack>
-    </Box>
+          >
+            View Menu
+          </Button>
+          <Button
+            component={RouterLink}
+            to="/waiter"
+            variant="contained"
+            color="secondary"
+            size="large"
+            startIcon={<span role="img" aria-label="waiter">👨‍🍳</span>}
+            sx={{ 
+              py: 2,
+              px: 4,
+              fontSize: { xs: '1rem', sm: '1.2rem' },
+              borderRadius: '8px',
+              fontWeight: 'medium',
+              width: '100%'
+            }}
+          >
+            Waiter Access
+          </Button>
+        </Stack>
+      </Box>
+    </Container>
   );
 }
 

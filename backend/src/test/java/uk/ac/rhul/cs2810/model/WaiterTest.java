@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -160,12 +161,12 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfSuccessfulDelivery() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Pending"); // Ensure status is "Pending"
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING); // Ensure status is "Pending"
 
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that setStatus was called with the correct argument ("Delivered")
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check if the correct message was printed
     String output = outContent.toString();
@@ -176,11 +177,11 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfAlreadyDelivered() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Delivered");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder, never()).setStatus("Delivered");
+    verify(mockOrder, never()).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
@@ -188,11 +189,11 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfCaseInsensitiveStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("delivered");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder, never()).setStatus("Delivered");
+    verify(mockOrder, never()).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
@@ -200,43 +201,43 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfUnexpectedStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Processing");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PROCESSING);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
   }
 
   @Test
   public void testMarkOrderAsDeliveredMethodOutputVerification() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Pending");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING);
 
     waiter.markOrderAsDelivered(mockOrder);
 
     String output = outContent.toString();
     assertTrue(output.contains("has been marked as Delivered"));
   }
-  
+
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyOrderStatus() {
-      Order mockOrder = mock(Order.class);
-      when(mockOrder.getStatus()).thenReturn(""); // Empty status
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(null); // Empty status
 
-      waiter.markOrderAsDelivered(mockOrder);
+    waiter.markOrderAsDelivered(mockOrder);
 
-      // This should trigger the "Order is already delivered or invalid" message.
-      assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
+    // This should trigger the "Order is already delivered or invalid" message.
+    assertTrue(outContent.toString().contains("Order is already delivered or invalid"));
   }
 
   @Test
   public void testMarkOrderAsDeliveredMethodIfInProgressStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("in-progress");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.IN_PROGRESS);
 
     waiter.markOrderAsDelivered(mockOrder);
 
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
 
@@ -244,13 +245,13 @@ public class WaiterTest {
   public void testMarkOrderAsDeliveredMethodIfCompletedStatus() {
     // Mock an order with the status "Completed"
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Completed");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.COMPLETED);
 
     // Call the markOrderAsDelivered method
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that the status is changed to "Delivered"
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
@@ -260,17 +261,18 @@ public class WaiterTest {
   public void testMarkOrderAsDeliveredMethodIfCancelledStatus() {
     // Mock an order with the status "Cancelled"
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("Cancelled");
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.CANCELLED);
 
     // Call the markOrderAsDelivered method
     waiter.markOrderAsDelivered(mockOrder);
 
     // Verify that the status is changed to "Delivered"
-    verify(mockOrder).setStatus("Delivered");
+    verify(mockOrder).setStatus(OrderStatus.DELIVERED);
 
     // Check that the correct output is printed
     assertTrue(outContent.toString().contains("has been marked as Delivered"));
   }
+
   // Reset System.out after the test
   @AfterEach
   public void restoreSystemOut() {
@@ -286,7 +288,7 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfWhitespaceOrderStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn("   "); // Order status is only whitespace
+    when(mockOrder.getStatus()).thenReturn(null); // Order status is only whitespace
 
     waiter.markOrderAsDelivered(mockOrder);
 
@@ -296,7 +298,7 @@ public class WaiterTest {
   @Test
   public void testMarkOrderAsDeliveredMethodIfEmptyStringOrderStatus() {
     Order mockOrder = mock(Order.class);
-    when(mockOrder.getStatus()).thenReturn(""); // Empty string
+    when(mockOrder.getStatus()).thenReturn(null); // Empty string
 
     waiter.markOrderAsDelivered(mockOrder);
 
@@ -471,6 +473,103 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order or menu is not available."));
     assertTrue(!result, "Order should not be confirmed if there is no menu");
   }
+  
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_NoUnpaidOrders() {
+      Order mockOrder1 = mock(Order.class);
+      Order mockOrder2 = mock(Order.class);
 
+      when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+      when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+      List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+      // Assign tables to the waiter
+      waiter.setAssignedTables(Arrays.asList(1, 2));
+
+      List<Integer> result = waiter.getUnpaidTables(orders);
+
+      // Assert that the result is empty since all orders are delivered and paid
+      assertTrue(result.isEmpty(), "Expected no unpaid tables since all orders are delivered");
+
+      // Ensure the correct message is printed
+      assertTrue(outContent.toString().contains("All delivered orders have been paid"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_SingleUnpaidOrder() {
+    Order mockOrder = mock(Order.class);
+
+    // Mock the order status to DELIVERED but not paid
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer = mock(Customer.class);
+    when(mockCustomer.getId()).thenReturn((long) 1); // Table number 1
+    when(mockOrder.getCustomer()).thenReturn(mockCustomer);
+
+    List<Order> orders = Arrays.asList(mockOrder);
+
+    // Assign table 1 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that table 1 is returned as unpaid
+    assertEquals(1, result.size(), "Expected table 1 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1]"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithAssignedTables_MultipleUnpaidOrders() {
+    Order mockOrder1 = mock(Order.class);
+    Order mockOrder2 = mock(Order.class);
+
+    when(mockOrder1.getStatus()).thenReturn(OrderStatus.DELIVERED);
+    when(mockOrder2.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    Customer mockCustomer1 = mock(Customer.class);
+    when(mockCustomer1.getId()).thenReturn((long) 1);
+    when(mockOrder1.getCustomer()).thenReturn(mockCustomer1);
+
+    Customer mockCustomer2 = mock(Customer.class);
+    when(mockCustomer2.getId()).thenReturn((long) 2);
+    when(mockOrder2.getCustomer()).thenReturn(mockCustomer2);
+
+    List<Order> orders = Arrays.asList(mockOrder1, mockOrder2);
+
+    // Assign table 1 and table 2 to the waiter
+    waiter.setAssignedTables(Arrays.asList(1, 2));
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that both table 1 and table 2 are returned as unpaid
+    assertEquals(2, result.size(), "Expected tables 1 and 2 to be returned as unpaid");
+    assertTrue(result.contains(1), "Expected unpaid table 1");
+    assertTrue(result.contains(2), "Expected unpaid table 2");
+
+    // Ensure the correct message is printed
+    assertTrue(
+        outContent.toString().contains("Waiter John needs to check payment for tables: [1, 2]"));
+  }
+
+  @Test
+  public void testGetUnpaidTables_WithNoAssignedTables() {
+    List<Order> orders = new ArrayList<>();
+
+    // Set no assigned tables
+    waiter.setAssignedTables(new ArrayList<>());
+
+    List<Integer> result = waiter.getUnpaidTables(orders);
+
+    // Assert that the result is empty as there are no assigned tables
+    assertTrue(result.isEmpty(), "Expected no unpaid tables since no tables are assigned");
+
+    // Ensure the correct message is printed
+    assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
+  }
 }
 

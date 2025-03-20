@@ -3,6 +3,7 @@ package uk.ac.rhul.cs2810.model;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, "12:30 PM", 15, "Pending");
+    order = new Order(1, customer, "12:30 PM", 15, OrderStatus.PENDING);
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
@@ -45,7 +46,7 @@ class OrderTest {
     assertEquals(customer, order.getCustomer());
     assertEquals("12:30 PM", order.getOrderTime());
     assertEquals(15, order.getWaitingTime());
-    assertEquals("Pending", order.getStatus());
+    assertEquals(OrderStatus.PENDING, order.getStatus());
     assertTrue(order.getItems().isEmpty());
   }
 
@@ -76,8 +77,8 @@ class OrderTest {
 
   @Test
   void testSetAndGetStatus() {
-    order.setStatus("In Progress");
-    assertEquals("In Progress", order.getStatus());
+    order.setStatus(OrderStatus.IN_PROGRESS);
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
   }
 
   @Test
@@ -124,7 +125,47 @@ class OrderTest {
 
   @Test
   void testUpdateStatus() {
-    order.updateStatus("Completed");
-    assertEquals("Completed", order.getStatus());
+    order.updateStatus(OrderStatus.COMPLETED);
+    assertEquals(OrderStatus.COMPLETED, order.getStatus());
   }
+
+  @Test
+  void testMarkAsReadyForDelivery_ValidTransition() {
+    order.setStatus(OrderStatus.IN_PROGRESS);
+    order.markAsReadyForDelivery();
+    assertEquals(OrderStatus.READY_FOR_DELIVERY, order.getStatus());
+  }
+
+  @Test
+  void testMarkAsReadyForDelivery_InvalidTransition_ShouldThrowException() {
+    order.setStatus(OrderStatus.PENDING);
+
+    Exception exception = assertThrows(InvalidOrderStateException.class, () -> {
+      order.markAsReadyForDelivery();
+    });
+
+    assertEquals(
+        "Order must be IN_PROGRESS or PROCESSING before it can be marked as READY_FOR_DELIVERY.",
+        exception.getMessage());
+  }
+
+  @Test
+  void testUpdateStatus_ValidTransition() {
+    order.setStatus(OrderStatus.PENDING);
+    order.updateStatus(OrderStatus.IN_PROGRESS);
+    assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
+  }
+
+  @Test
+  void testUpdateStatus_InvalidTransition_ShouldThrowException() {
+    order.setStatus(OrderStatus.PENDING);
+
+    Exception exception = assertThrows(InvalidOrderStateException.class, () -> {
+      order.updateStatus(OrderStatus.DELIVERED);
+    });
+
+    assertEquals("Order cannot skip directly from PENDING to DELIVERED.", exception.getMessage());
+  }
+
+
 }
