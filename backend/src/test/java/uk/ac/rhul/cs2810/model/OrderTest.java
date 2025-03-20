@@ -16,7 +16,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, null, 0, OrderStatus.PENDING); // Pass nulls for removed fields
+    order = new Order(1, customer, null); // Pass nulls for removed fields
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
