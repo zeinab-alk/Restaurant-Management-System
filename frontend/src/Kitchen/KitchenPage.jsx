@@ -14,7 +14,7 @@ const KitchenPage = () => {
 
     const fetchPreparingOrders = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/api/kitchen/preparing");
+            const response = await axios.get("http://localhost:2800/api/kitchen/preparing");
             setOrders(response.data);
         } catch (error) {
             console.error("Error fetching orders:", error);
@@ -23,8 +23,11 @@ const KitchenPage = () => {
 
     const markOrderAsReady = async (orderId) => {
         try {
-            await axios.post(`/api/orders/${orderId}/ready`); // Mark order as "Ready"
-            setOrders(prevOrders => prevOrders.filter(order => order.orderNumber !== orderId)); // Remove from UI
+            const { data: updatedOrder } = await axios.post(`http://localhost:2800/api/kitchen/${orderId}/ready`); // Mark order as "Ready"
+
+            setOrders((prevOrders) => prevOrders.map((o) =>
+                (o.orderNumber === updatedOrder.orderNumber ? updatedOrder : o))
+            );
         } catch (error) {
             console.error("Error marking order as ready:", error);
         }
@@ -54,10 +57,22 @@ const KitchenPage = () => {
                     {orders.map(order => (
                         <li key={order.orderNumber}>
                             <span>Order #{order.orderNumber} - {order.status}</span>
+                            {/* Display the contents of the order: items, etc. */}
+                            {order.menuItems && order.menuItems.length > 0 && (
+                                <ul style={{ marginLeft: "1em" }}>
+                                    {order.menuItems.map((item) => (
+                                        <li key={item.id}>
+                                            {item.name} – £{item.price.toFixed(2)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+
                             <button onClick={() => markOrderAsReady(order.orderNumber)}>Mark as Ready</button>
                         </li>
                     ))}
                 </ul>
+
             )}
 
         </div>

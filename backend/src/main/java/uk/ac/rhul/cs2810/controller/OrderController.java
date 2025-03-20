@@ -38,6 +38,7 @@ public class OrderController {
   @PostMapping
   public ResponseEntity<Order> placeOrder(@RequestBody Order order) {
     try {
+      order.setStatus(Order.STATUS_PREPARING);
       Order savedOrder = orderRepository.save(order);
       return ResponseEntity.ok(savedOrder);
     } catch (Exception e) {
