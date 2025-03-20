@@ -73,4 +73,6 @@ public interface WaiterRepository extends CrudRepository<Waiter, Integer> {
   @Query("SELECT w FROM Waiter w JOIN w.assignedTables ta WHERE ta.tableNumber = :tableNumber")
   List<Waiter> findWaitersByAssignedTable(@Param("tableNumber") int tableNumber);
 
+  Optional<Waiter> findById(Long waiterId);
+
 }
