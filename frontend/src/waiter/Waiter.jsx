@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { 
@@ -49,7 +47,6 @@ const WaiterPage = () => {
   const [editingWaiters, setEditingWaiters] = useState({});
   const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
 
-
   // Define available order statuses
   const orderStatuses = [
     'PENDING', 
@@ -64,6 +61,7 @@ const WaiterPage = () => {
   // Define fetchOrders first using useCallback
   const fetchOrders = useCallback(() => {
     setError(''); // Clear any previous errors
+
     const fetchAssignedTables = async (waiterId) => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/${waiterId}/assigned-tables`);
@@ -144,6 +142,7 @@ const WaiterPage = () => {
     return () => clearInterval(interval);
   }, [lastOrderId, fetchOrders]);
 
+
     const fetchWaiters = async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
@@ -173,6 +172,8 @@ const WaiterPage = () => {
     useEffect(() => {
       fetchWaiters();
     }, []); // Empty dependency array ensures it runs once on mount
+    
+
 
 
   // Also set the help requests polling interval to 2 seconds
@@ -358,7 +359,8 @@ const WaiterPage = () => {
       console.error("Error updating table:", error);
       alert("Failed to update table. Please try again.");
     }
-  };
+  };  
+  
 
   // Add resolveRequest function
   const resolveRequest = async (id) => {
@@ -436,7 +438,7 @@ const WaiterPage = () => {
         gutterBottom 
         sx={{ 
           mb: 2, fontWeight: 'medium' }}>
-            
+
         Waiter Table Assignments
 </Typography>
 <Button
@@ -461,7 +463,41 @@ const WaiterPage = () => {
       <TableBody>
         {waiters.map((waiter) => (
           <TableRow key={waiter.id}>
+            <TableCell>
+  {editingWaiters[waiter.id] ? (
+    <input
+      type="text"
+      value={editingWaiters[waiter.id].id}
+      onChange={(e) =>
+        setEditingWaiters(prev => ({
+          ...prev,
+          [waiter.id]: { ...prev[waiter.id], id: e.target.value }
+        }))
+      }
+      style={{ width: "50px", padding: "4px" }}
+    />
+  ) : (
+    waiter.id
+  )}
+</TableCell>
 
+<TableCell>
+  {editingWaiters[waiter.id] ? (
+    <input
+      type="text"
+      value={editingWaiters[waiter.id].name}
+      onChange={(e) =>
+        setEditingWaiters(prev => ({
+          ...prev,
+          [waiter.id]: { ...prev[waiter.id], name: e.target.value }
+        }))
+      }
+      style={{ width: "150px", padding: "4px" }}
+    />
+  ) : (
+    waiter.name
+  )}
+</TableCell>
 
 <TableCell>
   {editingWaiter === waiter.id ? (
@@ -544,10 +580,28 @@ const WaiterPage = () => {
     sx={{ ml: 1 }}
   >
     Save
-        </Button>
-      ) : null} {}
-    </>
-  )}
+  </Button>
+) : (
+  <Button 
+    onClick={() => startEditing(waiter)} 
+    variant="contained" 
+    color="secondary"
+    sx={{ ml: 1 }}
+  >
+    Edit
+  </Button>
+)}
+
+<Button
+  onClick={() => setWaiters(waiters.filter(w => w.id !== waiter.id))}
+  variant="contained"
+  color="error"
+  sx={{ ml: 1 }}
+>
+  Remove
+</Button>
+  </>
+)}
 
             </TableCell>
           </TableRow>
@@ -556,6 +610,7 @@ const WaiterPage = () => {
     </Table>
   </Box>
 </Paper>
+
         <Typography 
           variant="h3" 
           component="h1" 
