@@ -472,5 +472,80 @@ public class WaiterControllerTest {
         .andExpect(jsonPath("$[0].orderNumber").value(1))
         .andExpect(jsonPath("$[1].orderNumber").value(2));
   }
+  
+  @Test
+  public void assignTableToWaiter_WhenWaiterExists_ShouldAssignTable() {
+      // Arrange
+      int waiterId = 1;
+      int tableNumber = 5;
+      Waiter waiter = new Waiter();
+      waiter.setId(waiterId);
+      waiter.setName("John");
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+      // Act
+      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+
+      // Assert
+      assertEquals(200, response.getStatusCodeValue());
+      assertEquals("Table 5 assigned to waiter John", response.getBody());
+      assertTrue(waiter.getAssignedTableNumbers().contains(tableNumber));
+      verify(waiterRepository, times(1)).save(waiter);
+  }
+
+  @Test
+  public void assignTableToWaiter_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
+      // Arrange
+      int waiterId = 99;
+      int tableNumber = 5;
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+
+      // Act
+      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+
+      // Assert
+      assertEquals(404, response.getStatusCodeValue());
+      assertEquals("Waiter with ID 99 not found.", response.getBody());
+      verify(waiterRepository, never()).save(any(Waiter.class));
+  }
+
+  @Test
+  public void getAssignedTables_WhenWaiterExists_ShouldReturnTableList() {
+      // Arrange
+      int waiterId = 1;
+      Waiter waiter = new Waiter();
+      waiter.setId(waiterId);
+      waiter.setName("John");
+      waiter.assignTable(5);
+      waiter.assignTable(10);
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+
+      // Act
+      ResponseEntity<List<Integer>> response = waiterController.getAssignedTables(waiterId);
+
+      // Assert
+      assertEquals(200, response.getStatusCodeValue());
+      assertNotNull(response.getBody());
+      assertTrue(response.getBody().contains(5));
+      assertTrue(response.getBody().contains(10));
+  }
+
+  @Test
+  public void getAssignedTables_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
+      // Arrange
+      int waiterId = 99;
+
+      when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+
+      // Act
+      ResponseEntity<List<Integer>> response = waiterController.getAssignedTables(waiterId);
+
+      // Assert
+      assertEquals(404, response.getStatusCodeValue());
+      assertEquals(null, response.getBody());
+  }
 
 }
