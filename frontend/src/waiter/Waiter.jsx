@@ -40,7 +40,6 @@ const WaiterPage = () => {
   const [lastOrderId, setLastOrderId] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [newOrderAlert, setNewOrderAlert] = useState(false);
-  //new
   const [assignedTables, setAssignedTables] = useState({});
   const [selectedWaiter, setSelectedWaiter] = useState(null);
   const [newTable, setNewTable] = useState("");
@@ -49,7 +48,6 @@ const WaiterPage = () => {
   const [editedTable, setEditedTable] = useState("");
   const [editingWaiters, setEditingWaiters] = useState({});
   const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
-//end new
 
 
   // Define available order statuses
@@ -66,7 +64,6 @@ const WaiterPage = () => {
   // Define fetchOrders first using useCallback
   const fetchOrders = useCallback(() => {
     setError(''); // Clear any previous errors
-    //new
     const fetchAssignedTables = async (waiterId) => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/${waiterId}/assigned-tables`);
@@ -79,7 +76,6 @@ const WaiterPage = () => {
         console.error("Error fetching assigned tables:", error);
       }
     };    
-    //end new 
 
     axios.get(`${API_ENDPOINT}/api/orders`)
       .then(res => {
@@ -148,7 +144,6 @@ const WaiterPage = () => {
     return () => clearInterval(interval);
   }, [lastOrderId, fetchOrders]);
 
-  //new
     const fetchWaiters = async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
@@ -178,8 +173,6 @@ const WaiterPage = () => {
     useEffect(() => {
       fetchWaiters();
     }, []); // Empty dependency array ensures it runs once on mount
-    // endnew
-
 
 
   // Also set the help requests polling interval to 2 seconds
@@ -280,6 +273,93 @@ const WaiterPage = () => {
     }
   };
 
+  const assignTableToWaiter = async (waiterId) => {
+    if (!newTable) {
+      alert("Please select a table!");
+      return;
+    }
+  
+    try {
+      await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(newTable)}`);
+  
+      setWaiters((prevWaiters) =>
+        prevWaiters.map((waiter) =>
+          waiter.id === waiterId
+            ? { ...waiter, assignedTables: [...waiter.assignedTables, newTable] }
+            : waiter
+        )
+      );
+  
+      setNewTable(""); // Reset dropdown after assignment
+    } catch (error) {
+      console.error("Error assigning table:", error);
+  
+      if (error.response) {
+        alert(`Error: ${error.response.data}`);
+      } else {
+        alert("Failed to assign table. Please try again.");
+      }
+    }
+  };
+
+  const startEditing = (waiter) => {
+  setEditingWaiters((prev) => ({
+    ...prev,
+    [waiter.id]: { id: waiter.id, name: waiter.name }, // Store current values
+  }));
+};
+
+
+  const saveEditedWaiter = (waiterId) => {
+    setWaiters((prevWaiters) =>
+      prevWaiters.map((waiter) =>
+        waiter.id === waiterId
+          ? { ...waiter, ...editingWaiters[waiterId] } // Update with edited data
+          : waiter
+      )
+    );
+  
+    // Exit editing mode for this waiter
+    setEditingWaiters((prev) => {
+      const updatedEditingWaiters = { ...prev };
+      delete updatedEditingWaiters[waiterId]; // Remove from editing state
+      return updatedEditingWaiters;
+    });
+  };
+  
+  const removeAssignedTable = (waiterId, tableToRemove) => {
+    setWaiters((prevWaiters) =>
+      prevWaiters.map((waiter) =>
+        waiter.id === waiterId
+          ? { 
+              ...waiter, 
+              assignedTables: waiter.assignedTables.filter((table) => table !== tableToRemove) 
+            }
+          : waiter
+      )
+    );
+  };
+  
+  
+  
+  const saveEditedTable = async (waiterId) => {
+    try {
+      await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(editedTable)}`);
+      
+      // Update UI immediately
+      setWaiters(prevWaiters =>
+        prevWaiters.map(waiter =>
+          waiter.id === waiterId ? { ...waiter, assignedTables: [editedTable] } : waiter
+        )
+      );
+  
+      setEditingWaiter(null); // Exit edit mode
+    } catch (error) {
+      console.error("Error updating table:", error);
+      alert("Failed to update table. Please try again.");
+    }
+  };
+
   // Add resolveRequest function
   const resolveRequest = async (id) => {
     try {
@@ -356,8 +436,7 @@ const WaiterPage = () => {
         gutterBottom 
         sx={{ 
           mb: 2, fontWeight: 'medium' }}>
-
-          //new
+            
         Waiter Table Assignments
 </Typography>
 <Button
