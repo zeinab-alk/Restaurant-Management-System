@@ -86,6 +86,24 @@ function Home() {
           >
             Waiter Access
           </Button>
+            <Button
+                component={RouterLink}
+                to="/kitchen"
+                variant="contained"
+                color="success"
+                size="large"
+                startIcon={<span role="img" aria-label="kitchen">🍳</span>}
+                sx={{
+                    py: 2,
+                    px: 4,
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                    borderRadius: "8px",
+                    fontWeight: "medium",
+                    width: "100%",
+                }}
+            >
+                Kitchen Access
+            </Button>
         </Stack>
       </Box>
     </Container>
