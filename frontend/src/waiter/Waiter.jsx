@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { 
-  Button, 
-  Container, 
-  Stack, 
-  Typography, 
-  Alert, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableRow, 
-  TableContainer, 
-  TableHead, 
-  Paper, 
-  Box, 
-  Chip, 
-  Select, 
-  MenuItem, 
-  FormControl, 
+import {
+  Button,
+  Container,
+  Stack,
+  Typography,
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableContainer,
+  TableHead,
+  Paper,
+  Box,
+  Chip,
+  Select,
+  MenuItem,
+  FormControl,
   Snackbar,
   useTheme,
   Grid
@@ -46,15 +46,16 @@ const WaiterPage = () => {
   const [editedTable, setEditedTable] = useState("");
   const [editingWaiters, setEditingWaiters] = useState({});
   const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
+  const [readyMessage, setReadyMessage] = useState("No orders are ready at the moment.");
 
   // Define available order statuses
   const orderStatuses = [
-    'PENDING', 
-    'IN_PROGRESS', 
-    'READY_FOR_DELIVERY', 
-    'COMPLETED', 
-    'DELIVERED', 
-    'PROCESSING', 
+    'PENDING',
+    'IN_PROGRESS',
+    'READY_FOR_DELIVERY',
+    'COMPLETED',
+    'DELIVERED',
+    'PROCESSING',
     'CANCELLED'
   ];
 
@@ -73,12 +74,12 @@ const WaiterPage = () => {
       } catch (error) {
         console.error("Error fetching assigned tables:", error);
       }
-    };    
+    };
 
     axios.get(`${API_ENDPOINT}/api/orders`)
       .then(res => {
         if (Array.isArray(res.data)) {
-          const filtered = res.data.filter(order => 
+          const filtered = res.data.filter(order =>
             order.status !== 'Delivered'
           );
           setOrders(filtered);
@@ -93,7 +94,7 @@ const WaiterPage = () => {
           setOrders([]);
           return;
         }
-        
+
         setError('Failed to load orders');
         console.error('Order fetch error:', err);
         // Set empty array on error so UI doesn't break
@@ -104,10 +105,10 @@ const WaiterPage = () => {
   // Initial orders fetch on component mount
   useEffect(() => {
     fetchOrders();
-    
+
     // Also fetch orders periodically in case of missed updates
     const ordersInterval = setInterval(fetchOrders, 3000); // Every 3 seconds
-    
+
     return () => clearInterval(ordersInterval);
   }, [fetchOrders]);
 
@@ -122,7 +123,7 @@ const WaiterPage = () => {
           const orderDetails = menuItems.map(item => item.name).join(", ");
           setOrderNotification(`New Order #${orderNumber}: ${orderDetails}`);
           setLastOrderId(id);
-          
+
           // Immediately fetch all orders when a new one is detected
           fetchOrders();
         }
@@ -136,7 +137,7 @@ const WaiterPage = () => {
 
     // Run immediately on mount
     fetchLatestOrder();
-    
+
     // Poll every 2 seconds for a good balance of responsiveness and efficiency
     const interval = setInterval(fetchLatestOrder, 2000);
     return () => clearInterval(interval);
@@ -147,7 +148,7 @@ const WaiterPage = () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/waiters`);
         const waitersData = response.data;
-    
+
         // Fetch assigned tables for each waiter
         const tablesData = await Promise.all(
           waitersData.map(async (waiter) => {
@@ -160,19 +161,19 @@ const WaiterPage = () => {
             }
           })
         );
-    
+
         setWaiters(tablesData);
       } catch (error) {
         console.error("Error fetching waiters:", error);
         setWaiters([]); // Ensure state is updated even on failure
       }
     };
-    
+
     // Call fetchWaiters properly
     useEffect(() => {
       fetchWaiters();
     }, []); // Empty dependency array ensures it runs once on mount
-    
+
 
 
 
@@ -200,7 +201,7 @@ const WaiterPage = () => {
 
     // Run immediately on mount
     fetchHelpRequests();
-    
+
     // Poll every 2 seconds
     const helpInterval = setInterval(fetchHelpRequests, 2000);
 
@@ -210,14 +211,14 @@ const WaiterPage = () => {
   // Enhanced status update handler
   const updateOrderStatus = (orderId, newStatus) => {
     console.log(`Attempting to update order ${orderId} to status: ${newStatus}`);
-    
+
     // Format the payload exactly as expected by the backend
-    const payload = { 
+    const payload = {
       status: newStatus.trim().toUpperCase() // Ensure it matches the Java enum format
     };
-    
+
     console.log('Sending payload:', payload);
-    
+
     // Add explicit headers and prevent browsers from caching
     axios.post(`${API_ENDPOINT}/api/waiters/orders/${orderId}/update-status`, payload, {
       headers: {
@@ -279,10 +280,10 @@ const WaiterPage = () => {
       alert("Please select a table!");
       return;
     }
-  
+
     try {
       await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(newTable)}`);
-  
+
       setWaiters((prevWaiters) =>
         prevWaiters.map((waiter) =>
           waiter.id === waiterId
@@ -290,11 +291,11 @@ const WaiterPage = () => {
             : waiter
         )
       );
-  
+
       setNewTable(""); // Reset dropdown after assignment
     } catch (error) {
       console.error("Error assigning table:", error);
-  
+
       if (error.response) {
         alert(`Error: ${error.response.data}`);
       } else {
@@ -319,7 +320,7 @@ const WaiterPage = () => {
           : waiter
       )
     );
-  
+
     // Exit editing mode for this waiter
     setEditingWaiters((prev) => {
       const updatedEditingWaiters = { ...prev };
@@ -327,40 +328,40 @@ const WaiterPage = () => {
       return updatedEditingWaiters;
     });
   };
-  
+
   const removeAssignedTable = (waiterId, tableToRemove) => {
     setWaiters((prevWaiters) =>
       prevWaiters.map((waiter) =>
         waiter.id === waiterId
-          ? { 
-              ...waiter, 
-              assignedTables: waiter.assignedTables.filter((table) => table !== tableToRemove) 
+          ? {
+              ...waiter,
+              assignedTables: waiter.assignedTables.filter((table) => table !== tableToRemove)
             }
           : waiter
       )
     );
   };
-  
-  
-  
+
+
+
   const saveEditedTable = async (waiterId) => {
     try {
       await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(editedTable)}`);
-      
+
       // Update UI immediately
       setWaiters(prevWaiters =>
         prevWaiters.map(waiter =>
           waiter.id === waiterId ? { ...waiter, assignedTables: [editedTable] } : waiter
         )
       );
-  
+
       setEditingWaiter(null); // Exit edit mode
     } catch (error) {
       console.error("Error updating table:", error);
       alert("Failed to update table. Please try again.");
     }
-  };  
-  
+  };
+
 
   // Add resolveRequest function
   const resolveRequest = async (id) => {
@@ -371,7 +372,7 @@ const WaiterPage = () => {
           req.id === id ? { ...req, resolved: true } : req
         )
       );
-      
+
       // Send API request
       const response = await axios.put(`${API_ENDPOINT}/api/help-requests/${id}/resolve`);
 
@@ -380,7 +381,7 @@ const WaiterPage = () => {
       }
     } catch (error) {
       console.error("Error resolving help request:", error);
-      
+
       // Revert UI change if API call fails
       setHelpRequests((prevRequests) =>
         prevRequests.map((req) =>
@@ -390,42 +391,61 @@ const WaiterPage = () => {
     }
   };
 
+  const fetchReadyMessage = async () => {
+    try {
+      const response = await axios.get(`${API_ENDPOINT}/api/kitchen/last-ready`);
+      setReadyMessage(response.data || "No orders are ready at the moment.");
+    } catch (error) {
+      console.error("Error fetching ready message:", error);
+      setReadyMessage("No orders are ready at the moment.");
+    }
+  };
+
+  useEffect(() => {
+    fetchReadyMessage();
+
+    // Poll every 5 seconds to check for new ready messages
+    const interval = setInterval(fetchReadyMessage, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Navigation and Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
+        <Box sx={{
+          display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           gap: 2,
           mb: 3
         }}>
-          <Button 
-            component={RouterLink} 
-            to="/" 
-            variant="contained" 
+          <Button
+            component={RouterLink}
+            to="/"
+            variant="contained"
             color="success"
             startIcon={<span role="img" aria-label="home">🏠</span>}
             sx={{ fontWeight: 'medium' }}
           >
             Back to Home
           </Button>
-          
-          <Button 
-            component={RouterLink} 
-            to="/menuitem/change" 
-            variant="contained" 
+
+          <Button
+            component={RouterLink}
+            to="/menuitem/change"
+            variant="contained"
             color="primary"
             startIcon={<span role="img" aria-label="edit">✏️</span>}
             sx={{ fontWeight: 'medium' }}
           >
             Edit Menu
           </Button>
-          
-          <Button 
-            component={RouterLink} 
-            to="/menuitem/add" 
-            variant="contained" 
+
+          <Button
+            component={RouterLink}
+            to="/menuitem/add"
+            variant="contained"
             color="secondary"
             startIcon={<span role="img" aria-label="add">➕</span>}
             sx={{ fontWeight: 'medium' }}
@@ -433,10 +453,10 @@ const WaiterPage = () => {
             Add Menu Item
           </Button>
         </Box>
-        <Typography 
-        variant="h5" 
-        gutterBottom 
-        sx={{ 
+        <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
           mb: 2, fontWeight: 'medium' }}>
 
         Waiter Table Assignments
@@ -525,9 +545,9 @@ const WaiterPage = () => {
           ))}
         </Select>
       </FormControl>
-      <Button 
-        onClick={() => assignTableToWaiter(waiter.id, editedTable)} 
-        variant="contained" 
+      <Button
+        onClick={() => assignTableToWaiter(waiter.id, editedTable)}
+        variant="contained"
         color="success"
         sx={{ ml: 1 }}
       >
@@ -542,8 +562,8 @@ const WaiterPage = () => {
 
             <TableCell>
               <FormControl size="small">
-                <Select 
-                  value={newTable} 
+                <Select
+                  value={newTable}
                   onChange={(e) => setNewTable(e.target.value)}
                   displayEmpty
                 >
@@ -554,9 +574,9 @@ const WaiterPage = () => {
                 </Select>
               </FormControl>
               {editingWaiter === waiter.id ? (
-  <Button 
-    onClick={() => saveEditedTable(waiter.id)} 
-    variant="contained" 
+  <Button
+    onClick={() => saveEditedTable(waiter.id)}
+    variant="contained"
     color="success"
     sx={{ ml: 1 }}
   >
@@ -564,27 +584,27 @@ const WaiterPage = () => {
   </Button>
 ) : (
   <>
-    <Button 
-      onClick={() => assignTableToWaiter(waiter.id)} 
-      variant="contained" 
+    <Button
+      onClick={() => assignTableToWaiter(waiter.id)}
+      variant="contained"
       color="primary"
       sx={{ ml: 1 }}
     >
       Assign
     </Button>
     {editingWaiters[waiter.id] ? (
-  <Button 
-    onClick={() => saveEditedWaiter(waiter.id)} 
-    variant="contained" 
+  <Button
+    onClick={() => saveEditedWaiter(waiter.id)}
+    variant="contained"
     color="success"
     sx={{ ml: 1 }}
   >
     Save
   </Button>
 ) : (
-  <Button 
-    onClick={() => startEditing(waiter)} 
-    variant="contained" 
+  <Button
+    onClick={() => startEditing(waiter)}
+    variant="contained"
     color="secondary"
     sx={{ ml: 1 }}
   >
@@ -611,12 +631,12 @@ const WaiterPage = () => {
   </Box>
 </Paper>
 
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom 
-          align="center" 
-          sx={{ 
+        <Typography
+          variant="h3"
+          component="h1"
+          gutterBottom
+          align="center"
+          sx={{
             mb: 3,
             fontWeight: 'bold',
             fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' }
@@ -625,7 +645,7 @@ const WaiterPage = () => {
           Waiter Dashboard
         </Typography>
       </Box>
-      
+
       {/* Notifications */}
       <Box sx={{ mb: 4 }}>
         {error && (
@@ -633,16 +653,16 @@ const WaiterPage = () => {
             {error}
           </Alert>
         )}
-        
+
         {orderNotification && (
           <Snackbar
             open={newOrderAlert}
             autoHideDuration={6000}
             onClose={() => setNewOrderAlert(false)}
           >
-            <Alert 
-              onClose={() => setNewOrderAlert(false)} 
-              severity="info" 
+            <Alert
+              onClose={() => setNewOrderAlert(false)}
+              severity="info"
               variant="filled"
             >
               {orderNotification}
@@ -650,19 +670,19 @@ const WaiterPage = () => {
           </Snackbar>
         )}
       </Box>
-      
+
       {/* Orders Section */}
-      <Typography 
-        variant="h5" 
-        gutterBottom 
-        sx={{ 
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
           mb: 2,
-          fontWeight: 'medium' 
+          fontWeight: 'medium'
         }}
       >
         Current Orders
       </Typography>
-      
+
       {orders.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 1, mb: 4 }} elevation={2}>
           <Typography variant="h6" color="text.secondary">
@@ -670,32 +690,32 @@ const WaiterPage = () => {
           </Typography>
         </Paper>
       ) : (
-        <Paper sx={{ 
+        <Paper sx={{
           overflow: 'hidden',
           mb: 4,
           boxShadow: 2,
           borderRadius: 1
         }} elevation={3}>
-          <Box sx={{ 
-            overflowX: 'auto', 
+          <Box sx={{
+            overflowX: 'auto',
             width: '100%'
           }}>
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                  <TableCell sx={{ 
-                    width: '50px', 
+                  <TableCell sx={{
+                    width: '50px',
                     color: theme.palette.mode === 'dark' ? 'black' : 'white',
                     fontWeight: 'bold'
                   }}></TableCell>
-                  <TableCell sx={{ 
+                  <TableCell sx={{
                     color: theme.palette.mode === 'dark' ? 'black' : 'white',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Order #
                   </TableCell>
-                  <TableCell sx={{ 
+                  <TableCell sx={{
                     color: theme.palette.mode === 'dark' ? 'black' : 'white',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap',
@@ -703,14 +723,14 @@ const WaiterPage = () => {
                   }}>
                     Time
                   </TableCell>
-                  <TableCell sx={{ 
+                  <TableCell sx={{
                     color: theme.palette.mode === 'dark' ? 'black' : 'white',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Status
                   </TableCell>
-                  <TableCell sx={{ 
+                  <TableCell sx={{
                     color: theme.palette.mode === 'dark' ? 'black' : 'white',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
@@ -758,13 +778,13 @@ const WaiterPage = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ 
+                        <Box sx={{
                           display: 'flex',
                           flexDirection: { xs: 'column', md: 'row' },
                           gap: 1
                         }}>
-                          <FormControl 
-                            variant="outlined" 
+                          <FormControl
+                            variant="outlined"
                             size="small"
                             sx={{ minWidth: 150 }}
                           >
@@ -787,7 +807,7 @@ const WaiterPage = () => {
                               }
                             </Select>
                           </FormControl>
-                          
+
                           {order.status === 'READY_FOR_DELIVERY' && (
                             <Button
                               variant="contained"
@@ -869,14 +889,23 @@ const WaiterPage = () => {
               </Button>
             }
           >
-            {req.resolved 
-              ? `Table ${req.tableNumber} - Resolved` 
+            {req.resolved
+              ? `Table ${req.tableNumber} - Resolved`
               : `⚠️ Table ${req.tableNumber} needs assistance!`}
           </Alert>
+
         ))
+
       )}
+      <Typography variant="h4" sx={{ mt: 4 }}>
+        Ready Orders
+      </Typography>
+      <Alert severity="info" sx={{ mt: 2 }}>
+        {readyMessage}
+      </Alert>
     </Container>
-    
+
+
   );
 };
 
