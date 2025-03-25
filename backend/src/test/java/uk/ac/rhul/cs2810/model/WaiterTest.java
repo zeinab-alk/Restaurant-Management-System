@@ -579,11 +579,10 @@ public class WaiterTest {
 
     boolean result = waiter.cancelOrder(mockOrder);
 
-    assertTrue(result, "Order cancellation should go though successfully when order is pending.");
+    assertTrue(result, "Order cancellation should go through successfully when order is pending.");
     verify(mockOrder).setStatus(OrderStatus.CANCELLED);
     assertTrue(outContent.toString().contains("Order has been successfully cancelled."));
   }
-
 
   @Test
   public void testCancelOrder_WhenOrderIsCancelled() {
@@ -593,7 +592,7 @@ public class WaiterTest {
     boolean result = waiter.cancelOrder(mockOrder);
 
     assertFalse(result,
-        "Cancellation should not be successfuly when the order is already cancelled.");
+        "Cancellation should not be successful when the order is already cancelled.");
     assertTrue(outContent.toString().contains("Order is already cancelled."));
     verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
   }
@@ -605,7 +604,7 @@ public class WaiterTest {
 
     boolean result = waiter.cancelOrder(mockOrder);
 
-    assertFalse(result, "Order is already delivered so cant be cancelled.");
+    assertFalse(result, "Order is already delivered so it can't be cancelled.");
     assertTrue(outContent.toString().contains("Cannot cancel an order that is already delivered."));
     verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
   }
@@ -614,9 +613,10 @@ public class WaiterTest {
   public void testCancelOrder_WhenOrderDoesNotExist() {
     boolean result = waiter.cancelOrder(null);
 
-    assertFalse(result, "Order is null so you cant cancel not real order.");
+    assertFalse(result, "Order is null so you can't cancel a non-existent order.");
     assertTrue(outContent.toString().contains("Order is null and cannot be cancelled."));
-}
+  }
+
 }
 
 
