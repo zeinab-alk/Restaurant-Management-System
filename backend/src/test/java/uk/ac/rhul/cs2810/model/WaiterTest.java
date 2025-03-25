@@ -594,6 +594,17 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Order is already cancelled."));
   }
 
+  @Test
+  public void testCancelOrder_WhenOrderIsAlreadyDelivered() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    waiter.cancelOrder(mockOrder);
+
+    verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
+    assertTrue(outContent.toString().contains("Cannot cancel an order that is already delivered."));
+  }
+
 }
 
 
