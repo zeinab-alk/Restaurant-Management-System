@@ -201,6 +201,35 @@ public class Waiter {
   }
 
   /**
+   * Cancels an order by checking its status and marking it as CANCELLED.
+   *
+   * @param order The order to be cancelled.
+   * @return true if the order was successfully cancelled , false otherwise.
+   */
+  public boolean cancelOrder(Order order) {
+    if (order == null) {
+      System.out.println("Order does not exist so cant be cancelled!");
+      return false;
+    }
+
+    if (order.getStatus() == OrderStatus.CANCELLED) {
+      System.out.println("Order " + order.getOrderNumber() + " is already canceled.");
+      return false;
+    }
+
+    if (order.getStatus() == OrderStatus.DELIVERED) {
+      System.out.println("Order " + order.getOrderNumber()
+          + " has already been delivered and cannot be canceled.");
+      return false;
+    }
+
+    order.setStatus(OrderStatus.CANCELLED);
+    System.out.println("Order " + order.getOrderNumber() + " has been canceled successfully.");
+    return true;
+  }
+
+
+  /**
    * Gets a list of tables assigned to this waiter that have been delivered
    * but remain unpaid.
    *
