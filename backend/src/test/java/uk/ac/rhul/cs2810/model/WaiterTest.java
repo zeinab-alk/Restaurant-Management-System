@@ -582,6 +582,18 @@ public class WaiterTest {
     verify(mockOrder).setStatus(OrderStatus.CANCELLED);
     assertTrue(outContent.toString().contains("Order has been successfully cancelled."));
   }
+
+  @Test
+  public void testCancelOrder_WhenOrderIsCancelled() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.CANCELLED);
+
+    waiter.cancelOrder(mockOrder);
+
+    verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
+    assertTrue(outContent.toString().contains("Order is already cancelled."));
+  }
+
 }
 
 
