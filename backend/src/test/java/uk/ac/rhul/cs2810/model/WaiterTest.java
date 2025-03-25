@@ -571,6 +571,17 @@ public class WaiterTest {
     // Ensure the correct message is printed
     assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
   }
+
+  @Test
+  public void testCancelOrder_WhenCancellationIsASuccess() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING);
+
+    waiter.cancelOrder(mockOrder);
+
+    verify(mockOrder).setStatus(OrderStatus.CANCELLED);
+    assertTrue(outContent.toString().contains("Order has been successfully cancelled."));
+  }
 }
 
 
