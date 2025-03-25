@@ -14,8 +14,6 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 /**
  * Represents a waiter entity in the system.
  */
@@ -35,7 +33,7 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTablesLegacy; // Renamed to keep old data
+  private List<Integer> assignedTablesLegacy;
 
   @ElementCollection
   private List<String> currentOrders;
@@ -59,7 +57,7 @@ public class Waiter {
    * Default constructor required by JPA.
    */
   public Waiter() {}
-  
+
   /**
    * {@link TableAssignment}
    *
@@ -77,7 +75,6 @@ public class Waiter {
     this.menu = menu;
     this.busy = false;
   }
-
 
   /**
    * Overloaded method for confirming order without parameters (stub method).
@@ -237,6 +234,40 @@ public class Waiter {
   }
 
   /**
+   * Cancels an order by checking its status and marking it as CANCELLED.
+   *
+   * @param order The order to be cancelled.
+   * @return true if the order was successfully cancelled , false otherwise.
+   */
+  public boolean cancelOrder(Order order) {
+    if (order == null) {
+      System.out.println("Order is null and cannot be cancelled.");
+      return false;
+    }
+
+    if (order.getStatus() == OrderStatus.CANCELLED) {
+      System.out.println("Order is already cancelled.");
+      return false;
+    }
+
+    if (order.getStatus() == OrderStatus.DELIVERED) {
+      System.out.println("Cannot cancel an order that is already delivered.");
+      return false;
+    }
+
+    order.setStatus(OrderStatus.CANCELLED);
+    System.out.println("Order has been successfully cancelled.");
+    return true;
+  }
+
+  /**
+   * Cancels an order (stub method).
+   */
+  public void cancelOrder() {
+    System.out.println("Cancelling order...");
+  }
+
+  /**
    * Tracks the order status.
    */
   public void trackOrder() {
@@ -249,14 +280,6 @@ public class Waiter {
   public void updateOrderStatus() {
     System.out.println("Updating order status...");
   }
-
-  /**
-   * Cancels an order.
-   */
-  public void cancelOrder() {
-    System.out.println("Cancelling order...");
-  }
-
 
   /**
    * Notifies the team about the order status.
@@ -414,4 +437,3 @@ public class Waiter {
   }
 
 }
-

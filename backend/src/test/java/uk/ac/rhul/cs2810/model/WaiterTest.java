@@ -571,6 +571,52 @@ public class WaiterTest {
     // Ensure the correct message is printed
     assertTrue(outContent.toString().contains("No tables assigned to waiter: John"));
   }
+
+  @Test
+  public void testCancelOrder_WhenCancellationIsASuccess() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.PENDING);
+
+    boolean result = waiter.cancelOrder(mockOrder);
+
+    assertTrue(result, "Order cancellation should go through successfully when order is pending.");
+    verify(mockOrder).setStatus(OrderStatus.CANCELLED);
+    assertTrue(outContent.toString().contains("Order has been successfully cancelled."));
+  }
+
+  @Test
+  public void testCancelOrder_WhenOrderIsCancelled() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.CANCELLED);
+
+    boolean result = waiter.cancelOrder(mockOrder);
+
+    assertFalse(result,
+        "Cancellation should not be successful when the order is already cancelled.");
+    assertTrue(outContent.toString().contains("Order is already cancelled."));
+    verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
+  }
+
+  @Test
+  public void testCancelOrder_WhenOrderIsAlreadyDelivered() {
+    Order mockOrder = mock(Order.class);
+    when(mockOrder.getStatus()).thenReturn(OrderStatus.DELIVERED);
+
+    boolean result = waiter.cancelOrder(mockOrder);
+
+    assertFalse(result, "Order is already delivered so it can't be cancelled.");
+    assertTrue(outContent.toString().contains("Cannot cancel an order that is already delivered."));
+    verify(mockOrder, never()).setStatus(OrderStatus.CANCELLED);
+  }
+
+  @Test
+  public void testCancelOrder_WhenOrderDoesNotExist() {
+    boolean result = waiter.cancelOrder(null);
+
+    assertFalse(result, "Order is null so you can't cancel a non-existent order.");
+    assertTrue(outContent.toString().contains("Order is null and cannot be cancelled."));
+  }
+
 }
 
 
