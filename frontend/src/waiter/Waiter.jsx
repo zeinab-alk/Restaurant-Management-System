@@ -20,6 +20,11 @@ import {
   FormControl,
   Snackbar,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Grid
 } from "@mui/material";
 import axios from "axios";
@@ -33,6 +38,10 @@ const WaiterPage = () => {
   const theme = useTheme();
   const [orderNotification, setOrderNotification] = useState(null);
   const [helpRequests, setHelpRequests] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [openAlertDialog, setOpenAlertDialog] = useState(false);
+  const [tableNumber, setTableNumber] = useState('');
+  const [alertType, setAlertType] = useState('');
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
   const [lastOrderId, setLastOrderId] = useState(null);
@@ -58,6 +67,14 @@ const WaiterPage = () => {
     'PROCESSING',
     'CANCELLED'
   ];
+ // Define available alert types
+  const alertTypes = [
+    "Bill Request",
+    "Condiments Request",
+    "General Request",
+    "Urgent Request"
+  ];
+  
 
   // Define fetchOrders first using useCallback
   const fetchOrders = useCallback(() => {
@@ -207,6 +224,31 @@ const WaiterPage = () => {
 
     return () => clearInterval(helpInterval);
   }, []);
+
+  const fetchAlerts = useCallback(() => {
+    axios.get(`${API_ENDPOINT}/api/alerts`)
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setAlerts(res.data);
+        } else {
+          setAlerts([]);
+        }
+      })
+      .catch(err => {
+        if (err.response?.status === 404) {
+          setAlerts([]);
+        } else {
+          console.error('Error fetching alerts:', err);
+        }
+      });
+  }, []);
+  
+  useEffect(() => {
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 2000);
+    return () => clearInterval(interval);
+  }, [fetchAlerts]);
+  
 
   // Enhanced status update handler
   const updateOrderStatus = (orderId, newStatus) => {
@@ -390,7 +432,28 @@ const WaiterPage = () => {
       );
     }
   };
-
+  const createAlert = () => {
+    if (!tableNumber || !alertType) {
+      alert("Please enter a table number and select an alert type.");
+      return;
+    }
+  
+    axios.post(`${API_ENDPOINT}/api/alerts`, { tableNumber, alertType })
+      .then(() => {
+        fetchAlerts();
+        setOpenAlertDialog(false);
+        setTableNumber('');
+        setAlertType('');
+      })
+      .catch(err => console.error("Error creating alert:", err));
+  };
+  
+  const resolveAlert = (id) => {
+    axios.put(`${API_ENDPOINT}/api/alerts/${id}/resolve`)
+      .then(() => fetchAlerts())
+      .catch(err => console.error("Error resolving alert:", err));
+  };
+  
   const fetchReadyMessage = async () => {
     try {
       const response = await axios.get(`${API_ENDPOINT}/api/kitchen/last-ready`);
@@ -452,6 +515,15 @@ const WaiterPage = () => {
           >
             Add Menu Item
           </Button>
+          <Button
+  variant="contained"
+  color="error"
+  startIcon={<span role="img" aria-label="alert">🚨</span>}
+  sx={{ fontWeight: 'medium' }}
+  onClick={() => setOpenAlertDialog(true)}
+>
+  Create Alert
+</Button>
         </Box>
         <Typography
         variant="h5"
@@ -898,11 +970,76 @@ const WaiterPage = () => {
 
       )}
       <Typography variant="h4" sx={{ mt: 4 }}>
+  Active Alerts
+</Typography>
+
+{alerts.length === 0 ? (
+  <Alert severity="success" sx={{ mt: 2 }}>
+    No active alerts.
+  </Alert>
+) : (
+  alerts.map((alert) => (
+    <Alert
+      key={alert.id}
+      severity={alert.resolved ? "success" : "error"}
+      sx={{ mt: 2 }}
+      action={
+        <Button
+          onClick={() => resolveAlert(alert.id)}
+          variant="contained"
+          color="success"
+          disabled={alert.resolved}
+        >
+          {alert.resolved ? `Resolved by ${alert.resolvedBy}` : "Resolve"}
+        </Button>
+      }
+    >
+      {alert.resolved
+        ? `🔔 Table ${alert.tableNumber} - Resolved`
+        : `⚠️ Table ${alert.tableNumber} - ${alert.alertType}`}
+    </Alert>
+  ))
+)}
+
+      <Typography variant="h4" sx={{ mt: 4 }}>
         Ready Orders
       </Typography>
       <Alert severity="info" sx={{ mt: 2 }}>
         {readyMessage}
       </Alert>
+      <Dialog open={openAlertDialog} onClose={() => setOpenAlertDialog(false)}>
+  <DialogTitle>Create Alert</DialogTitle>
+  <DialogContent>
+    <TextField
+      label="Table Number"
+      variant="outlined"
+      fullWidth
+      value={tableNumber}
+      onChange={(e) => setTableNumber(e.target.value)}
+      sx={{ mb: 2 }}
+    />
+    <FormControl fullWidth>
+      <Select
+        value={alertType}
+        displayEmpty
+        onChange={(e) => setAlertType(e.target.value)}
+      >
+        <MenuItem value="" disabled>Select Alert Type</MenuItem>
+        {alertTypes.map((type) => (
+          <MenuItem key={type} value={type}>{type}</MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenAlertDialog(false)} color="secondary">
+      Cancel
+    </Button>
+    <Button onClick={createAlert} color="primary">
+      Create
+    </Button>
+  </DialogActions>
+</Dialog>
     </Container>
 
 
