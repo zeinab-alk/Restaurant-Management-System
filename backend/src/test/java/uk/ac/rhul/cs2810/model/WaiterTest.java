@@ -605,6 +605,13 @@ public class WaiterTest {
     assertTrue(outContent.toString().contains("Cannot cancel an order that is already delivered."));
   }
 
+  @Test
+  public void testCancelOrder_WhenOrderDoesNotExist() {
+    waiter.cancelOrder(null);
+
+    assertTrue(outContent.toString().contains("Order is null and cannot be cancelled."));
+  }
+
 }
 
 
