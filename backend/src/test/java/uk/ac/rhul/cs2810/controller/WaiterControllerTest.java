@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -553,8 +555,7 @@ public class WaiterControllerTest {
   }
 
   @Test
-  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput()
-      throws Exception {
+  public void getUnpaidTables_WhenWaiterHasNoAssignedTables_ErrorOutput() throws Exception {
     int waiterId = 1;
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
@@ -590,19 +591,8 @@ public class WaiterControllerTest {
     waiter.setName("John");
     waiter.setAssignedTables(Arrays.asList(10, 20));
 
-    Customer customer1 = new Customer();
-    customer1.setId(10);
-    Customer customer2 = new Customer();
-    customer2.setId(20);
-    Order order1 = new Order();
-    order1.setStatus(OrderStatus.DELIVERED);
-    order1.setCustomer(customer1);
-    Order order2 = new Order();
-    order2.setStatus(OrderStatus.DELIVERED);
-    order2.setCustomer(customer2);
-
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
-    when(orderRepository.findAll()).thenReturn(Arrays.asList(order1, order2));
+    when(orderRepository.findAll()).thenReturn(Collections.emptyList());
 
     ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
 
@@ -610,5 +600,6 @@ public class WaiterControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("All delivered orders for waiter John have been paid.", response.getBody());
   }
+
 
 }
