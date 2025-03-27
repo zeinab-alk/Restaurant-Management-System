@@ -24,6 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import uk.ac.rhul.cs2810.model.Customer;
 import uk.ac.rhul.cs2810.model.Menu;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
@@ -467,46 +470,87 @@ public class WaiterControllerTest {
         .andExpect(jsonPath("$[0].orderNumber").value(1))
         .andExpect(jsonPath("$[1].orderNumber").value(2));
   }
-  
+
   @Test
   public void assignTableToWaiter_WhenWaiterExists_ShouldAssignTable() {
-      // Arrange
-      int waiterId = 1;
-      int tableNumber = 5;
-      Waiter waiter = new Waiter();
-      waiter.setId(waiterId);
-      waiter.setName("John");
+    // Arrange
+    int waiterId = 1;
+    int tableNumber = 5;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
-      // Act
-      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+    // Act
+    ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
 
-      // Assert
-      assertEquals(200, response.getStatusCodeValue());
-      assertEquals("Table 5 assigned to waiter John", response.getBody());
-      assertTrue(waiter.getAssignedTableNumbers().contains(tableNumber));
-      verify(waiterRepository, times(1)).save(waiter);
+    // Assert
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals("Table 5 assigned to waiter John", response.getBody());
+    assertTrue(waiter.getAssignedTableNumbers().contains(tableNumber));
+    verify(waiterRepository, times(1)).save(waiter);
   }
 
   @Test
   public void assignTableToWaiter_WhenWaiterDoesNotExist_ShouldReturnNotFound() {
-      // Arrange
-      int waiterId = 99;
-      int tableNumber = 5;
+    // Arrange
+    int waiterId = 99;
+    int tableNumber = 5;
 
-      when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
 
-      // Act
-      ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
+    // Act
+    ResponseEntity<String> response = waiterController.assignTableToWaiter(waiterId, tableNumber);
 
-      // Assert
-      assertEquals(404, response.getStatusCodeValue());
-      assertEquals("Waiter with ID 99 not found.", response.getBody());
-      verify(waiterRepository, never()).save(any(Waiter.class));
+    // Assert
+    assertEquals(404, response.getStatusCodeValue());
+    assertEquals("Waiter with ID 99 not found.", response.getBody());
+    verify(waiterRepository, never()).save(any(Waiter.class));
   }
 
 
+
+  public void getUnpaidTables_WhenWaiterExistsAndHasAssignedTables_ValidResponse_ShouldOutputTables()
+      throws Exception {
+    // Arrange
+    int waiterId = 1;
+    Waiter waiter = new Waiter();
+    waiter.setId(waiterId);
+    waiter.setName("John");
+    waiter.setAssignedTables(Arrays.asList(10, 20));
+
+    Customer customer1 = new Customer();
+    customer1.setId(10);
+
+    Customer customer2 = new Customer();
+    customer2.setId(20);
+
+    Customer customer3 = new Customer();
+    customer3.setId(30); // Has not waiiter assigned to customer
+
+    Order order1 = new Order();
+    order1.setStatus(OrderStatus.DELIVERED);
+    order1.setCustomer(customer1);
+
+    Order order2 = new Order();
+    order2.setStatus(OrderStatus.DELIVERED);
+    order2.setCustomer(customer2);
+
+    Order order3 = new Order();
+    order3.setStatus(OrderStatus.DELIVERED);
+    order3.setCustomer(customer3);
+
+    when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
+    when(orderRepository.findAll()).thenReturn(Arrays.asList(order1, order2, order3));
+
+    ResponseEntity<String> response = waiterController.getUnpaidTables(waiterId);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertTrue(response.getBody()
+        .contains("Waiter John needs to check payment for the following tables: [10, 20]"));
+  }
 
 
 }
