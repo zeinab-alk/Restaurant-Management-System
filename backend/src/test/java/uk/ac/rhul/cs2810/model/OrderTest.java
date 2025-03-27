@@ -16,7 +16,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, "12:30 PM", 15, OrderStatus.PENDING);
+    order = new Order(1, customer, null, 0, OrderStatus.PENDING); // Pass nulls for removed fields
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
@@ -44,8 +44,6 @@ class OrderTest {
   void testOrderConstructor() {
     assertEquals(1, order.getOrderNumber());
     assertEquals(customer, order.getCustomer());
-    assertEquals("12:30 PM", order.getOrderTime());
-    assertEquals(15, order.getWaitingTime());
     assertEquals(OrderStatus.PENDING, order.getStatus());
     assertTrue(order.getItems().isEmpty());
   }
@@ -61,18 +59,6 @@ class OrderTest {
     Customer newCustomer = new Customer(); // Placeholder
     order.setCustomer(newCustomer);
     assertEquals(newCustomer, order.getCustomer());
-  }
-
-  @Test
-  void testSetAndGetOrderTime() {
-    order.setOrderTime("1:00 PM");
-    assertEquals("1:00 PM", order.getOrderTime());
-  }
-
-  @Test
-  void testSetAndGetWaitingTime() {
-    order.setWaitingTime(20);
-    assertEquals(20, order.getWaitingTime());
   }
 
   @Test
@@ -125,7 +111,7 @@ class OrderTest {
 
   @Test
   void testUpdateStatus() {
-    order.updateStatus(OrderStatus.COMPLETED);
+    order.updateOrderStatus(OrderStatus.COMPLETED);
     assertEquals(OrderStatus.COMPLETED, order.getStatus());
   }
 
@@ -152,7 +138,7 @@ class OrderTest {
   @Test
   void testUpdateStatus_ValidTransition() {
     order.setStatus(OrderStatus.PENDING);
-    order.updateStatus(OrderStatus.IN_PROGRESS);
+    order.updateOrderStatus(OrderStatus.IN_PROGRESS);
     assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
   }
 
@@ -161,11 +147,9 @@ class OrderTest {
     order.setStatus(OrderStatus.PENDING);
 
     Exception exception = assertThrows(InvalidOrderStateException.class, () -> {
-      order.updateStatus(OrderStatus.DELIVERED);
+      order.updateOrderStatus(OrderStatus.DELIVERED);
     });
 
     assertEquals("Order cannot skip directly from PENDING to DELIVERED.", exception.getMessage());
   }
-
-
 }
