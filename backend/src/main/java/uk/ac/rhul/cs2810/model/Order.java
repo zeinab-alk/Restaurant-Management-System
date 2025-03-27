@@ -2,7 +2,21 @@ package uk.ac.rhul.cs2810.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
 
+
+
 /**
  * Represents an order placed by a customer at a restaurant. Contains details about the order,
- * including customer, items, order time, and status.
+ * including customer, items, order time, waiting time, and status.
  */
 @Entity
-@Table(name = "orders")
+@Table(name = "orders") // Ensures the table name is properly created
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Order {
 
@@ -35,20 +51,17 @@ public class Order {
       inverseJoinColumns = @JoinColumn(name = "item_id"))
   private List<MenuItem> menuItems;
 
+  private String orderTime;
+  private int waitingTime;
+
   @Enumerated(EnumType.STRING)
   @JsonProperty("status")
   private OrderStatus status;
 
-  @Column(name = "waiting_time")
-  private int waitingTime;
-
-  @Column(name = "order_placed_time", nullable = false)
+  @Column(nullable = false)
   private LocalDateTime orderPlacedTime;
 
-  @Column(name = "order_updated_time")
   private LocalDateTime orderUpdatedTime;
-
-  @Column(name = "estimated_completion_time")
   private LocalDateTime estimatedCompletionTime;
 
   @PrePersist
@@ -60,61 +73,6 @@ public class Order {
   @PreUpdate
   protected void onUpdate() {
     this.orderUpdatedTime = LocalDateTime.now();
-  }
-
-  // Constructors
-  public Order() {
-    this.menuItems = new ArrayList<>();
-  }
-
-  public Order(int orderNumber, Customer customer, OrderStatus status) {
-    this.orderNumber = orderNumber;
-    this.customer = customer;
-    this.status = status;
-    this.menuItems = new ArrayList<>();
-    this.orderPlacedTime = LocalDateTime.now();
-    this.orderUpdatedTime = LocalDateTime.now();
-  }
-
-  // Getters and setters
-  public int getOrderNumber() {
-    return orderNumber;
-  }
-
-  public void setOrderNumber(int orderNumber) {
-    this.orderNumber = orderNumber;
-  }
-
-  public Customer getCustomer() {
-    return customer;
-  }
-
-  public void setCustomer(Customer customer) {
-    this.customer = customer;
-  }
-
-  public List<MenuItem> getMenuItems() {
-    return menuItems != null ? menuItems : new ArrayList<>();
-  }
-
-  public void setItems(List<MenuItem> items) {
-    this.menuItems = (items != null) ? items : new ArrayList<>();
-  }
-
-  public OrderStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(OrderStatus status) {
-    this.status = status;
-  }
-
-  public int getWaitingTime() {
-    return waitingTime;
-  }
-
-  public void setWaitingTime(int waitingTime) {
-    this.waitingTime = waitingTime;
   }
 
   public LocalDateTime getOrderPlacedTime() {
@@ -141,29 +99,122 @@ public class Order {
     this.estimatedCompletionTime = estimatedCompletionTime;
   }
 
-  // Order logic
-  @JsonProperty("menuItems")
-  public List<MenuItem> getItems() {
-    return getMenuItems();
+
+  /**
+   * Constructs an Order with the given parameters.
+   *
+   * @param orderNumber The unique order number.
+   * @param customer The customer who placed the order.
+   * @param orderTime The time the order was placed.
+   * @param waitingTime The estimated waiting time for the order.
+   * @param status The current status of the order.
+   */
+  public Order(int orderNumber, Customer customer, String orderTime, int waitingTime,
+      OrderStatus status) {
+    this.orderNumber = orderNumber;
+    this.customer = customer;
+    this.orderTime = orderTime;
+    this.waitingTime = waitingTime;
+    this.status = status;
+    this.menuItems = new ArrayList<>();
+    this.orderPlacedTime = LocalDateTime.now();
+    this.orderUpdatedTime = LocalDateTime.now();
   }
 
+  /**
+   * Default constructor (needed for JPA and JSON serialization).
+   */
+  public Order() {
+    this.menuItems = new ArrayList<>();
+  }
+
+  public int getOrderNumber() {
+    return orderNumber;
+  }
+
+  public void setOrderNumber(int orderNumber) {
+    this.orderNumber = orderNumber;
+  }
+
+  public Customer getCustomer() {
+    return customer;
+  }
+
+  public void setCustomer(Customer customer) {
+    this.customer = customer;
+  }
+
+  public void setItems(List<MenuItem> items) {
+    this.menuItems = (items != null) ? items : new ArrayList<>();
+  }
+
+  public String getOrderTime() {
+    return orderTime;
+  }
+
+  public void setOrderTime(String orderTime) {
+    this.orderTime = orderTime;
+  }
+
+  public int getWaitingTime() {
+    return waitingTime;
+  }
+
+  public void setWaitingTime(int waitingTime) {
+    this.waitingTime = waitingTime;
+  }
+
+  public OrderStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(OrderStatus status) {
+    this.status = status;
+  }
+
+  /**
+   * Ensures items list is always initialized before returning.
+   */
+  @JsonProperty("menuItems")
+  public List<MenuItem> getItems() {
+    return (this.menuItems != null) ? this.menuItems : new ArrayList<>();
+  }
+
+  /**
+   * Adds a menu item to the order.
+   *
+   * @param menuItem The menu item to add.
+   */
   public void addItem(MenuItem menuItem) {
     if (this.menuItems == null) {
       this.menuItems = new ArrayList<>();
     }
-    this.menuItems.add(menuItem);
+    menuItems.add(menuItem);
   }
 
+  /**
+   * Removes a menu item from the order.
+   *
+   * @param menuItem The menu item to remove.
+   */
   public void removeItem(MenuItem menuItem) {
     if (this.menuItems != null) {
-      this.menuItems.remove(menuItem);
+      menuItems.remove(menuItem);
     }
   }
 
+  /**
+   * Calculates the total price of all items in the order.
+   *
+   * @return The total price of the order.
+   */
   public double getOrderSum() {
     return menuItems.stream().mapToDouble(MenuItem::getPrice).sum();
   }
 
+  /**
+   * Marks an order as READY_FOR_DELIVERY, ensuring a valid transition.
+   */
   public void markAsReadyForDelivery() {
     if (this.status != OrderStatus.IN_PROGRESS && this.status != OrderStatus.PROCESSING) {
       throw new InvalidOrderStateException(
@@ -174,19 +225,35 @@ public class Order {
     this.status = OrderStatus.READY_FOR_DELIVERY;
   }
 
-  public void updateOrderStatus(OrderStatus newStatus) {
+  /**
+   * Updates the status of an order while ensuring valid transitions.
+   *
+   * @param newStatus The new status to set.
+   */
+  public void updateStatus(OrderStatus newStatus) {
+    // Prevent skipping key order statuses
     if (this.status == OrderStatus.PENDING && newStatus == OrderStatus.DELIVERED) {
       throw new InvalidOrderStateException("Order cannot skip directly from PENDING to DELIVERED.");
     }
-
+    logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
     this.status = newStatus;
     this.orderUpdatedTime = LocalDateTime.now();
 
+    // If order is now in progress, calculate estimated completion time
     if (newStatus == OrderStatus.IN_PROGRESS) {
-      this.estimatedCompletionTime = this.orderUpdatedTime.plusMinutes(15);
+      this.estimatedCompletionTime = this.orderUpdatedTime.plusMinutes(waitingTime);
     }
-
-    logger.info("Order {} status changed to {}", this.orderNumber, newStatus);
   }
 
+  /**
+   * Retrieves the list of menu items in the order.
+   */
+  public List<MenuItem> getMenuItems() {
+    return getItems();
+  }
+
+  /*
+   * public String getOrderDetails() { // Some optional debug output }
+   */
 }
+

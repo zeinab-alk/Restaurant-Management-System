@@ -44,7 +44,7 @@ public class OrderControllerTest {
   @Test
   public void testPlaceOrderSuccess() throws Exception {
     // Arrange
-    Order mockOrder = new Order(1, null, OrderStatus.PENDING);
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
     when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
 
     // Act & Assert
@@ -63,7 +63,7 @@ public class OrderControllerTest {
     // Arrange: simulate an exception thrown by the repository
     when(orderRepository.save(any(Order.class))).thenThrow(new RuntimeException("DB error"));
 
-    Order requestOrder = new Order(999, null, OrderStatus.PENDING);
+    Order requestOrder = new Order(999, null, "2025-02-15 10:00", 10, OrderStatus.PENDING);
 
     // Act & Assert: verify we get INTERNAL_SERVER_ERROR
     mockMvc
@@ -78,7 +78,7 @@ public class OrderControllerTest {
   @Test
   public void testGetOrderFound() throws Exception {
     // Arrange
-    Order mockOrder = new Order(1, null, OrderStatus.PENDING);
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
     when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
 
     // Act & Assert
@@ -105,8 +105,8 @@ public class OrderControllerTest {
   @Test
   public void testGetAllOrders() throws Exception {
     // Arrange
-    Order order1 = new Order(1, null, OrderStatus.PENDING);
-    Order order2 = new Order(2, null, OrderStatus.COMPLETED);
+    Order order1 = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
+    Order order2 = new Order(2, null, "2025-02-14 13:00", 10, OrderStatus.COMPLETED);
     List<Order> mockOrders = Arrays.asList(order1, order2);
 
     when(orderRepository.findAllWithMenuItems()).thenReturn(mockOrders);
@@ -126,7 +126,7 @@ public class OrderControllerTest {
   @Test
   public void testGetLatestOrder_Success() throws Exception {
     // Arrange
-    Order latestOrder = new Order(3, null, OrderStatus.COMPLETED);
+    Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, OrderStatus.COMPLETED);
 
     when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.of(latestOrder));
     when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.of(latestOrder));
@@ -153,7 +153,7 @@ public class OrderControllerTest {
   @Test
   public void testUpdateOrderStatus_Success() throws Exception {
     // Arrange
-    Order mockOrder = new Order(1, null, OrderStatus.PENDING);
+    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
     when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
     when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
 

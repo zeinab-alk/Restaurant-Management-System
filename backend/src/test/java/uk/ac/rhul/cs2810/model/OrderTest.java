@@ -17,7 +17,7 @@ class OrderTest {
   @BeforeEach
   void setUp() {
     customer = new Customer(); // Placeholder until Customer class is implemented
-    order = new Order(1, customer, null); // Pass nulls for removed fields
+    order = new Order(1, customer, "12:30 PM", 15, OrderStatus.PENDING);
 
     List<String> dietaryRestrictions = new ArrayList<>();
     List<String> allergenInformation = new ArrayList<>();
@@ -45,6 +45,8 @@ class OrderTest {
   void testOrderConstructor() {
     assertEquals(1, order.getOrderNumber());
     assertEquals(customer, order.getCustomer());
+    assertEquals("12:30 PM", order.getOrderTime());
+    assertEquals(15, order.getWaitingTime());
     assertEquals(OrderStatus.PENDING, order.getStatus());
     assertTrue(order.getItems().isEmpty());
   }
@@ -60,6 +62,18 @@ class OrderTest {
     Customer newCustomer = new Customer(); // Placeholder
     order.setCustomer(newCustomer);
     assertEquals(newCustomer, order.getCustomer());
+  }
+
+  @Test
+  void testSetAndGetOrderTime() {
+    order.setOrderTime("1:00 PM");
+    assertEquals("1:00 PM", order.getOrderTime());
+  }
+
+  @Test
+  void testSetAndGetWaitingTime() {
+    order.setWaitingTime(20);
+    assertEquals(20, order.getWaitingTime());
   }
 
   @Test
@@ -112,7 +126,7 @@ class OrderTest {
 
   @Test
   void testUpdateStatus() {
-    order.updateOrderStatus(OrderStatus.COMPLETED);
+    order.updateStatus(OrderStatus.COMPLETED);
     assertEquals(OrderStatus.COMPLETED, order.getStatus());
   }
 
@@ -139,7 +153,7 @@ class OrderTest {
   @Test
   void testUpdateStatus_ValidTransition() {
     order.setStatus(OrderStatus.PENDING);
-    order.updateOrderStatus(OrderStatus.IN_PROGRESS);
+    order.updateStatus(OrderStatus.IN_PROGRESS);
     assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
   }
 
@@ -148,7 +162,7 @@ class OrderTest {
     order.setStatus(OrderStatus.PENDING);
 
     Exception exception = assertThrows(InvalidOrderStateException.class, () -> {
-      order.updateOrderStatus(OrderStatus.DELIVERED);
+      order.updateStatus(OrderStatus.DELIVERED);
     });
 
     assertEquals("Order cannot skip directly from PENDING to DELIVERED.", exception.getMessage());
@@ -173,7 +187,7 @@ class OrderTest {
     } // Small delay to ensure timestamp changes
 
     order.setStatus(OrderStatus.IN_PROGRESS);
-    order.updateOrderStatus(OrderStatus.COMPLETED);
+    order.updateStatus(OrderStatus.COMPLETED);
 
     assertTrue(order.getOrderUpdatedTime().isAfter(initialUpdateTime),
         "Order updated time should change when order is updated.");
@@ -182,7 +196,7 @@ class OrderTest {
   @Test
   void testEstimatedCompletionTimeSetOnInProgress() {
     order.setWaitingTime(30);
-    order.updateOrderStatus(OrderStatus.IN_PROGRESS);
+    order.updateStatus(OrderStatus.IN_PROGRESS);
 
     assertNotNull(order.getEstimatedCompletionTime(),
         "Estimated completion time should be set when order is IN_PROGRESS.");

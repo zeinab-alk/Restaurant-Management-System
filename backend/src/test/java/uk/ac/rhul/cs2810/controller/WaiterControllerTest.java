@@ -462,8 +462,8 @@ public class WaiterControllerTest {
 
   @Test
   public void testGetReadyOrders_Success() throws Exception {
-    Order readyOrder1 = new Order(1, null, OrderStatus.READY_FOR_DELIVERY);
-    Order readyOrder2 = new Order(2, null, OrderStatus.READY_FOR_DELIVERY);
+    Order readyOrder1 = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.READY_FOR_DELIVERY);
+    Order readyOrder2 = new Order(2, null, "2025-02-14 13:00", 10, OrderStatus.READY_FOR_DELIVERY);
 
     when(orderRepository.findByStatus(OrderStatus.READY_FOR_DELIVERY))
         .thenReturn(Arrays.asList(readyOrder1, readyOrder2));
