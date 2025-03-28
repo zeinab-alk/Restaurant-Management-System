@@ -66,6 +66,13 @@ function KitchenPage() {
     }
   };
 
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
+  }, []);
+  
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ mb: 4, display: "flex", justifyContent: "flex-start" }}>
