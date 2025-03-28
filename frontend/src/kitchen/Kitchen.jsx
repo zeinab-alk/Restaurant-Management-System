@@ -29,24 +29,29 @@ function KitchenPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-  
+
   const minutesSincePlaced = (placedTime) => {
     if (!placedTime) return "N/A";
     const placed = new Date(placedTime);
     const diffMs = now - placed;
-  
+
     if (diffMs < 0) return "N/A";
-  
+
     const totalSeconds = Math.floor(diffMs / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-  
+
     return `${minutes} min ${seconds} s ago`;
   };
-  
 
   useEffect(() => {
     fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
@@ -67,16 +72,9 @@ function KitchenPage() {
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleRemoveOrder = (orderId) => {
-    setRemovedOrders(prev => [...prev, orderId]);
-  };  
-  
+    setRemovedOrders((prev) => [...prev, orderId]);
+  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -119,44 +117,54 @@ function KitchenPage() {
               </TableHead>
 
               <TableBody>
-              {orders
+                {orders
                   .filter(order => !removedOrders.includes(order.orderNumber))
                   .map((order) => (
                     <TableRow key={order.orderNumber}>
                       <TableCell>{order.orderNumber}</TableCell>
+
                       <TableCell>
-                      <ul style={{ margin: 0, paddingLeft: "1rem" }}>
-                        {order.menuItems.map((item, index) => (
-                          <li key={index}>
-                            <Typography variant="body2">{item.name}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </TableCell>
+                        <ul style={{ margin: 0, paddingLeft: "1rem" }}>
+                          {order.menuItems.map((item, index) => (
+                            <li key={index}>
+                              <Typography variant="body2">{item.name}</Typography>
+                            </li>
+                          ))}
+                        </ul>
+                      </TableCell>
 
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {minutesSincePlaced(order.orderPlacedTime)}
-                      </Typography>
-                    </TableCell>
-
-                    <TableCell>
-                      {readyOrders.includes(order.orderNumber) ? (
-                        <Typography color="success.main" fontWeight="medium">
-                          Ready ✅
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {minutesSincePlaced(order.orderPlacedTime)}
                         </Typography>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          color="success"
-                          onClick={() => sendReadyNotification(order.orderNumber)}
-                        >
-                          Set as Ready
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+
+                      <TableCell>
+                        {readyOrders.includes(order.orderNumber) ? (
+                          <Stack spacing={1}>
+                            <Typography color="success.main" fontWeight="medium">
+                              Ready ✅
+                            </Typography>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              onClick={() => handleRemoveOrder(order.orderNumber)}
+                            >
+                              Remove
+                            </Button>
+                          </Stack>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() => sendReadyNotification(order.orderNumber)}
+                          >
+                            Set as Ready
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </Box>
@@ -167,4 +175,3 @@ function KitchenPage() {
 }
 
 export default KitchenPage;
-
