@@ -6,6 +6,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 function KitchenPage() {
     const [orders, setOrders] = useState([]);
+    const [readyOrders, setReadyOrders] = useState([]);
 
     const minutesSincePlaced = (placedTime) => {
         if (!placedTime) return "N/A";
@@ -42,14 +43,14 @@ function KitchenPage() {
         try {
             await axios.post(`${API_ENDPOINT}/api/kitchen/mark-ready/${orderId}`);
             console.log(`Notified waiters that Order #${orderId} is ready.`);
-            alert(`Order #${orderId} has been marked as ready!`);
-
-            // Remove the order from the local state so it disappears
-            setOrders(prevOrders => prevOrders.filter(order => order.orderNumber !== orderId));
+    
+            setReadyOrders(prev => [...prev, orderId]);
+    
         } catch (error) {
             console.error("Error sending notification:", error);
         }
     };
+    
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
