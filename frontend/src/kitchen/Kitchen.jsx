@@ -119,11 +119,12 @@ function KitchenPage() {
               </TableHead>
 
               <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.orderNumber}>
-                    <TableCell>{order.orderNumber}</TableCell>
-
-                    <TableCell>
+              {orders
+                  .filter(order => !removedOrders.includes(order.orderNumber))
+                  .map((order) => (
+                    <TableRow key={order.orderNumber}>
+                      <TableCell>{order.orderNumber}</TableCell>
+                      <TableCell>
                       <ul style={{ margin: 0, paddingLeft: "1rem" }}>
                         {order.menuItems.map((item, index) => (
                           <li key={index}>
