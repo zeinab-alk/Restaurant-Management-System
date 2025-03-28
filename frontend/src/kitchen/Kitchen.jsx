@@ -186,5 +186,4 @@ function KitchenPage() {
     </Box>
 );
 }
-
 export default KitchenPage;
