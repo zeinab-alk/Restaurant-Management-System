@@ -113,8 +113,17 @@ function KitchenPage() {
           </Button>
         </Box>
 
-        <Typography variant="h4" align="center" sx={{ fontWeight: "bold", mb: 2 }}>
-          Kitchen Dashboard
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            mb: 2
+          }}
+        >
+          🍴 Kitchen Dashboard 🌶️
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
@@ -131,10 +140,10 @@ function KitchenPage() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableCell sx={{ fontWeight: "bold" }}>Order #</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Contents</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Order Placed</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Action</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>#️⃣ Order</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>🥙 Contents</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>⏰ Placed</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>✔️ Action</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -172,7 +181,7 @@ function KitchenPage() {
                                 color="error"
                                 onClick={() => handleRemoveOrder(order.orderNumber)}
                               >
-                                Remove
+                                🗑️ Remove
                               </Button>
                             </Stack>
                           ) : (
@@ -181,7 +190,7 @@ function KitchenPage() {
                               color="success"
                               onClick={() => sendReadyNotification(order.orderNumber)}
                             >
-                              Set as Ready
+                             ✅ Set as Ready
                             </Button>
                           )}
                         </TableCell>
