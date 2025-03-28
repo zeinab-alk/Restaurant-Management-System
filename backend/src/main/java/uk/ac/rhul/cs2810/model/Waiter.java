@@ -33,10 +33,11 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTablesLegacy;
+  private List<Integer> assignedTablesLegacy = new ArrayList<>();
 
   @ElementCollection
-  private List<String> currentOrders;
+  private List<String> currentOrders = new ArrayList<>();
+
 
   @ManyToOne
   @JoinColumn(name = "menu_id")
@@ -61,7 +62,8 @@ public class Waiter {
   /**
    * {@link TableAssignment}
    *
-   * <p>Waiter constructor.
+   * <p>
+   * Waiter constructor.
    *
    * @param id the waiter ID.
    * @param name the waiter name.
@@ -125,7 +127,7 @@ public class Waiter {
       System.out.println("Item name cannot be null.");
       return;
     }
-    
+
     if (menu != null) {
       MenuItem item = menu.getItemByName(itemName);
       if (item != null) {
@@ -198,8 +200,7 @@ public class Waiter {
   }
 
   /**
-   * Gets a list of tables assigned to this waiter that have been delivered
-   * but remain unpaid.
+   * Gets a list of tables assigned to this waiter that have been delivered but remain unpaid.
    *
    * @param allOrders the list of all orders
    * @return a list of unpaid table numbers
@@ -341,7 +342,7 @@ public class Waiter {
   public void setName(String name) {
     this.name = name;
   }
-  
+
   /**
    * Retrieves the current status of the waiter.
    *

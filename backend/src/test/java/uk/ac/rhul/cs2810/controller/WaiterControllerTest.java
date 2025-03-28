@@ -560,8 +560,8 @@ public class WaiterControllerTest {
     Waiter waiter = new Waiter();
     waiter.setId(waiterId);
     waiter.setName("John");
-    waiter.setAssignedTables(null); // Waiter john has no tables assigned to him should output error
-                                    // message
+    // waiter.setAssignedTables(); // Waiter john has no tables assigned to him should output error
+    // message
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.of(waiter));
 
