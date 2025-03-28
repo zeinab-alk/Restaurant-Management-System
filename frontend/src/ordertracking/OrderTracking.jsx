@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_ENDPOINT } from "../config"; // ✅ this line is already correct
 
 const OrderTracking = () => {
   const [order, setOrder] = useState(null);
@@ -7,7 +8,7 @@ const OrderTracking = () => {
   useEffect(() => {
     const fetchLatestOrder = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/orders/latest");
+        const response = await fetch(`${API_ENDPOINT}/api/orders/latest`);
         if (response.status === 204) {
           setOrder(null); // No content
         } else {
