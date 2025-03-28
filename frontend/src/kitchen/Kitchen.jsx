@@ -86,6 +86,7 @@ function KitchenPage() {
                             <TableRow>
                                 <TableCell>Order #</TableCell>
                                 <TableCell>Contents</TableCell>
+                                <TableCell>Order Placed</TableCell>
                                 <TableCell>Action</TableCell>
                             </TableRow>
                         </TableHead>
@@ -93,14 +94,22 @@ function KitchenPage() {
                             {orders.map((order) => (
                                 <TableRow key={order.orderNumber}>
                                     <TableCell>{order.orderNumber}</TableCell>
-                                    <TableCell>{order.menuItems.map((item, index) => (
-                                        <Typography key={index}>
-                                            {`${item.name}`}
-                                        </Typography>
-                                    ))}
+                                    <TableCell>
+                                        {order.menuItems.map((item, index) => (
+                                            <Typography key={index}>
+                                                {item.name}
+                                            </Typography>
+                                        ))}
                                     </TableCell>
                                     <TableCell>
-                                        <Button variant="contained" color="success" onClick={() => sendReadyNotification(order.orderNumber)}>
+                                        {minutesSincePlaced(order.orderPlacedTime)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button 
+                                            variant="contained" 
+                                            color="success" 
+                                            onClick={() => sendReadyNotification(order.orderNumber)}
+                                        >
                                             Set as Ready
                                         </Button>
                                     </TableCell>
