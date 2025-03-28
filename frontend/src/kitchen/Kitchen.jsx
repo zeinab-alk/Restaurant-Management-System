@@ -20,21 +20,29 @@ import { Link as RouterLink } from "react-router-dom";
 function KitchenPage() {
   const [orders, setOrders] = useState([]);
   const [readyOrders, setReadyOrders] = useState([]);
+  const [now, setNow] = useState(new Date());
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  
   const minutesSincePlaced = (placedTime) => {
     if (!placedTime) return "N/A";
-    const now = new Date();
     const placed = new Date(placedTime);
     const diffMs = now - placed;
-
+  
     if (diffMs < 0) return "N/A";
-
+  
     const totalSeconds = Math.floor(diffMs / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-
+  
     return `${minutes} min ${seconds} s ago`;
   };
+  
 
   useEffect(() => {
     fetchOrders();
@@ -146,3 +154,4 @@ function KitchenPage() {
 }
 
 export default KitchenPage;
+
