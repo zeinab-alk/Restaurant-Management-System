@@ -21,6 +21,7 @@ function KitchenPage() {
   const [orders, setOrders] = useState([]);
   const [readyOrders, setReadyOrders] = useState([]);
   const [now, setNow] = useState(new Date());
+  const [removedOrders, setRemovedOrders] = useState([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,6 +72,10 @@ function KitchenPage() {
     const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleRemoveOrder = (orderId) => {
+    setRemovedOrders(prev => [...prev, orderId]);
+  };  
   
 
   return (
