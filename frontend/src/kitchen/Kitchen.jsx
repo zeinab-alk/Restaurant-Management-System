@@ -77,6 +77,18 @@ function KitchenPage() {
   };
 
   return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "sage",
+        backgroundImage:
+          'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+          'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+          'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+          'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
+        backgroundSize: "40px 40px"
+      }}
+    >
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ mb: 4, display: "flex", justifyContent: "flex-start" }}>
         <Button
@@ -171,7 +183,8 @@ function KitchenPage() {
         )}
       </Paper>
     </Container>
-  );
+    </Box>
+);
 }
 
 export default KitchenPage;
