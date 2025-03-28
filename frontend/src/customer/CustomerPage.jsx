@@ -1,6 +1,7 @@
 import React from "react";
+import { API_ENDPOINT } from "../config";
 import { Container, Typography, Paper, Box, Button } from "@mui/material";
-import OrderTracking from "src/ordertracking/OrderTracking";
+import OrderTracking from "../ordertracking/OrderTracking";
 import { Link as RouterLink } from 'react-router-dom';
 
 function CustomerPage() {
