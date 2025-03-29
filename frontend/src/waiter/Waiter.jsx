@@ -411,8 +411,20 @@ const WaiterPage = () => {
 
 
   return (
+    <Box
+    sx={{
+      minHeight: "100vh",
+      backgroundColor: "#fff8e1",
+      backgroundImage:
+        'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
+      backgroundSize: "40px 40px"
+    }}
+    >
+
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      {/* Navigation and Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{
           display: 'flex',
@@ -453,6 +465,7 @@ const WaiterPage = () => {
             Add Menu Item
           </Button>
         </Box>
+
         <Typography
         variant="h5"
         gutterBottom
@@ -522,17 +535,17 @@ const WaiterPage = () => {
 <TableCell>
   {editingWaiter === waiter.id ? (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-      {/* Display assigned tables with remove option */}
+
       {waiter.assignedTables.map((table, index) => (
         <Chip
           key={index}
           label={`Table ${table}`}
-          onDelete={() => removeAssignedTable(waiter.id, table)} // Enables removal
+          onDelete={() => removeAssignedTable(waiter.id, table)} 
           color="primary"
           sx={{ cursor: "pointer" }}
         />
       ))}
-      {/* Dropdown for adding new tables */}
+
       <FormControl size="small">
         <Select
           value={editedTable}
@@ -646,7 +659,6 @@ const WaiterPage = () => {
         </Typography>
       </Box>
 
-      {/* Notifications */}
       <Box sx={{ mb: 4 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -671,7 +683,6 @@ const WaiterPage = () => {
         )}
       </Box>
 
-      {/* Orders Section */}
       <Typography
         variant="h5"
         gutterBottom
@@ -904,6 +915,8 @@ const WaiterPage = () => {
         {readyMessage}
       </Alert>
     </Container>
+    </Box>
+
 
 
   );
