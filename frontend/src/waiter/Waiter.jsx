@@ -468,6 +468,7 @@ const WaiterPage = () => {
 
         <Typography
         variant="h5"
+        color="black"
         gutterBottom
         sx={{
           mb: 2, fontWeight: 'medium' }}>
