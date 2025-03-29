@@ -157,7 +157,7 @@ function KitchenPage() {
                         sx={{
                           backgroundColor: readyOrders.includes(order.orderNumber)
                             ? "#e8f5e9"
-                            : "#"
+                            : "#ffcccb"
                         }}
                       >                      
 
