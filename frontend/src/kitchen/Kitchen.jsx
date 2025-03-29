@@ -151,7 +151,15 @@ function KitchenPage() {
                   {orders
                     .filter(order => !removedOrders.includes(order.orderNumber))
                     .map((order) => (
-                      <TableRow key={order.orderNumber}>
+                        <TableRow
+                        key={order.orderNumber}
+                        sx={{
+                          backgroundColor: readyOrders.includes(order.orderNumber)
+                            ? "#e8f5e9"
+                            : "#ffcccb"
+                        }}
+                      >                      
+
                         <TableCell>{order.orderNumber}</TableCell>
 
                         <TableCell>
