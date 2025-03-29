@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a waiter entity in the system.
@@ -50,7 +51,9 @@ public class Waiter {
   private List<TableAssignment> assignedTables = new ArrayList<>();
 
   public void assignTable(int tableNumber) {
-    assignedTables.add(new TableAssignment(tableNumber));
+    if (assignedTables.stream().noneMatch(ta -> ta.getTableNumber() == tableNumber)) {
+        assignedTables.add(new TableAssignment(tableNumber));
+    }
   }
 
   /**
@@ -298,7 +301,7 @@ public class Waiter {
   }
 
   /**
-   * Sets the waiter’s busy status.
+   * Sets the waiter's busy status.
    *
    * @param busy true if the waiter is busy, false otherwise
    */
@@ -384,11 +387,12 @@ public class Waiter {
    * @return a list of assigned table numbers.
    */
   public List<Integer> getAssignedTableNumbers() {
-    List<Integer> tableNumbers = new ArrayList<>();
-    for (TableAssignment ta : assignedTables) {
-      tableNumbers.add(ta.getTableNumber());
+    if (assignedTables == null) {
+        return new ArrayList<>();
     }
-    return tableNumbers;
+    return assignedTables.stream()
+                         .map(TableAssignment::getTableNumber)
+                         .collect(Collectors.toList());
   }
 
   /**
@@ -404,7 +408,6 @@ public class Waiter {
     return tableNumbers;
   }
 
-
   /**
    * Sets assigned tables by converting List&lt;Integer&gt; to List&lt;TableAssignment&gt;.
    *
@@ -416,7 +419,6 @@ public class Waiter {
       assignedTables.add(new TableAssignment(tableNumber));
     }
   }
-
 
   /**
    * Retrieves the list of current orders assigned to the waiter.
@@ -434,6 +436,38 @@ public class Waiter {
    */
   public void setCurrentOrders(List<String> currentOrders) {
     this.currentOrders = currentOrders;
+  }
+
+  /**
+   * Getter for the actual List&lt;TableAssignment&gt;
+   *
+   * @return the actual List&lt;TableAssignment&gt;
+   */
+  public List<TableAssignment> getAssignments() {
+      return assignedTables;
+  }
+
+  /**
+   * RENAMED and potentially less useful now, consider removing later
+   * This setter might still cause issues if used improperly as it replaces the whole list.
+   *
+   * @param tableNumbers A list of table numbers to assign.
+   */
+  public void setAssignedTableNumbers(List<Integer> tableNumbers) {
+      // Clear existing assignments. Hibernate will handle orphan removal.
+      if (this.assignedTables != null) {
+          this.assignedTables.clear();
+      }
+
+      // Add new assignments if provided
+      if (tableNumbers != null) {
+          if (this.assignedTables == null) {
+              this.assignedTables = new ArrayList<>();
+          }
+          for (Integer tableNum : tableNumbers) {
+              this.assignedTables.add(new TableAssignment(tableNum));
+          }
+      }
   }
 
 }
