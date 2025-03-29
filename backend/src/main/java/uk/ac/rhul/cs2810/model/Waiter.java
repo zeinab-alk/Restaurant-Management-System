@@ -33,7 +33,8 @@ public class Waiter {
   private String status;
 
   @ElementCollection
-  private List<Integer> assignedTablesLegacy = new ArrayList<>();
+  private List<Integer> assignedTablesLegacy;
+
 
   @ElementCollection
   private List<String> currentOrders = new ArrayList<>();
@@ -62,8 +63,11 @@ public class Waiter {
   /**
    * {@link TableAssignment}
    *
+   * <<<<<<< HEAD
    * <p>
-   * Waiter constructor.
+   * Waiter constructor. =======
+   * <p>
+   * Waiter constructor. >>>>>>> origin/main
    *
    * @param id the waiter ID.
    * @param name the waiter name.
@@ -200,7 +204,9 @@ public class Waiter {
   }
 
   /**
-   * Gets a list of tables assigned to this waiter that have been delivered but remain unpaid.
+   * <<<<<<< HEAD Gets a list of tables assigned to this waiter that have been delivered but remain
+   * unpaid. ======= Gets a list of tables assigned to this waiter that have been delivered but
+   * remain unpaid. >>>>>>> origin/main
    *
    * @param allOrders the list of all orders
    * @return a list of unpaid table numbers

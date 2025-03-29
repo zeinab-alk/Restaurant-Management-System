@@ -233,6 +233,7 @@ public class WaiterController {
    * @return ResponseEntity with success or error message.
    */
   @PostMapping("/{waiterId}/assign-table/{tableNumber}")
+
   public ResponseEntity<String> assignTableToWaiter(@PathVariable int waiterId,
       @PathVariable int tableNumber) {
     Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
@@ -260,14 +261,14 @@ public class WaiterController {
 
 
   /**
-   * Retrieves a list of tables with orders that have been delivered but not yet paid.
+   * Retrieves a list of tables that have received their orders but have not yet paid.
    *
-   * @param waiterId The ID of the waiter to check.
-   * @return ResponseEntity containing a list of table numbers with unpaid orders or a message
-   *         indicating all orders are paid.
+   * @param waiterId The ID of the waiter responsible for the tables.
+   * @return ResponseEntity containing a list of unpaid tables or a message indicating all orders
+   *         have been paid.
    */
-
   @GetMapping("/{waiterId}/unpaid-tables")
+
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
     Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
 
@@ -280,7 +281,7 @@ public class WaiterController {
     List<Order> allOrders = orderRepository.findAll();
     List<Integer> unpaidTables = new ArrayList<>();
 
-    if (waiter.getAssignedTables() == null || waiter.getAssignedTables().isEmpty()) {
+    if (waiter.getAssignedTables().isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body("No tables assigned to waiter " + waiter.getName() + ".");
     }
@@ -298,9 +299,8 @@ public class WaiterController {
     }
 
 
-    // Respond based on whether there are unpaid tables
-    // Message will be outputtted based on if tables have or have not paid
 
+    // Message will be outputtted based on if tables have or have not paid
     if (unpaidTables.isEmpty()) {
       return ResponseEntity
           .ok("All delivered orders for waiter " + waiter.getName() + " have been paid.");
@@ -309,6 +309,5 @@ public class WaiterController {
           + " needs to check payment for the following tables: " + unpaidTables);
     }
   }
-
 }
 

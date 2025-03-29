@@ -27,21 +27,52 @@ function App({ children }) {
     [],
   );
 
-  const theme = React.useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-        },
-      }),
-    [mode],
-  );
+  const theme = React.useMemo(() => createTheme({
+    palette: {
+      mode,
+      ...(mode === 'light'
+        ? {
+            primary: { main: '#d84315' }, 
+            secondary: { main: '#ffb300' }, 
+            background: {
+              default: '#fff8e1',
+              paper: '#fff3e0'
+            },
+          }
+        : {
+            primary: { main: '#ffcc80' },
+            secondary: { main: '#ff7043' },
+            background: {
+              default: '#3e2723',
+              paper: '#4e342e'
+            },
+          }),
+    },
+    typography: {
+      fontFamily: `'Quicksand', 'Cinzel Decorative', cursive`,
+      h1: {
+        fontFamily: `'Cinzel Decorative', cursive`,
+      },
+    },
+    shape: {
+      borderRadius: 10
+    }
+  }), [mode]);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ minHeight: '100vh', pb: 4, width: '100%' }}>
+        <Box
+          sx={{
+            minHeight: '100vh',
+            pb: 4,
+            background: mode === 'light'
+            ? 'linear-gradient(to bottom, #fff9e3, #ffecb3)'
+            : 'linear-gradient(to bottom, #3e2723, #4e342e)',
+            
+          }}
+        >
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -53,17 +84,16 @@ function App({ children }) {
             <Typography 
               variant="h1" 
               component="h1" 
-              color="primary"
-              sx={{ 
-                width: '50%',
-                minWidth: '50%',
+               sx={{
+                color: mode === 'light' ? 'primary.main' : '#fff8e1',
                 textAlign: 'center',
-                fontSize: '4.5rem',
-                fontWeight: 'bold',
-                letterSpacing: '0.2em'
+                fontSize: { xs: '2.8rem', sm: '3.8rem', md: '5rem' },
+                textShadow: '2px 2px #ffcc80',
+                letterSpacing: '0.1em',
+                userSelect: 'none',
               }}
             >
-              OAXACA
+              🌮 OAXACA 🍹
             </Typography>
             <IconButton 
               onClick={colorMode.toggleColorMode} 
