@@ -47,6 +47,15 @@ function App({ children }) {
               paper: '#4e342e'
             },
           }),
+    },
+    typography: {
+      fontFamily: `'Quicksand', 'Cinzel Decorative', cursive`,
+      h1: {
+        fontFamily: `'Cinzel Decorative', cursive`,
+      },
+    },
+    shape: {
+      borderRadius: 10
     }
   }), [mode]);
 
