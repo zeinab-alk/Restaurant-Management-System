@@ -472,7 +472,7 @@ const WaiterPage = () => {
         sx={{
           mb: 2, fontWeight: 'medium' }}>
 
-        Waiter Table Assignments
+        Waiter Table Assignments 🪑
 </Typography>
 <Button
   onClick={() => setWaiters([...waiters, { ...newWaiter, id: waiters.length + 1 }])}
@@ -644,19 +644,21 @@ const WaiterPage = () => {
   </Box>
 </Paper>
 
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          align="center"
-          sx={{
-            mb: 3,
-            fontWeight: 'bold',
-            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' }
-          }}
-        >
-          Waiter Dashboard
-        </Typography>
+<Typography
+  variant="h3"
+  component="h1"
+  gutterBottom
+  align="center"
+  sx={{
+    mb: 3,
+    fontWeight: 'bold',
+    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+    color: "#d32f2f"
+  }}
+>
+  🌯 Oaxaca Waiter Dashboard 🍽
+</Typography>
+
       </Box>
 
       <Box sx={{ mb: 4 }}>
@@ -691,7 +693,7 @@ const WaiterPage = () => {
           fontWeight: 'medium'
         }}
       >
-        Current Orders
+        🧾 Current Orders
       </Typography>
 
       {orders.length === 0 ? (
@@ -876,8 +878,8 @@ const WaiterPage = () => {
         </Paper>
       )}
 
-      <Typography variant="h4" sx={{ mt: 4 }}>
-        Active Help Requests
+      <Typography variant="h4" color="red" sx={{ mt: 4 }}>
+        Active Help Requests 🙋
       </Typography>
       {helpRequests.length === 0 ? (
         <Alert severity="success" sx={{ mt: 2 }}>
@@ -908,8 +910,8 @@ const WaiterPage = () => {
         ))
 
       )}
-      <Typography variant="h4" sx={{ mt: 4 }}>
-        Ready Orders
+      <Typography variant="h4" color="green" sx={{ mt: 4 }} >
+        Ready Orders ✅ 
       </Typography>
       <Alert severity="info" sx={{ mt: 2 }}>
         {readyMessage}
