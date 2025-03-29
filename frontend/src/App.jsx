@@ -27,15 +27,28 @@ function App({ children }) {
     [],
   );
 
-  const theme = React.useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-        },
-      }),
-    [mode],
-  );
+  const theme = React.useMemo(() => createTheme({
+    palette: {
+      mode,
+      ...(mode === 'light'
+        ? {
+            primary: { main: '#d84315' }, 
+            secondary: { main: '#ffb300' }, 
+            background: {
+              default: '#fff8e1',
+              paper: '#fff3e0'
+            },
+          }
+        : {
+            primary: { main: '#ffcc80' },
+            secondary: { main: '#ff7043' },
+            background: {
+              default: '#3e2723',
+              paper: '#4e342e'
+            },
+          }),
+    }
+  }), [mode]);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
