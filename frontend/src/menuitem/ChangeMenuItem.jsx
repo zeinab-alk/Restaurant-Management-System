@@ -24,6 +24,7 @@ import {
   Select,
   MenuItem as MuiMenuItem
 } from "@mui/material";
+import { alpha } from '@mui/material/styles';
 import axios from "axios";
 import { API_ENDPOINT } from "../config";
 import { dietarySymbols, allergenSymbols } from '../utils/foodInfoSymbols';
@@ -108,34 +109,34 @@ const ChangeMenuItem = () => {
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap'
                 }}>Name</TableCell>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap'
                 }}>Price</TableCell>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap',
                   display: { xs: 'none', sm: 'table-cell' }
                 }}>Calories</TableCell>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap',
                   display: { xs: 'none', md: 'table-cell' }
                 }}>Dietary Info</TableCell>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap'
                 }}>Status</TableCell>
                 <TableCell sx={{ 
-                  color: theme.palette.mode === 'dark' ? 'black' : 'white', 
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap'
                 }}>Actions</TableCell>
@@ -178,14 +179,16 @@ const ChangeMenuItem = () => {
                         value={item.available ? "available" : "unavailable"}
                         onChange={(e) => toggleAvailability(item.itemId, e.target.value === "unavailable")}
                         displayEmpty
-                        sx={{ 
+                        sx={(theme) => ({
                           fontSize: '0.875rem',
-                          backgroundColor: item.available ? 'rgba(46, 125, 50, 0.1)' : 'rgba(211, 47, 47, 0.1)',
+                          backgroundColor: item.available
+                            ? alpha(theme.palette.success.main, 0.1)
+                            : alpha(theme.palette.error.main, 0.1),
                           '& .MuiSelect-select': {
-                            color: item.available ? 'success.main' : 'error.main',
+                            color: item.available ? theme.palette.success.main : theme.palette.error.main,
                             fontWeight: 'medium'
                           }
-                        }}
+                        })}
                       >
                         <MuiMenuItem value="available">Available</MuiMenuItem>
                         <MuiMenuItem value="unavailable">Unavailable</MuiMenuItem>

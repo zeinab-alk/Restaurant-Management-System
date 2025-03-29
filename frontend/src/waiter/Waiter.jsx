@@ -412,16 +412,22 @@ const WaiterPage = () => {
 
   return (
     <Box
-    sx={{
-      minHeight: "100vh",
-      backgroundColor: "#fff8e1",
-      backgroundImage:
-        'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
-      backgroundSize: "40px 40px"
-    }}
+      sx={(theme) => ({ // Use callback function to access theme
+        minHeight: "100vh",
+        // Use theme's paper background for consistency
+        backgroundColor: theme.palette.background.paper,
+        // Define pattern colors based on mode
+        backgroundImage: theme.palette.mode === 'light'
+          ? 'linear-gradient(135deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(0,0,0,0.05) 25%, ${theme.palette.background.paper} 25%)` // Use theme paper bg
+          : 'linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(255,255,255,0.05) 25%, ${theme.palette.background.paper} 25%)`, // Use theme paper bg
+        backgroundSize: "40px 40px",
+      })}
     >
 
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -468,7 +474,7 @@ const WaiterPage = () => {
 
         <Typography
         variant="h5"
-        color="black"
+        color="text.primary"
         gutterBottom
         sx={{
           mb: 2, fontWeight: 'medium' }}>
@@ -488,10 +494,10 @@ const WaiterPage = () => {
     <Table>
       <TableHead>
         <TableRow sx={{ backgroundColor: 'primary.main' }}>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Waiter ID</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Assigned Tables</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Waiter ID</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Name</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Assigned Tables</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Actions</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -650,12 +656,12 @@ const WaiterPage = () => {
   component="h1"
   gutterBottom
   align="center"
-  sx={{
+  sx={(theme) => ({
     mb: 3,
     fontWeight: 'bold',
     fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
-    color: "#d32f2f"
-  }}
+    color: theme.palette.error.main
+  })}
 >
   🌯 Oaxaca Waiter Dashboard 🍽
 </Typography>
@@ -691,7 +697,8 @@ const WaiterPage = () => {
         gutterBottom
         sx={{
           mb: 2,
-          fontWeight: 'medium'
+          fontWeight: 'medium',
+          color: 'text.primary'
         }}
       >
         🧾 Current Orders
@@ -719,18 +726,18 @@ const WaiterPage = () => {
                 <TableRow sx={{ backgroundColor: 'primary.main' }}>
                   <TableCell sx={{
                     width: '50px',
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold'
                   }}></TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Order #
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap',
                     display: { xs: 'none', sm: 'table-cell' }
@@ -738,14 +745,14 @@ const WaiterPage = () => {
                     Time
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Status
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
@@ -879,8 +886,16 @@ const WaiterPage = () => {
         </Paper>
       )}
 
-      <Typography variant="h4" color="red" sx={{ mt: 4 }}>
-        Active Help Requests 🙋
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={(theme) => ({
+          mb: 2,
+          fontWeight: 'medium',
+          color: theme.palette.error.main
+        })}
+      >
+        💁‍♀️ Active Help Requests 💁
       </Typography>
       {helpRequests.length === 0 ? (
         <Alert severity="success" sx={{ mt: 2 }}>
@@ -911,8 +926,16 @@ const WaiterPage = () => {
         ))
 
       )}
-      <Typography variant="h4" color="green" sx={{ mt: 4 }} >
-        Ready Orders ✅ 
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={(theme) => ({
+          mb: 2,
+          fontWeight: 'medium',
+          color: theme.palette.success.main
+        })}
+      >
+        ✅ Ready Orders ✅
       </Typography>
       <Alert severity="info" sx={{ mt: 2 }}>
         {readyMessage}

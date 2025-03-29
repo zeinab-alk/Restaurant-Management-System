@@ -49,7 +49,7 @@ function App({ children }) {
           }),
     },
     typography: {
-      fontFamily: `'Quicksand', 'Cinzel Decorative', cursive`,
+      fontFamily: `'Roboto', sans-serif`,
       h1: {
         fontFamily: `'Cinzel Decorative', cursive`,
       },
@@ -85,7 +85,7 @@ function App({ children }) {
               variant="h1" 
               component="h1" 
                sx={{
-                color: mode === 'light' ? 'primary.main' : '#fff8e1',
+                color: mode === 'light' ? theme.palette.primary.main : theme.palette.primary.contrastText,
                 textAlign: 'center',
                 fontSize: { xs: '2.8rem', sm: '3.8rem', md: '5rem' },
                 textShadow: '2px 2px #ffcc80',

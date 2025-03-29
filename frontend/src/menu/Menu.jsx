@@ -84,7 +84,7 @@ function Menu({ isEmbedded = false }) {
   const [sortDirection, setSortDirection] = useState('asc');
 
   const PriceSlider = styled(Slider)({
-    color: '#3a8589',
+    color: theme.palette.primary.main,
     height: 8,
     '& .MuiSlider-thumb': {
       height: 24,
@@ -340,7 +340,8 @@ function Menu({ isEmbedded = false }) {
           sx={{ 
             mb: 4,
             fontWeight: 'bold',
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            color: 'primary.main'
           }}
         >
           Our Menu
@@ -381,7 +382,7 @@ function Menu({ isEmbedded = false }) {
               valueLabelDisplay="auto"
               min={0}
               max={maxPriceValue}
-              sx={{ color: '#3a8589', mb: 2 }}
+              sx={{ color: theme.palette.primary.main, mb: 2 }}
               valueLabelFormat={(value) => `£${value}`}
             />
             
@@ -434,7 +435,7 @@ function Menu({ isEmbedded = false }) {
               valueLabelDisplay="auto"
               min={0}
               max={maxCaloriesValue}
-              sx={{ color: '#3a8589', mb: 2 }}
+              sx={{ color: theme.palette.primary.main, mb: 2 }}
               valueLabelFormat={(value) => `${value} kcal`}
             />
             
@@ -601,26 +602,26 @@ function Menu({ isEmbedded = false }) {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
                   Name
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
                   Price
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
                   Calories
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
                   Dietary Info
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
                   Allergens
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Status
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
+                  Popularity
                 </TableCell>
-                <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontWeight: 'bold' }}>
-                  Actions
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
+                  Order
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -700,7 +701,11 @@ function Menu({ isEmbedded = false }) {
           borderRadius: 1,
           boxShadow: 2
         }}>
-          <Typography variant="h5" gutterBottom>Your Order</Typography>
+          <Typography variant="h5" component="h2" 
+            sx={{ color: 'primary.main', mb: 2 }}
+          >
+            Your Order
+          </Typography>
           
           {cart.length === 0 ? (
             <Typography variant="body1" color="text.secondary">No items in cart</Typography>
