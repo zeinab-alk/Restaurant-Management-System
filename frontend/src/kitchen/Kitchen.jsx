@@ -78,16 +78,17 @@ function KitchenPage() {
 
   return (
     <Box
-      sx={{
+    sx={{
         minHeight: "100vh",
-        backgroundColor: "sage",
+        backgroundColor: "#ffefd5", 
         backgroundImage:
-          'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-          'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-          'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-          'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
+          'linear-gradient(135deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
+          'linear-gradient(225deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
+          'linear-gradient(45deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
+          'linear-gradient(315deg, rgba(255, 183, 77, 0.15) 25%, #ffefd5 25%)',
         backgroundSize: "40px 40px"
       }}
+      
     >
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box
@@ -98,7 +99,7 @@ function KitchenPage() {
             alignItems: "center"
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "red" }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", color: "#c49000" }}>
             🌮 Oaxaca Kitchen 🌯
           </Typography>
           <Button
@@ -116,7 +117,7 @@ function KitchenPage() {
         <Typography
           variant="h5"
           sx={{
-            fontWeight: "bold",
+            fontWeight: "bold", color: "#d84315",
             display: "flex",
             alignItems: "center",
             gap: 1,
@@ -140,10 +141,10 @@ function KitchenPage() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                  <TableCell sx={{ fontWeight: "bold" }}>#️⃣ Order</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>🥙 Contents</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>⏰ Placed</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>✔️ Action</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color:"black" }}>#️⃣ Order</TableCell>
+                    <TableCell sx={{ fontWeight: "bold", color:"black" }}>🥙 Contents</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" , color:"black" }}>⏰ Time Placed</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" , color:"black" }}>✔️ Action</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -156,7 +157,7 @@ function KitchenPage() {
                         sx={{
                           backgroundColor: readyOrders.includes(order.orderNumber)
                             ? "#e8f5e9"
-                            : "#ffcccb"
+                            : "#"
                         }}
                       >                      
 
