@@ -50,9 +50,14 @@ public class Waiter {
   @JoinColumn(name = "waiter_id")
   private List<TableAssignment> assignedTables = new ArrayList<>();
 
+  /**
+   * Adds a table assignment to the waiter if it doesn't already exist.
+   *
+   * @param tableNumber The table number to assign.
+   */
   public void assignTable(int tableNumber) {
     if (assignedTables.stream().noneMatch(ta -> ta.getTableNumber() == tableNumber)) {
-        assignedTables.add(new TableAssignment(tableNumber));
+      assignedTables.add(new TableAssignment(tableNumber));
     }
   }
 
@@ -388,7 +393,7 @@ public class Waiter {
    */
   public List<Integer> getAssignedTableNumbers() {
     if (assignedTables == null) {
-        return new ArrayList<>();
+      return new ArrayList<>();
     }
     return assignedTables.stream()
                          .map(TableAssignment::getTableNumber)
@@ -439,35 +444,35 @@ public class Waiter {
   }
 
   /**
-   * Getter for the actual List&lt;TableAssignment&gt;
+   * Getter for the actual List&lt;TableAssignment&gt;.
    *
    * @return the actual List&lt;TableAssignment&gt;
    */
   public List<TableAssignment> getAssignments() {
-      return assignedTables;
+    return assignedTables;
   }
 
   /**
-   * RENAMED and potentially less useful now, consider removing later
+   * RENAMED and potentially less useful now, consider removing later.
    * This setter might still cause issues if used improperly as it replaces the whole list.
    *
    * @param tableNumbers A list of table numbers to assign.
    */
   public void setAssignedTableNumbers(List<Integer> tableNumbers) {
-      // Clear existing assignments. Hibernate will handle orphan removal.
-      if (this.assignedTables != null) {
-          this.assignedTables.clear();
-      }
+    // Clear existing assignments. Hibernate will handle orphan removal.
+    if (this.assignedTables != null) {
+      this.assignedTables.clear();
+    }
 
-      // Add new assignments if provided
-      if (tableNumbers != null) {
-          if (this.assignedTables == null) {
-              this.assignedTables = new ArrayList<>();
-          }
-          for (Integer tableNum : tableNumbers) {
-              this.assignedTables.add(new TableAssignment(tableNum));
-          }
+    // Add new assignments if provided
+    if (tableNumbers != null) {
+      if (this.assignedTables == null) {
+        this.assignedTables = new ArrayList<>();
       }
+      for (Integer tableNum : tableNumbers) {
+        this.assignedTables.add(new TableAssignment(tableNum));
+      }
+    }
   }
 
 }
