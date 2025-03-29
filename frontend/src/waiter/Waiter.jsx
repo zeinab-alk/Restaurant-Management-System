@@ -411,8 +411,20 @@ const WaiterPage = () => {
 
 
   return (
+    <Box
+    sx={{
+      minHeight: "100vh",
+      backgroundColor: "#fff8e1",
+      backgroundImage:
+        'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
+        'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
+      backgroundSize: "40px 40px"
+    }}
+    >
+
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      {/* Navigation and Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{
           display: 'flex',
@@ -453,13 +465,15 @@ const WaiterPage = () => {
             Add Menu Item
           </Button>
         </Box>
+
         <Typography
         variant="h5"
+        color="black"
         gutterBottom
         sx={{
           mb: 2, fontWeight: 'medium' }}>
 
-        Waiter Table Assignments
+        Waiter Table Assignments 🪑
 </Typography>
 <Button
   onClick={() => setWaiters([...waiters, { ...newWaiter, id: waiters.length + 1 }])}
@@ -522,17 +536,17 @@ const WaiterPage = () => {
 <TableCell>
   {editingWaiter === waiter.id ? (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-      {/* Display assigned tables with remove option */}
+
       {waiter.assignedTables.map((table, index) => (
         <Chip
           key={index}
           label={`Table ${table}`}
-          onDelete={() => removeAssignedTable(waiter.id, table)} // Enables removal
+          onDelete={() => removeAssignedTable(waiter.id, table)} 
           color="primary"
           sx={{ cursor: "pointer" }}
         />
       ))}
-      {/* Dropdown for adding new tables */}
+
       <FormControl size="small">
         <Select
           value={editedTable}
@@ -631,22 +645,23 @@ const WaiterPage = () => {
   </Box>
 </Paper>
 
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          align="center"
-          sx={{
-            mb: 3,
-            fontWeight: 'bold',
-            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' }
-          }}
-        >
-          Waiter Dashboard
-        </Typography>
+<Typography
+  variant="h3"
+  component="h1"
+  gutterBottom
+  align="center"
+  sx={{
+    mb: 3,
+    fontWeight: 'bold',
+    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+    color: "#d32f2f"
+  }}
+>
+  🌯 Oaxaca Waiter Dashboard 🍽
+</Typography>
+
       </Box>
 
-      {/* Notifications */}
       <Box sx={{ mb: 4 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -671,7 +686,6 @@ const WaiterPage = () => {
         )}
       </Box>
 
-      {/* Orders Section */}
       <Typography
         variant="h5"
         gutterBottom
@@ -680,7 +694,7 @@ const WaiterPage = () => {
           fontWeight: 'medium'
         }}
       >
-        Current Orders
+        🧾 Current Orders
       </Typography>
 
       {orders.length === 0 ? (
@@ -865,8 +879,8 @@ const WaiterPage = () => {
         </Paper>
       )}
 
-      <Typography variant="h4" sx={{ mt: 4 }}>
-        Active Help Requests
+      <Typography variant="h4" color="red" sx={{ mt: 4 }}>
+        Active Help Requests 🙋
       </Typography>
       {helpRequests.length === 0 ? (
         <Alert severity="success" sx={{ mt: 2 }}>
@@ -897,13 +911,15 @@ const WaiterPage = () => {
         ))
 
       )}
-      <Typography variant="h4" sx={{ mt: 4 }}>
-        Ready Orders
+      <Typography variant="h4" color="green" sx={{ mt: 4 }} >
+        Ready Orders ✅ 
       </Typography>
       <Alert severity="info" sx={{ mt: 2 }}>
         {readyMessage}
       </Alert>
     </Container>
+    </Box>
+
 
 
   );
