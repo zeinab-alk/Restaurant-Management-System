@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
+import uk.ac.rhul.cs2810.model.PayRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 import org.springframework.data.domain.Sort;
 
@@ -128,10 +129,8 @@ public class OrderControllerTest {
     // Arrange
     Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, OrderStatus.COMPLETED);
 
-    when(orderRepository.findLatestOrderWithMenuItems())
-        .thenReturn(Optional.of(latestOrder));
-    when(orderRepository.findTopByOrderByOrderTimeDesc())
-        .thenReturn(Optional.of(latestOrder));
+    when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.of(latestOrder));
+    when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.of(latestOrder));
 
     // Act & Assert
     mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isOk())
@@ -190,6 +189,87 @@ public class OrderControllerTest {
         .andDo(print()).andExpect(status().isNotFound());
   }
 
+  @Test
+  public void testPayForOrder_Success() throws Exception {
+    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "Zeynep Sener", "123");
+    Order mockOrder = new Order();
+    mockOrder.setOrderNumber(1);
+    mockOrder.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value("Payment successful. Order marked as PAID."));
+  }
+
+  @Test
+  public void testPayForOrder_OrderNotFound() throws Exception {
+    PayRequest request = new PayRequest(999, "1234678912345678", "11/25", "Zeynep Sener", "123");
+    when(orderRepository.findByOrderNumber(999)).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNotFound()).andExpect(jsonPath("$").value("Order not found."));
+  }
+
+  @Test
+  public void testPayForOrder_InvalidCardNumber() throws Exception {
+    PayRequest request = new PayRequest(1, "123", "11/25", "Zeynep Sener", "123");
+
+    Order mockOrder = new Order();
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest()).andExpect(jsonPath("$").value("Invalid card number."));
+  }
+
+  @Test
+  public void testPayForOrder_InvalidExpiryFormat() throws Exception {
+    PayRequest request = new PayRequest(1, "1234678912345678", "13/99", "Zeynep Sener", "123");
+
+    Order mockOrder = new Order();
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$").value("Invalid expiry date format."));
+  }
+
+  @Test
+  public void testPayForOrder_MissingCardholderName() throws Exception {
+    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "   ", "123");
+
+    Order mockOrder = new Order();
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$").value("Cardholder name required."));
+  }
+
+  @Test
+  public void testPayForOrder_InvalidCVV() throws Exception {
+    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "Zeynep Sener", "12");
+
+    Order mockOrder = new Order();
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+
+    mockMvc
+        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest()).andExpect(jsonPath("$").value("Invalid CVV."));
+  }
 
 }
 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
+import uk.ac.rhul.cs2810.model.PayRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 
 /**
@@ -75,13 +76,13 @@ public class OrderController {
     try {
       long startTime = System.currentTimeMillis();
       logger.info("Fetching all orders...");
-      
+
       List<Order> orders = orderRepository.findAllWithMenuItems();
-      
+
       long endTime = System.currentTimeMillis();
-      logger.info("Orders fetched successfully in {} ms. Found {} orders.", 
-          (endTime - startTime), orders.size());
-      
+      logger.info("Orders fetched successfully in {} ms. Found {} orders.", (endTime - startTime),
+          orders.size());
+
       return ResponseEntity.ok(orders);
     } catch (Exception e) {
       logger.error("Error fetching orders: {}", e.getMessage(), e);
@@ -99,31 +100,29 @@ public class OrderController {
     try {
       long startTime = System.currentTimeMillis();
       logger.info("Fetching latest order...");
-      
+
       // First try with optimized query
       Optional<Order> latestOrder = orderRepository.findLatestOrderWithMenuItems();
-      
+
       // Fallback to simpler query if the optimized one doesn't work
       if (latestOrder.isEmpty()) {
         latestOrder = orderRepository.findTopByOrderByOrderTimeDesc();
       }
-      
+
       if (latestOrder.isPresent()) {
         Order order = latestOrder.get();
         logger.info("Latest Order Found: {}", order.getOrderNumber());
-        
+
         // Only log detailed info at debug level to reduce console spam
         if (logger.isDebugEnabled()) {
           logger.debug("Menu Items in Order: {}", order.getMenuItems());
         }
-        
+
         long endTime = System.currentTimeMillis();
         logger.info("Latest order fetched in {} ms", (endTime - startTime));
-        
+
         // Add cache control headers to reduce load on frequent polling
-        return ResponseEntity
-            .ok()
-            .header("Cache-Control", "max-age=1") // Cache for 1 second
+        return ResponseEntity.ok().header("Cache-Control", "max-age=1") // Cache for 1 second
             .body(order);
       } else {
         // Return an empty response with 204 No Content instead of 404
@@ -161,6 +160,42 @@ public class OrderController {
 
     return ResponseEntity.ok(order);
   }
-}
 
+
+  /**
+   * Processes a payment request for a given order. Validates card details and updates the order
+   * status to PAID if valid.
+   *
+   * @param request The PayRequest containing order number and full card details
+   * @return A ResponseEntity with a success or error message
+   */
+  @PostMapping("/pay")
+  public ResponseEntity<String> payForOrder(@RequestBody PayRequest request) {
+    Optional<Order> optionalOrder = orderRepository.findByOrderNumber(request.getOrderNumber());
+
+    if (optionalOrder.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found.");
+    }
+
+    // Validate card fields
+    if (!request.getCardNumber().matches("\\d{16}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid card number.");
+    }
+    if (!request.getExpiryDate().matches("(0[1-9]|1[0-2])/\\d{2}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid expiry date format.");
+    }
+    if (request.getCardHolderName() == null || request.getCardHolderName().isBlank()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cardholder name required.");
+    }
+    if (!request.getCvv().matches("\\d{3}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid CVV.");
+    }
+
+    Order order = optionalOrder.get();
+    order.setStatus(OrderStatus.PAID);
+    orderRepository.save(order);
+
+    return ResponseEntity.ok("Payment successful. Order marked as PAID.");
+  }
+}
 
