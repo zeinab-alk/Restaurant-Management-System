@@ -159,6 +159,17 @@ public class OrderController {
 
     return ResponseEntity.ok(order);
   }
+
+  @GetMapping("/number/{orderNumber}")
+  public ResponseEntity<Order> getOrderByOrderNumber(@PathVariable int orderNumber) {
+    Optional<Order> optionalOrder = orderRepository.findByOrderNumberWithMenuItems(orderNumber);
+    if (optionalOrder.isPresent()) {
+      return ResponseEntity.ok(optionalOrder.get());
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+
 }
 
 

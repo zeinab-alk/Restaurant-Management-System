@@ -189,6 +189,36 @@ public class OrderControllerTest {
   }
 
 
+
+  @Test
+  public void testGetOrderByOrderNumber_Success() throws Exception {
+    // Create mock order and set fields manually to avoid constructor issues
+    Order mockOrder = new Order();
+    mockOrder.setOrderNumber(123);
+    mockOrder.setOrderTime("2025-03-30 14:00");
+    mockOrder.setWaitingTime(20);
+    mockOrder.setStatus(OrderStatus.PROCESSING);
+
+    // Mock the repository call
+    when(orderRepository.findByOrderNumberWithMenuItems(123)).thenReturn(Optional.of(mockOrder));
+
+
+    // Perform the request and verify
+    mockMvc.perform(get("/api/orders/number/123")).andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$.orderNumber").value(123))
+        .andExpect(jsonPath("$.status").value(OrderStatus.PROCESSING.toString()));
+  }
+
+
+  @Test
+  public void testGetOrderByOrderNumber_NotFound() throws Exception {
+    when(orderRepository.findByOrderNumberWithMenuItems(999)).thenReturn(Optional.empty());
+
+    mockMvc.perform(get("/api/orders/number/999")).andDo(print()).andExpect(status().isNotFound());
+  }
+
+
+
 }
 
 
