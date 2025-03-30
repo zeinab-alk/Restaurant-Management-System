@@ -35,10 +35,8 @@ public class Waiter {
   @ElementCollection
   private List<Integer> assignedTablesLegacy;
 
-
   @ElementCollection
   private List<String> currentOrders = new ArrayList<>();
-
 
   @ManyToOne
   @JoinColumn(name = "menu_id")
@@ -61,13 +59,9 @@ public class Waiter {
   public Waiter() {}
 
   /**
-   * {@link TableAssignment}
-   *
-   * <<<<<<< HEAD
    * <p>
-   * Waiter constructor. =======
-   * <p>
-   * Waiter constructor. >>>>>>> origin/main
+   * Waiter constructor.
+   * </p>
    *
    * @param id the waiter ID.
    * @param name the waiter name.

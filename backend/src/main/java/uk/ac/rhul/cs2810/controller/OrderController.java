@@ -160,6 +160,12 @@ public class OrderController {
     return ResponseEntity.ok(order);
   }
 
+  /**
+   * Retrieves an order by its order number including its menu items.
+   *
+   * @param orderNumber The order number to search for.
+   * @return ResponseEntity containing the order if found, or 404 if not.
+   */
   @GetMapping("/number/{orderNumber}")
   public ResponseEntity<Order> getOrderByOrderNumber(@PathVariable int orderNumber) {
     Optional<Order> optionalOrder = orderRepository.findByOrderNumberWithMenuItems(orderNumber);
@@ -171,5 +177,3 @@ public class OrderController {
   }
 
 }
-
-
