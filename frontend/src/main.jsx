@@ -13,6 +13,8 @@ import KitchenPage from "./kitchen/Kitchen";
 import AddMenuItem from "./menuitem/AddMenuItem";
 import ChangeMenuItem from "./menuitem/ChangeMenuItem";
 import EditMenuItem from "./menuitem/EditMenuItem";
+import CustomerPage from "./customer/CustomerPage";
+
 
 const router = createBrowserRouter([
   {
@@ -55,6 +57,11 @@ const router = createBrowserRouter([
     path: "/menuitem/edit/:id",
     element: <App><EditMenuItem /></App>,
   },
+  {
+    path: "/customer",
+    element: <App><CustomerPage /></App>,
+  },
+  
 ]);
 
 createRoot(document.getElementById("root")).render(

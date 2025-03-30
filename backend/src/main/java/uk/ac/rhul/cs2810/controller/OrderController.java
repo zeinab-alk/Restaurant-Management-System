@@ -75,13 +75,13 @@ public class OrderController {
     try {
       long startTime = System.currentTimeMillis();
       logger.info("Fetching all orders...");
-      
+
       List<Order> orders = orderRepository.findAllWithMenuItems();
-      
+
       long endTime = System.currentTimeMillis();
-      logger.info("Orders fetched successfully in {} ms. Found {} orders.", 
-          (endTime - startTime), orders.size());
-      
+      logger.info("Orders fetched successfully in {} ms. Found {} orders.", (endTime - startTime),
+          orders.size());
+
       return ResponseEntity.ok(orders);
     } catch (Exception e) {
       logger.error("Error fetching orders: {}", e.getMessage(), e);
@@ -99,31 +99,29 @@ public class OrderController {
     try {
       long startTime = System.currentTimeMillis();
       logger.info("Fetching latest order...");
-      
+
       // First try with optimized query
       Optional<Order> latestOrder = orderRepository.findLatestOrderWithMenuItems();
-      
+
       // Fallback to simpler query if the optimized one doesn't work
       if (latestOrder.isEmpty()) {
         latestOrder = orderRepository.findTopByOrderByOrderTimeDesc();
       }
-      
+
       if (latestOrder.isPresent()) {
         Order order = latestOrder.get();
         logger.info("Latest Order Found: {}", order.getOrderNumber());
-        
+
         // Only log detailed info at debug level to reduce console spam
         if (logger.isDebugEnabled()) {
           logger.debug("Menu Items in Order: {}", order.getMenuItems());
         }
-        
+
         long endTime = System.currentTimeMillis();
         logger.info("Latest order fetched in {} ms", (endTime - startTime));
-        
+
         // Add cache control headers to reduce load on frequent polling
-        return ResponseEntity
-            .ok()
-            .header("Cache-Control", "max-age=1") // Cache for 1 second
+        return ResponseEntity.ok().header("Cache-Control", "max-age=1") // Cache for 1 second
             .body(order);
       } else {
         // Return an empty response with 204 No Content instead of 404
@@ -161,6 +159,21 @@ public class OrderController {
 
     return ResponseEntity.ok(order);
   }
+
+  /**
+   * Retrieves an order by its order number including its menu items.
+   *
+   * @param orderNumber The order number to search for.
+   * @return ResponseEntity containing the order if found, or 404 if not.
+   */
+  @GetMapping("/number/{orderNumber}")
+  public ResponseEntity<Order> getOrderByOrderNumber(@PathVariable int orderNumber) {
+    Optional<Order> optionalOrder = orderRepository.findByOrderNumberWithMenuItems(orderNumber);
+    if (optionalOrder.isPresent()) {
+      return ResponseEntity.ok(optionalOrder.get());
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+
 }
-
-
