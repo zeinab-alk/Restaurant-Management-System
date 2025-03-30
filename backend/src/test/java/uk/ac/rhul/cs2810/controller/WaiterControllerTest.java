@@ -595,4 +595,21 @@ public class WaiterControllerTest {
     verify(orderRepository, never()).save(any(Order.class));
   }
 
+  @Test
+  public void cancelOrder_OrderIsNUll() {
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(null);
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    ResponseEntity<String> response = waiterController.cancelOrder(orderId);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Order status is invalid.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class));
+  }
+
+
 }
