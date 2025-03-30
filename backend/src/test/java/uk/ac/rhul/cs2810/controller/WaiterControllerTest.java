@@ -612,4 +612,22 @@ public class WaiterControllerTest {
   }
 
 
+  @Test
+  public void cancelOrder_WithValidOrder() {
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    ResponseEntity<String> response = waiterController.cancelOrder(orderId);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order 123 has been successfully cancelled.", response.getBody());
+    assertEquals(OrderStatus.CANCELLED, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+
+
 }
