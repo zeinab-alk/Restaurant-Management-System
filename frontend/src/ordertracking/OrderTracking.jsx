@@ -1,53 +1,100 @@
-import React, { useEffect, useState } from "react";
-import { API_ENDPOINT } from "../config"; 
+import React, { useState } from "react";
+import { API_ENDPOINT } from "../config";
 
 const OrderTracking = () => {
-  const [order, setOrder] = useState(null);
+  const [orderNumberInput, setOrderNumberInput] = useState("");
+  const [trackedOrders, setTrackedOrders] = useState([]);
   const [error, setError] = useState("");
+  const [searching, setSearching] = useState(false);
 
-  useEffect(() => {
-    const fetchLatestOrder = async () => {
-      try {
-        const response = await fetch(`${API_ENDPOINT}/api/orders/latest`);
-        if (response.status === 204) {
-          setOrder(null); // No content
+  const allowedStatuses = ["PROCESSING", "IN_PROGRESS", "READY_FOR_DELIVERY", "DELIVERED"];
+
+  const handleTrackOrder = async () => {
+    if (!orderNumberInput) return;
+    setSearching(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_ENDPOINT}/api/orders/number/${orderNumberInput}`);
+      if (res.status === 404) {
+        setError(`Order #${orderNumberInput} not found.`);
+      } else {
+        const data = await res.json();
+        if (!allowedStatuses.includes(data.status)) {
+          setError(`Order #${orderNumberInput} is not yet being processed.`);
         } else {
-          const data = await response.json();
-          setOrder(data);
+          setTrackedOrders((prev) => {
+            const exists = prev.find((o) => o.orderNumber === data.orderNumber);
+            return exists ? prev : [...prev, data];
+          });
         }
-      } catch (err) {
-        setError("Unable to fetch order status.");
       }
-    };
+    } catch (err) {
+      setError("Failed to fetch order.");
+    } finally {
+      setSearching(false);
+      setOrderNumberInput("");
+    }
+  };
 
-    fetchLatestOrder();
-    const interval = setInterval(fetchLatestOrder, 10000); // Poll every 10s
-    return () => clearInterval(interval);
-  }, []);
-
-  if (error) return <div>{error}</div>;
-  if (!order) return <div>No recent orders found.</div>;
-
-  const placed = new Date(order.orderPlacedTime);
-  const eta = new Date(order.estimatedCompletionTime);
-  const now = new Date();
-  const progress = Math.min(((now - placed) / (eta - placed)) * 100, 100);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'PENDING':
+        return 'text-yellow-400';
+      case 'IN_PROGRESS':
+      case 'PROCESSING':
+        return 'text-blue-400';
+      case 'READY_FOR_DELIVERY':
+        return 'text-green-400';
+      case 'DELIVERED':
+      case 'COMPLETED':
+        return 'text-emerald-400';
+      case 'CANCELLED':
+        return 'text-red-400';
+      default:
+        return 'text-white';
+    }
+  };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-lg max-w-md mx-auto mt-4">
-      <h2 className="text-xl font-bold mb-2">Tracking Order #{order.orderNumber}</h2>
-      <p>Status: <strong>{order.status}</strong></p>
-      <p>Placed: {placed.toLocaleTimeString()}</p>
-      <p>ETA: {eta.toLocaleTimeString()}</p>
+    <div className="bg-[#3b2f2f] text-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto mt-8 animate-fade-in">
+      <div className="mb-8 text-center">
+        <input
+          type="number"
+          placeholder="Enter your Order Number"
+          value={orderNumberInput}
+          onChange={(e) => setOrderNumberInput(e.target.value)}
+          className="border border-yellow-300 bg-[#5c4438] text-white p-3 rounded w-72 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-300 ease-in-out"
+        />
+        <button
+          onClick={handleTrackOrder}
+          className="ml-4 bg-yellow-400 hover:bg-yellow-500 text-[#3b2f2f] font-bold px-5 py-3 rounded shadow hover:scale-105 transform transition duration-300"
+        >
+          Track
+        </button>
+      </div>
 
-      <div className="mt-4">
-        <div className="w-full bg-gray-200 h-4 rounded-full">
-          <div
-            className="bg-green-500 h-4 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-        <p className="text-sm mt-1">{Math.round(progress)}% completed</p>
+      {searching && <p className="text-center text-yellow-300 animate-pulse">Loading...</p>}
+      {error && <p className="text-red-400 text-center mb-4 animate-shake">{error}</p>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {trackedOrders.map((order) => {
+          const placed = new Date(order.orderPlacedTime);
+
+          return (
+            <div
+              key={order.orderNumber}
+              className="bg-[#4d3a3a] p-6 rounded-lg shadow-lg text-center border border-yellow-400 transform hover:scale-105 transition duration-300 animate-slide-up"
+            >
+              <h3 className="text-xl font-bold text-yellow-300 mb-2 tracking-wide">
+                Order #{order.orderNumber}
+              </h3>
+              <p className="text-lg font-medium text-white mb-1">
+                Status: <span className={`italic font-semibold ${getStatusColor(order.status)}`}>{order.status.replace(/_/g, ' ')}</span>
+              </p>
+              <p className="text-sm text-gray-300 italic">Placed: {placed.toLocaleTimeString()}</p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
