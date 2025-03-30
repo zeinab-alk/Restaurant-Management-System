@@ -226,6 +226,8 @@ public class WaiterController {
     return ResponseEntity.ok(readyOrders);
   }
 
+
+
   /**
    * Assigns a table to a waiter.
    *
@@ -234,6 +236,7 @@ public class WaiterController {
    * @return ResponseEntity with success or error message.
    */
   @PostMapping("/{waiterId}/assign-table/{tableNumber}")
+
   public ResponseEntity<String> assignTableToWaiter(@PathVariable int waiterId,
       @PathVariable int tableNumber) {
     Optional<Waiter> optionalTargetWaiter = waiterRepository.findById(waiterId);
@@ -287,6 +290,7 @@ public class WaiterController {
     return ResponseEntity.ok(waiters);
   }
 
+
   /**
    * Retrieves a list of tables that have received their orders but have not yet paid.
    *
@@ -295,6 +299,7 @@ public class WaiterController {
    *         have been paid.
    */
   @GetMapping("/{waiterId}/unpaid-tables")
+
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
     Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
 
@@ -306,10 +311,6 @@ public class WaiterController {
     Waiter waiter = optionalWaiter.get();
     List<Order> allOrders = orderRepository.findAll();
     List<Integer> unpaidTables = new ArrayList<>();
-
-    if (waiter.getAssignedTables() == null) {
-      waiter.setAssignedTables(new ArrayList<>()); // Prevent NullPointerException
-    }
 
     if (waiter.getAssignedTables().isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -327,6 +328,9 @@ public class WaiterController {
         }
       }
     }
+
+
+
     // Message will be outputtted based on if tables have or have not paid
     if (unpaidTables.isEmpty()) {
       return ResponseEntity
