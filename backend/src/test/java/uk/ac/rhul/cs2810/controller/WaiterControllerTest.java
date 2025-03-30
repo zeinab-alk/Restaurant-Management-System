@@ -97,10 +97,8 @@ public class WaiterControllerTest {
 
     when(waiterRepository.findById(waiterId)).thenReturn(Optional.empty());
 
-    // Act
     ResponseEntity<String> response = waiterController.notifyWaiterNewOrder(waiterId, order);
 
-    // Assert
     assertNotNull(response);
     assertEquals(404, response.getStatusCodeValue());
     assertEquals("Waiter with ID 99 not found.", response.getBody());
@@ -108,11 +106,8 @@ public class WaiterControllerTest {
     verify(waiterRepository, never()).save(any(Waiter.class));
   }
 
-  // --- markOrderAsDelivered tests ---
-
   @Test
   public void markOrderAsDelivered_WhenOrderExists_ShouldMarkAsDelivered() {
-    // Arrange
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
@@ -120,10 +115,8 @@ public class WaiterControllerTest {
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-    // Act
     ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
 
-    // Assert
     assertEquals("Order 123 has been marked as Delivered.", response.getBody());
     assertEquals(OrderStatus.DELIVERED, order.getStatus()); // Ensure the status was updated
     verify(orderRepository, times(1)).save(order); // Verify save was called
@@ -131,7 +124,6 @@ public class WaiterControllerTest {
 
   @Test
   public void markOrderAsDelivered_WhenOrderAlreadyDelivered_ShouldReturnAlreadyDeliveredMessage() {
-    // Arrange
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
@@ -139,31 +131,26 @@ public class WaiterControllerTest {
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-    // Act
     ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
 
-    // Assert
     assertEquals("Order 123 is already delivered.", response.getBody());
     verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 
   @Test
   public void markOrderAsDelivered_WhenOrderNotFound_ShouldReturnNotFoundMessage() {
-    // Arrange
     int orderId = 1;
     when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-    // Act
+
     ResponseEntity<String> response = waiterController.markOrderAsDelivered(orderId);
 
-    // Assert
     assertEquals("Order with number 1 not found.", response.getBody());
     verify(orderRepository, never()).save(any(Order.class)); // Save should not be called
   }
 
   @Test
   public void markOrderAsDelivered_WhenOrderStatusIsNull_ShouldReturnErrorMessage() {
-    // Arrange
     int orderId = 1;
     Order order = new Order();
     order.setOrderNumber(123);
@@ -595,5 +582,52 @@ public class WaiterControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("All delivered orders for waiter John have been paid.", response.getBody());
   }
+
+  @Test
+  public void cancelOrder_WhenOrderNotFound() {
+    int orderId = 1;
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+    ResponseEntity<String> response = waiterController.cancelOrder(orderId);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertEquals("Order with ID 1 not found.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class));
+  }
+
+  @Test
+  public void cancelOrder_OrderIsNUll() {
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(null);
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    ResponseEntity<String> response = waiterController.cancelOrder(orderId);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertEquals("Order status is invalid.", response.getBody());
+    verify(orderRepository, never()).save(any(Order.class));
+  }
+
+
+  @Test
+  public void cancelOrder_WithValidOrder() {
+    int orderId = 1;
+    Order order = new Order();
+    order.setOrderNumber(123);
+    order.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    ResponseEntity<String> response = waiterController.cancelOrder(orderId);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Order 123 has been successfully cancelled.", response.getBody());
+    assertEquals(OrderStatus.CANCELLED, order.getStatus());
+    verify(orderRepository, times(1)).save(order);
+  }
+
 
 }

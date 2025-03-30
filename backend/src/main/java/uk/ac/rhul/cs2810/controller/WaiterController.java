@@ -456,6 +456,43 @@ public class WaiterController {
     }
   }
 
-  // === END NEW CRUD Endpoints ===
+  /**
+   * Cancels an order if it is able to.
+   *
+   * @param orderId The ID of the order to cancel.
+   * @return ResponseEntity with success or failure message.
+   */
+  @PostMapping("/orders/{orderId}/cancel")
+  public ResponseEntity<String> cancelOrder(@PathVariable int orderId) {
+    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+    if (optionalOrder.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("Order with ID " + orderId + " not found.");
+    }
+
+    Order order = optionalOrder.get();
+
+    if (order.getStatus() == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order status is invalid.");
+    }
+
+    if (order.getStatus() == OrderStatus.CANCELLED) {
+      return ResponseEntity.ok("Order " + order.getOrderNumber() + " has already been cancelled.");
+    }
+
+    if (order.getStatus() == OrderStatus.DELIVERED) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot cancel order "
+          + order.getOrderNumber() + " has already been delivered so cant be cancelled.");
+    }
+
+    order.setStatus(OrderStatus.CANCELLED);
+    orderRepository.save(order);
+
+    return ResponseEntity
+        .ok("Order " + order.getOrderNumber() + " has been successfully cancelled.");
+  }
+
+
 }
 
