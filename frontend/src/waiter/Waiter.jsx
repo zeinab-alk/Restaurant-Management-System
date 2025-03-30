@@ -28,6 +28,10 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import TextField from '@mui/material/TextField';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const WaiterPage = () => {
   const theme = useTheme();
@@ -40,13 +44,16 @@ const WaiterPage = () => {
   const [newOrderAlert, setNewOrderAlert] = useState(false);
   const [assignedTables, setAssignedTables] = useState({});
   const [selectedWaiter, setSelectedWaiter] = useState(null);
-  const [newTable, setNewTable] = useState("");
+  const [tableSelections, setTableSelections] = useState({});
   const [waiters, setWaiters] = useState([]);
   const [editingWaiter, setEditingWaiter] = useState(null);
   const [editedTable, setEditedTable] = useState("");
   const [editingWaiters, setEditingWaiters] = useState({});
-  const [newWaiter, setNewWaiter] = useState({ id: "", name: "", assignedTables: [] });
   const [readyMessage, setReadyMessage] = useState("No orders are ready at the moment.");
+
+  // ADDED: State for adding a new waiter
+  const [isAddingWaiter, setIsAddingWaiter] = useState(false);
+  const [newWaiterName, setNewWaiterName] = useState("");
 
   // Define available order statuses
   const orderStatuses = [
@@ -275,24 +282,25 @@ const WaiterPage = () => {
     }
   };
 
-  const assignTableToWaiter = async (waiterId) => {
-    if (!newTable) {
+  const assignTableToWaiter = async (waiterId, tableNum) => {
+    if (!tableNum) {
       alert("Please select a table!");
       return;
     }
 
     try {
-      await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(newTable)}`);
+      await axios.post(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${parseInt(tableNum)}`);
 
       setWaiters((prevWaiters) =>
         prevWaiters.map((waiter) =>
           waiter.id === waiterId
-            ? { ...waiter, assignedTables: [...waiter.assignedTables, newTable] }
+            ? { ...waiter, assignedTables: [...(waiter.assignedTables || []), tableNum] }
             : waiter
         )
       );
 
-      setNewTable(""); // Reset dropdown after assignment
+      setTableSelections(prev => ({ ...prev, [waiterId]: '' }));
+
     } catch (error) {
       console.error("Error assigning table:", error);
 
@@ -312,21 +320,45 @@ const WaiterPage = () => {
 };
 
 
-  const saveEditedWaiter = (waiterId) => {
-    setWaiters((prevWaiters) =>
-      prevWaiters.map((waiter) =>
-        waiter.id === waiterId
-          ? { ...waiter, ...editingWaiters[waiterId] } // Update with edited data
-          : waiter
-      )
-    );
+  const saveEditedWaiter = async (waiterId) => {
+    const editedData = editingWaiters[waiterId];
+    if (!editedData) return;
 
-    // Exit editing mode for this waiter
-    setEditingWaiters((prev) => {
-      const updatedEditingWaiters = { ...prev };
-      delete updatedEditingWaiters[waiterId]; // Remove from editing state
-      return updatedEditingWaiters;
-    });
+    const payload = { name: editedData.name }; // Prepare payload (assuming only name is editable here)
+
+    setError(''); // Clear previous errors
+    try {
+      // Assume PUT /api/waiters/{id} endpoint accepts { name: "New Name" }
+      const response = await axios.put(`${API_ENDPOINT}/api/waiters/${waiterId}`, payload);
+
+      // Check for success status (200 OK or 204 No Content)
+      if (response.status === 200 || response.status === 204) {
+          // Update local state with edited data
+          setWaiters((prevWaiters) =>
+              prevWaiters.map((waiter) =>
+                  waiter.id === waiterId
+                      ? { ...waiter, ...editedData } // Apply edited data
+                      : waiter
+              )
+          );
+          // Exit editing mode ONLY on success
+          setEditingWaiters((prev) => {
+            const updatedEditingWaiters = { ...prev };
+            delete updatedEditingWaiters[waiterId];
+            return updatedEditingWaiters;
+          });
+      } else {
+          // Handle unexpected success response status if needed
+          console.warn("Unexpected success response status during waiter update:", response.status);
+          setError(`Failed to update waiter ${editedData.name || waiterId}. Unexpected server response.`);
+          // Remain in editing mode
+      }
+    } catch (error) {
+      console.error("Error updating waiter:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data || "Failed to update waiter.";
+      setError(`Error updating waiter ${editedData.name || waiterId}: ${errorMsg}`);
+      // Remain in editing mode
+    }
   };
 
   const removeAssignedTable = (waiterId, tableToRemove) => {
@@ -409,19 +441,122 @@ const WaiterPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Compute a map of all currently assigned tables { tableNumber: waiterName }
+  const allAssignedTablesMap = React.useMemo(() => {
+    const map = {};
+    waiters.forEach(w => {
+      if (w.assignedTables) {
+        w.assignedTables.forEach(tableNum => {
+          map[tableNum] = w.name; // Store the name of the waiter assigned
+        });
+      }
+    });
+    return map;
+  }, [waiters]);
+
+  // ADDED: Function to handle saving a new waiter via API
+  const handleSaveNewWaiter = async () => {
+    if (!newWaiterName.trim()) {
+      alert("Please enter a name for the new waiter.");
+      return;
+    }
+    setError(''); // Clear previous errors
+    try {
+      // Assume POST /api/waiters endpoint accepts { name: "Waiter Name" }
+      // and returns the full new waiter object { id: ..., name: ..., assignedTables: [] }
+      const response = await axios.post(`${API_ENDPOINT}/api/waiters`, { name: newWaiterName });
+
+      if (response.data && response.data.id) {
+        // Add the newly created waiter (from backend response) to the state
+        setWaiters(prevWaiters => [...prevWaiters, response.data]);
+        // Reset adding state
+        setNewWaiterName("");
+        setIsAddingWaiter(false);
+      } else {
+        // Handle unexpected response
+        console.error("Unexpected response format from POST /api/waiters:", response.data);
+        setError("Failed to add waiter. Unexpected response from server.");
+      }
+    } catch (error) {
+      console.error("Error adding new waiter:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data || "Failed to add waiter. Please check server logs.";
+      setError(`Error: ${errorMsg}`);
+    }
+  };
+
+  // ADDED: Function to handle removing a waiter via API
+  const handleRemoveWaiter = async (waiterId, waiterName) => {
+    if (!window.confirm(`Are you sure you want to remove waiter ${waiterName} (ID: ${waiterId})? This action cannot be undone.`)) {
+       return;
+    }
+
+    setError(''); // Clear previous errors
+    try {
+      // Assume DELETE /api/waiters/{id} endpoint exists
+      const response = await axios.delete(`${API_ENDPOINT}/api/waiters/${waiterId}`);
+
+      if (response.status === 200 || response.status === 204) { // Check for success
+        // Remove waiter from local state
+        setWaiters(prevWaiters => prevWaiters.filter(w => w.id !== waiterId));
+      } else {
+        console.error("Unexpected response status on waiter delete:", response.status);
+        setError(`Failed to remove waiter ${waiterName}. Unexpected server response.`);
+      }
+    } catch (error) {
+      console.error("Error removing waiter:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data || `Failed to remove waiter ${waiterName}.`;
+      setError(`Error: ${errorMsg}`);
+    }
+  };
+
+  // ADDED: Function to handle removing a table assignment via API
+  const handleRemoveTableAssignment = async (waiterId, tableNum) => {
+    setError(''); // Clear previous errors
+    try {
+      const response = await axios.delete(`${API_ENDPOINT}/api/waiters/${waiterId}/assign-table/${tableNum}`);
+      
+      if (response.status === 200 || response.status === 204) {
+        // Update local state: remove the table from the specific waiter's assignedTables
+        setWaiters(prevWaiters => 
+          prevWaiters.map(waiter => {
+            if (waiter.id === waiterId) {
+              return {
+                ...waiter,
+                assignedTables: (waiter.assignedTables || []).filter(t => t !== tableNum)
+              };
+            }
+            return waiter;
+          })
+        );
+      } else {
+         console.error("Unexpected response status on table removal:", response.status);
+         setError(`Failed to remove table ${tableNum}. Unexpected server response.`);
+      }
+    } catch (error) {
+      console.error("Error removing table assignment:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data || `Failed to remove table ${tableNum}.`;
+      setError(`Error: ${errorMsg}`);
+    }
+  };
 
   return (
     <Box
-    sx={{
-      minHeight: "100vh",
-      backgroundColor: "#fff8e1",
-      backgroundImage:
-        'linear-gradient(135deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(225deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(45deg, rgba(255,245,157,0.2) 25%, transparent 25%),' +
-        'linear-gradient(315deg, rgba(255,245,157,0.2) 25%, #fff8e1 25%)',
-      backgroundSize: "40px 40px"
-    }}
+      sx={(theme) => ({ // Use callback function to access theme
+        minHeight: "100vh",
+        // Use theme's paper background for consistency
+        backgroundColor: theme.palette.background.paper,
+        // Define pattern colors based on mode
+        backgroundImage: theme.palette.mode === 'light'
+          ? 'linear-gradient(135deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(0,0,0,0.05) 25%, ${theme.palette.background.paper} 25%)` // Use theme paper bg
+          : 'linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(255,255,255,0.05) 25%, ${theme.palette.background.paper} 25%)`, // Use theme paper bg
+        backgroundSize: "40px 40px",
+      })}
     >
 
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -468,178 +603,262 @@ const WaiterPage = () => {
 
         <Typography
         variant="h5"
-        color="black"
+        color="text.primary"
         gutterBottom
         sx={{
           mb: 2, fontWeight: 'medium' }}>
 
         Waiter Table Assignments 🪑
 </Typography>
-<Button
-  onClick={() => setWaiters([...waiters, { ...newWaiter, id: waiters.length + 1 }])}
-  variant="contained"
-  color="primary"
-  sx={{ mb: 2 }}
->
-  Add New Waiter
-</Button>
+<Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+  {!isAddingWaiter ? (
+    <Button
+      onClick={() => setIsAddingWaiter(true)}
+      variant="contained"
+      color="primary"
+    >
+      Add New Waiter
+    </Button>
+  ) : (
+    <>
+      <TextField
+        label="New Waiter Name"
+        variant="outlined"
+        size="small"
+        value={newWaiterName}
+        onChange={(e) => setNewWaiterName(e.target.value)}
+        autoFocus
+      />
+      <Button
+        onClick={handleSaveNewWaiter}
+        variant="contained"
+        color="success"
+      >
+        Save Waiter
+      </Button>
+      <Button
+        onClick={() => { setIsAddingWaiter(false); setNewWaiterName(""); }}
+        variant="outlined"
+        color="secondary"
+      >
+        Cancel
+      </Button>
+    </>
+  )}
+</Box>
 <Paper sx={{ overflow: 'hidden', mb: 4, boxShadow: 2, borderRadius: 1 }} elevation={3}>
   <Box sx={{ overflowX: 'auto', width: '100%' }}>
     <Table>
       <TableHead>
         <TableRow sx={{ backgroundColor: 'primary.main' }}>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Waiter ID</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Assigned Tables</TableCell>
-          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Waiter ID</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Name</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Assigned Tables</TableCell>
+          <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Actions</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
-        {waiters.map((waiter) => (
-          <TableRow key={waiter.id}>
-            <TableCell>
-  {editingWaiters[waiter.id] ? (
-    <input
-      type="text"
-      value={editingWaiters[waiter.id].id}
-      onChange={(e) =>
-        setEditingWaiters(prev => ({
-          ...prev,
-          [waiter.id]: { ...prev[waiter.id], id: e.target.value }
-        }))
-      }
-      style={{ width: "50px", padding: "4px" }}
-    />
-  ) : (
-    waiter.id
-  )}
-</TableCell>
+        {waiters.map((waiter) => {
+          // Determine status flags for this waiter's tables
+          const tablesWithHelp = new Set(
+            helpRequests
+              .filter(req => !req.resolved)
+              .map(req => req.tableNumber)
+          );
+          const tablesWithReadyOrders = new Set(
+            orders
+              .filter(order => order.status === 'READY_FOR_DELIVERY')
+              .map(order => order.tableNumber)
+          );
 
-<TableCell>
-  {editingWaiters[waiter.id] ? (
-    <input
-      type="text"
-      value={editingWaiters[waiter.id].name}
-      onChange={(e) =>
-        setEditingWaiters(prev => ({
-          ...prev,
-          [waiter.id]: { ...prev[waiter.id], name: e.target.value }
-        }))
-      }
-      style={{ width: "150px", padding: "4px" }}
-    />
-  ) : (
-    waiter.name
-  )}
-</TableCell>
+          return (
+            <TableRow key={waiter.id}>
+              <TableCell>
+                {editingWaiters[waiter.id] ? (
+                  <input
+                    type="text"
+                    value={editingWaiters[waiter.id].id}
+                    onChange={(e) =>
+                      setEditingWaiters(prev => ({
+                        ...prev,
+                        [waiter.id]: { ...prev[waiter.id], id: e.target.value }
+                      }))
+                    }
+                    style={{ width: "50px", padding: "4px" }}
+                  />
+                ) : (
+                  waiter.id
+                )}
+              </TableCell>
 
-<TableCell>
-  {editingWaiter === waiter.id ? (
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              <TableCell>
+                {editingWaiters[waiter.id] ? (
+                  <input
+                    type="text"
+                    value={editingWaiters[waiter.id].name}
+                    onChange={(e) =>
+                      setEditingWaiters(prev => ({
+                        ...prev,
+                        [waiter.id]: { ...prev[waiter.id], name: e.target.value }
+                      }))
+                    }
+                    style={{ width: "150px", padding: "4px" }}
+                  />
+                ) : (
+                  waiter.name
+                )}
+              </TableCell>
 
-      {waiter.assignedTables.map((table, index) => (
-        <Chip
-          key={index}
-          label={`Table ${table}`}
-          onDelete={() => removeAssignedTable(waiter.id, table)} 
-          color="primary"
-          sx={{ cursor: "pointer" }}
-        />
-      ))}
+              <TableCell>
+                {editingWaiter === waiter.id ? (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
 
-      <FormControl size="small">
-        <Select
-          value={editedTable}
-          onChange={(e) => setEditedTable(e.target.value)}
-          displayEmpty
-        >
-          <MenuItem value="" disabled>Select Table</MenuItem>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((table) => (
-            <MenuItem key={table} value={table}>{table}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <Button
-        onClick={() => assignTableToWaiter(waiter.id, editedTable)}
-        variant="contained"
-        color="success"
-        sx={{ ml: 1 }}
-      >
-        Add
-      </Button>
-    </Box>
-  ) : (
-    waiter.assignedTables.length > 0 ? waiter.assignedTables.join(", ") : "No tables assigned"
-  )}
-</TableCell>
+                    {waiter.assignedTables.map((table, index) => (
+                      <Chip
+                        key={index}
+                        label={`Table ${table}`}
+                        onDelete={() => removeAssignedTable(waiter.id, table)} 
+                        color="primary"
+                        sx={{ cursor: "pointer" }}
+                      />
+                    ))}
 
+                    <FormControl size="small">
+                      <Select
+                        value={editedTable}
+                        onChange={(e) => setEditedTable(e.target.value)}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>Select Table</MenuItem>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((table) => (
+                          <MenuItem key={table} value={table}>{table}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      onClick={() => assignTableToWaiter(waiter.id, editedTable)}
+                      variant="contained"
+                      color="success"
+                      sx={{ ml: 1 }}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {(waiter.assignedTables && waiter.assignedTables.length > 0) 
+                      ? waiter.assignedTables.map((tableNum) => {
+                          const hasHelp = tablesWithHelp.has(tableNum);
+                          const hasReady = tablesWithReadyOrders.has(tableNum);
+                          let chipColor = 'default';
+                          let chipIcon = null;
+                          
+                          if (hasHelp) {
+                            chipColor = 'error';
+                            chipIcon = <HelpOutlineIcon sx={{ fontSize: '1rem', ml: 0.5 }} />;
+                          } else if (hasReady) {
+                            chipColor = 'success';
+                            chipIcon = <NotificationsActiveIcon sx={{ fontSize: '1rem', ml: 0.5 }} />;
+                          }
 
-            <TableCell>
-              <FormControl size="small">
-                <Select
-                  value={newTable}
-                  onChange={(e) => setNewTable(e.target.value)}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>Select Table</MenuItem>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((table) => (
-                    <MenuItem key={table} value={table}>{table}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              {editingWaiter === waiter.id ? (
-  <Button
-    onClick={() => saveEditedTable(waiter.id)}
-    variant="contained"
-    color="success"
-    sx={{ ml: 1 }}
-  >
-    Save
-  </Button>
-) : (
-  <>
-    <Button
-      onClick={() => assignTableToWaiter(waiter.id)}
-      variant="contained"
-      color="primary"
-      sx={{ ml: 1 }}
-    >
-      Assign
-    </Button>
-    {editingWaiters[waiter.id] ? (
-  <Button
-    onClick={() => saveEditedWaiter(waiter.id)}
-    variant="contained"
-    color="success"
-    sx={{ ml: 1 }}
-  >
-    Save
-  </Button>
-) : (
-  <Button
-    onClick={() => startEditing(waiter)}
-    variant="contained"
-    color="secondary"
-    sx={{ ml: 1 }}
-  >
-    Edit
-  </Button>
-)}
+                          return (
+                            <Chip
+                              key={tableNum}
+                              label={`Table ${tableNum}`}
+                              color={chipColor}
+                              size="small"
+                              icon={chipIcon}
+                              onDelete={() => handleRemoveTableAssignment(waiter.id, tableNum)}
+                              deleteIcon={<DeleteIcon />}
+                            />
+                          );
+                        })
+                      : <Typography variant="body2" color="text.secondary">No tables assigned</Typography>
+                    }
+                  </Box>
+                )}
+              </TableCell>
 
-<Button
-  onClick={() => setWaiters(waiters.filter(w => w.id !== waiter.id))}
-  variant="contained"
-  color="error"
-  sx={{ ml: 1 }}
->
-  Remove
-</Button>
-  </>
-)}
+              <TableCell>
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <Select
+                    value={tableSelections[waiter.id] || ''}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      setTableSelections(prev => ({ ...prev, [waiter.id]: selectedValue }));
+                    }}
+                    displayEmpty
+                  >
+                    <MenuItem value="" disabled>Select Table</MenuItem>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((tableNum) => {
+                      const assignedWaiterName = allAssignedTablesMap[tableNum];
+                      const isAssignedToOther = assignedWaiterName && assignedWaiterName !== waiter.name;
+                      let displayText = `Table ${tableNum}`;
+                      if (isAssignedToOther) {
+                        displayText += ` (Assigned to: ${assignedWaiterName})`;
+                      }
+                      return (
+                        <MenuItem key={tableNum} value={tableNum}>
+                          {displayText}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+                {editingWaiter === waiter.id ? (
+                  <Button
+                    onClick={() => saveEditedTable(waiter.id)}
+                    variant="contained"
+                    color="success"
+                    sx={{ ml: 1 }}
+                  >
+                    Save
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => assignTableToWaiter(waiter.id, tableSelections[waiter.id])}
+                      variant="contained"
+                      color="primary"
+                      sx={{ ml: 1 }}
+                      disabled={!tableSelections[waiter.id]}
+                    >
+                      Assign
+                    </Button>
+                    {editingWaiters[waiter.id] ? (
+                      <Button
+                        onClick={() => saveEditedWaiter(waiter.id)}
+                        variant="contained"
+                        color="success"
+                        sx={{ ml: 1 }}
+                      >
+                        Save Name/ID
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => startEditing(waiter)}
+                        variant="contained"
+                        color="secondary"
+                        sx={{ ml: 1 }}
+                      >
+                        Edit Name/ID
+                      </Button>
+                    )}
 
-            </TableCell>
-          </TableRow>
-        ))}
+                    <Button
+                      onClick={() => handleRemoveWaiter(waiter.id, waiter.name)}
+                      variant="contained"
+                      color="error"
+                      sx={{ ml: 1 }}
+                    >
+                      Remove
+                    </Button>
+                  </>
+                )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   </Box>
@@ -650,12 +869,12 @@ const WaiterPage = () => {
   component="h1"
   gutterBottom
   align="center"
-  sx={{
+  sx={(theme) => ({
     mb: 3,
     fontWeight: 'bold',
     fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
-    color: "#d32f2f"
-  }}
+    color: theme.palette.error.main
+  })}
 >
   🌯 Oaxaca Waiter Dashboard 🍽
 </Typography>
@@ -691,7 +910,8 @@ const WaiterPage = () => {
         gutterBottom
         sx={{
           mb: 2,
-          fontWeight: 'medium'
+          fontWeight: 'medium',
+          color: 'text.primary'
         }}
       >
         🧾 Current Orders
@@ -719,18 +939,18 @@ const WaiterPage = () => {
                 <TableRow sx={{ backgroundColor: 'primary.main' }}>
                   <TableCell sx={{
                     width: '50px',
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold'
                   }}></TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Order #
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap',
                     display: { xs: 'none', sm: 'table-cell' }
@@ -738,14 +958,14 @@ const WaiterPage = () => {
                     Time
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
                     Status
                   </TableCell>
                   <TableCell sx={{
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                   }}>
@@ -879,8 +1099,16 @@ const WaiterPage = () => {
         </Paper>
       )}
 
-      <Typography variant="h4" color="red" sx={{ mt: 4 }}>
-        Active Help Requests 🙋
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={(theme) => ({
+          mb: 2,
+          fontWeight: 'medium',
+          color: theme.palette.error.main
+        })}
+      >
+        💁‍♀️ Active Help Requests 💁
       </Typography>
       {helpRequests.length === 0 ? (
         <Alert severity="success" sx={{ mt: 2 }}>
@@ -911,8 +1139,16 @@ const WaiterPage = () => {
         ))
 
       )}
-      <Typography variant="h4" color="green" sx={{ mt: 4 }} >
-        Ready Orders ✅ 
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={(theme) => ({
+          mb: 2,
+          fontWeight: 'medium',
+          color: theme.palette.success.main
+        })}
+      >
+        ✅ Ready Orders ✅
       </Typography>
       <Alert severity="info" sx={{ mt: 2 }}>
         {readyMessage}

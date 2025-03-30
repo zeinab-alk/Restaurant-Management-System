@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,10 +30,21 @@ public class WebSecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf().disable()
         .authorizeHttpRequests(
-            (requests) -> requests.requestMatchers("/", "/home", "/api/auth/**").permitAll()
+            (requests) -> requests
+                // Public endpoints
+                .requestMatchers("/", "/home", "/api/auth/**").permitAll()
+                // Waiter CRUD - GET authenticated, Write requires MANAGER
+                .requestMatchers(HttpMethod.GET, "/api/waiters/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/waiters").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.PUT, "/api/waiters/**").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/waiters/**").hasRole("MANAGER")
+                // Existing role-specific paths
                 .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/waiter/**").hasRole("WAITER")
-                .requestMatchers("/api/kitchen/**").hasRole("KITCHEN").anyRequest().authenticated())
+                .requestMatchers("/api/kitchen/**").hasRole("KITCHEN")
+                // Fallback: Any other request needs authentication
+                .anyRequest().authenticated()
+        )
         .formLogin((form) -> form.loginPage("/login").permitAll())
         .logout((logout) -> logout.permitAll());
 

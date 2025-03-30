@@ -14,6 +14,7 @@ import {
   Divider,
   Stack
 } from "@mui/material";
+import { alpha } from '@mui/material/styles';
 import { API_ENDPOINT } from "../config";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -78,17 +79,20 @@ function KitchenPage() {
 
   return (
     <Box
-    sx={{
+      sx={(theme) => ({
         minHeight: "100vh",
-        backgroundColor: "#ffefd5", 
-        backgroundImage:
-          'linear-gradient(135deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
-          'linear-gradient(225deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
-          'linear-gradient(45deg, rgba(255, 183, 77, 0.15) 25%, transparent 25%),' +
-          'linear-gradient(315deg, rgba(255, 183, 77, 0.15) 25%, #ffefd5 25%)',
-        backgroundSize: "40px 40px"
-      }}
-      
+        backgroundColor: theme.palette.background.paper,
+        backgroundImage: theme.palette.mode === 'light'
+          ? 'linear-gradient(135deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(0,0,0,0.05) 25%, ${theme.palette.background.paper} 25%)`
+          : 'linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            'linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+            `linear-gradient(315deg, rgba(255,255,255,0.05) 25%, ${theme.palette.background.paper} 25%)`,
+        backgroundSize: "40px 40px",
+      })}
     >
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box
@@ -99,7 +103,10 @@ function KitchenPage() {
             alignItems: "center"
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "#c49000" }}>
+          <Typography variant="h4" sx={(theme) => ({
+              fontWeight: "bold",
+              color: theme.palette.secondary.main
+          })}>
             🌮 Oaxaca Kitchen 🌯
           </Typography>
           <Button
@@ -116,13 +123,14 @@ function KitchenPage() {
 
         <Typography
           variant="h5"
-          sx={{
-            fontWeight: "bold", color: "#d84315",
+          sx={(theme) => ({
+            fontWeight: "bold",
+            color: theme.palette.primary.main,
             display: "flex",
             alignItems: "center",
             gap: 1,
             mb: 2
-          }}
+          })}
         >
           🍴 Kitchen Dashboard 🌶️
         </Typography>
@@ -140,11 +148,13 @@ function KitchenPage() {
             <Box sx={{ overflowX: "auto" }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                  <TableCell sx={{ fontWeight: "bold", color:"black" }}>#️⃣ Order</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color:"black" }}>🥙 Contents</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" , color:"black" }}>⏰ Time Placed</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" , color:"black" }}>✔️ Action</TableCell>
+                  <TableRow sx={(theme) => ({
+                    backgroundColor: theme.palette.action.hover
+                  })}>
+                  <TableCell sx={{ fontWeight: "bold", color: "text.primary" }}>#️⃣ Order</TableCell>
+                    <TableCell sx={{ fontWeight: "bold", color: "text.primary" }}>🥙 Contents</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" , color: "text.primary" }}>⏰ Time Placed</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" , color: "text.primary" }}>✔️ Action</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -154,11 +164,11 @@ function KitchenPage() {
                     .map((order) => (
                         <TableRow
                         key={order.orderNumber}
-                        sx={{
+                        sx={(theme) => ({
                           backgroundColor: readyOrders.includes(order.orderNumber)
-                            ? "#e8f5e9"
-                            : "#ffcccb"
-                        }}
+                            ? alpha(theme.palette.success.main, 0.1)
+                            : alpha(theme.palette.error.main, 0.1)
+                        })}
                       >                      
 
                         <TableCell>{order.orderNumber}</TableCell>
