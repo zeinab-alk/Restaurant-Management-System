@@ -2,6 +2,7 @@ package uk.ac.rhul.cs2810.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import uk.ac.rhul.cs2810.model.Kitchen;
 import uk.ac.rhul.cs2810.repository.KitchenRepository;
 
+/**
+ * Kitchen Controller class.
+ */
 public class KitchenControllerTest {
   @Mock
   private KitchenRepository kitchenRepository;

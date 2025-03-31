@@ -6,9 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,12 +16,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.repository.MenuItemRepository;
 
+/**
+ * Tests the menuitemcontroller class.
+ */
 @WebMvcTest(MenuItemController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class MenuItemControllerTest {
@@ -35,7 +35,7 @@ public class MenuItemControllerTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   /**
-   * Test `getAllMenuItems()`
+   * Test `getAllMenuItems()`.
    */
   @Test
   public void testGetAllMenuItems() throws Exception {
@@ -47,7 +47,7 @@ public class MenuItemControllerTest {
   }
 
   /**
-   * Test `addMenuItem()`
+   * Test `addMenuItem()`.
    */
   @Test
   public void testAddMenuItemSuccess() throws Exception {
@@ -73,7 +73,7 @@ public class MenuItemControllerTest {
   }
 
   /**
-   * Test `updateMenuItem()`
+   * Test `updateMenuItem()`.
    */
   @Test
   public void testUpdateMenuItemSuccess() throws Exception {
@@ -103,7 +103,7 @@ public class MenuItemControllerTest {
   }
 
   /**
-   * Test `getMenuItem()`
+   * Test `getMenuItem()`.
    */
   @Test
   public void testGetMenuItemFound() throws Exception {

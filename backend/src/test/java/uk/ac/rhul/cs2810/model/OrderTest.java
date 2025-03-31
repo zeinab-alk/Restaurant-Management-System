@@ -1,12 +1,13 @@
 package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import uk.ac.rhul.cs2810.exceptions.InvalidOrderStateException;
 
 class OrderTest {
   private Order order;
