@@ -916,5 +916,4 @@ function Menu({ isEmbedded = false }) {
     </Container>
   );
 }
-
 export default Menu;
