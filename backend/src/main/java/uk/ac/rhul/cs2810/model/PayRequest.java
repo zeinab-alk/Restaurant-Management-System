@@ -12,6 +12,15 @@ public class PayRequest {
   private String cardHolderName;
   private String cvv;
 
+  /**
+   * Constructs a new PayRequest with the payment details.
+   *
+   * @param orderNumber the order number
+   * @param cardNumber the card number
+   * @param expiryDate the expiry date of the card
+   * @param cardHolderName the name on the card
+   * @param cvv the card's CVV security code
+   */
   public PayRequest(int orderNumber, String cardNumber, String expiryDate, String cardHolderName,
       String cvv) {
     this.orderNumber = orderNumber;
