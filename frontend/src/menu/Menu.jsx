@@ -43,6 +43,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { styled } from '@mui/material/styles';
+import { toast } from 'react-hot-toast';
 
 const useContainerWidth = () => {
   const containerRef = useRef(null);
@@ -75,6 +76,8 @@ function Menu({ isEmbedded = false }) {
   const [tableNumber, setTableNumber] = useState("");
   const [waiterSuccess, setWaiterSuccess] = useState(null);
   const [waiterError, setWaiterError] = useState(null);
+  const [activeRequestId, setActiveRequestId] = useState(null);
+  const [requestStatus, setRequestStatus] = useState(null);
 
   const [selectedDietary, setSelectedDietary] = useState([]);
   const [selectedAllergens, setSelectedAllergens] = useState([]);
@@ -159,6 +162,36 @@ function Menu({ isEmbedded = false }) {
     }
   }, [menuItems]);
 
+  useEffect(() => {
+    let pollInterval;
+    
+    if (activeRequestId) {
+      // Poll for request status every 5 seconds
+      pollInterval = setInterval(async () => {
+        try {
+          const response = await axios.get(`${API_ENDPOINT}/api/help-requests/${activeRequestId}`);
+          const status = response.data.status;
+          setRequestStatus(status);
+          
+          // If request is resolved, clear the notification
+          if (status === 'RESOLVED') {
+            setWaiterSuccess(null);
+            setActiveRequestId(null);
+            setRequestStatus(null);
+          }
+        } catch (err) {
+          console.error("Error polling request status:", err);
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [activeRequestId]);
+
   const addToCart = (item) => {
     setCart((prevCart) => [...prevCart, item]); 
   };
@@ -205,7 +238,7 @@ function Menu({ isEmbedded = false }) {
     }
   
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_ENDPOINT}/api/help-requests`, 
         { tableNumber: parseInt(tableNumber, 10), waiterId: 1 }, 
         { headers: { "Content-Type": "application/json" } }
@@ -213,6 +246,11 @@ function Menu({ isEmbedded = false }) {
   
       setWaiterSuccess(`Waiter has been notified you need assistance at table #${tableNumber}`);
       setWaiterError(null);
+      
+      // Clear the success message after 5 seconds
+      setTimeout(() => {
+        setWaiterSuccess(null);
+      }, 5000);
     } catch (err) {
       console.error("API Error:", err.response?.data || err.message);
       setWaiterSuccess(null);
@@ -221,6 +259,23 @@ function Menu({ isEmbedded = false }) {
   
     setOpenDialog(false);
     setTableNumber("");
+  };
+
+  const cancelWaiterRequest = async () => {
+    try {
+      if (!activeRequestId) {
+        console.error("No active request to cancel");
+        return;
+      }
+      await axios.post(`${API_ENDPOINT}/api/help-requests/${activeRequestId}/cancel`);
+      setWaiterSuccess(null);
+      setActiveRequestId(null);
+      setRequestStatus(null);
+      toast.success("Request cancelled successfully");
+    } catch (err) {
+      console.error("Error cancelling request:", err);
+      toast.error("Error cancelling request. Please try again.");
+    }
   };
 
   const handlePayment = async () => {
@@ -346,20 +401,38 @@ function Menu({ isEmbedded = false }) {
             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}>
               Menu
             </Typography>
-            <Button
-              component={RouterLink}
-              to="/"
-              variant="contained"
-              color="success"
-              startIcon={<span role="img" aria-label="home">🏠</span>}
-              sx={{ fontWeight: 'medium' }}
-            >
-              Back to Home
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={callWaiter}
+                startIcon={<span role="img" aria-label="waiter">👋</span>}
+                sx={{ fontWeight: 'medium' }}
+              >
+                Request Waiter
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/"
+                variant="contained"
+                color="success"
+                startIcon={<span role="img" aria-label="home">🏠</span>}
+                sx={{ fontWeight: 'medium' }}
+              >
+                Back to Home
+              </Button>
+            </Box>
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            {waiterSuccess && <Alert severity="success" sx={{ mb: 2 }}>{waiterSuccess}</Alert>}
+            {waiterSuccess && (
+              <Alert 
+                severity="success" 
+                sx={{ mb: 2 }}
+              >
+                {waiterSuccess}
+              </Alert>
+            )}
             {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
           </Box>
         </>
