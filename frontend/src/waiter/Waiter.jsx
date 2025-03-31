@@ -670,8 +670,8 @@ const WaiterPage = () => {
   startIcon={<span role="img" aria-label="alert">🚨</span>}
   sx={(theme) => ({
     fontWeight: 'medium',
-    color: theme.palette.mode === 'dark' ? '#fff' : '#000'
-  })}
+    color: theme.palette.mode === 'dark' ? theme.palette.common.black : theme.palette.common.white
+  })}  
 >
   Create Alert
 </Button>
@@ -1216,8 +1216,15 @@ const WaiterPage = () => {
         ))
 
       )}
-      <Typography variant="h4" sx={{ mt: 4 }}>
-  Active Alerts
+<Typography
+  variant="h5"
+  sx={(theme) => ({
+    mb: 2,
+    fontWeight: 'medium',
+    color: theme.palette.mode === 'dark' ? '#ff7043' : '#fbc02d' 
+  })}
+>
+  🚨 Active Alerts 🚨
 </Typography>
 
 {alerts.length === 0 ? (

@@ -226,6 +226,8 @@ public class WaiterController {
     return ResponseEntity.ok(readyOrders);
   }
 
+
+
   /**
    * Assigns a table to a waiter.
    *
@@ -234,6 +236,7 @@ public class WaiterController {
    * @return ResponseEntity with success or error message.
    */
   @PostMapping("/{waiterId}/assign-table/{tableNumber}")
+
   public ResponseEntity<String> assignTableToWaiter(@PathVariable int waiterId,
       @PathVariable int tableNumber) {
     Optional<Waiter> optionalTargetWaiter = waiterRepository.findById(waiterId);
@@ -253,9 +256,8 @@ public class WaiterController {
           // Use getAssignedTableNumbers() for the check
           && otherWaiter.getAssignedTableNumbers().contains(tableNumber)) {
         // Table already assigned to another waiter
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body("Table " + tableNumber + " is already assigned to waiter "
-                + otherWaiter.getId() + ".");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            "Table " + tableNumber + " is already assigned to waiter " + otherWaiter.getId() + ".");
       }
     }
 
@@ -272,8 +274,8 @@ public class WaiterController {
     waiterRepository.save(targetWaiter);
 
     // Use waiter's name in the response message to match test expectation
-    return ResponseEntity.ok("Table " + tableNumber + " assigned to waiter "
-        + targetWaiter.getName());
+    return ResponseEntity
+        .ok("Table " + tableNumber + " assigned to waiter " + targetWaiter.getName());
   }
 
   /**
@@ -287,6 +289,7 @@ public class WaiterController {
     return ResponseEntity.ok(waiters);
   }
 
+
   /**
    * Retrieves a list of tables that have received their orders but have not yet paid.
    *
@@ -295,6 +298,7 @@ public class WaiterController {
    *         have been paid.
    */
   @GetMapping("/{waiterId}/unpaid-tables")
+
   public ResponseEntity<String> getUnpaidTables(@PathVariable int waiterId) {
     Optional<Waiter> optionalWaiter = waiterRepository.findById(waiterId);
 
@@ -306,10 +310,6 @@ public class WaiterController {
     Waiter waiter = optionalWaiter.get();
     List<Order> allOrders = orderRepository.findAll();
     List<Integer> unpaidTables = new ArrayList<>();
-
-    if (waiter.getAssignedTables() == null) {
-      waiter.setAssignedTables(new ArrayList<>()); // Prevent NullPointerException
-    }
 
     if (waiter.getAssignedTables().isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -327,6 +327,9 @@ public class WaiterController {
         }
       }
     }
+
+
+
     // Message will be outputtted based on if tables have or have not paid
     if (unpaidTables.isEmpty()) {
       return ResponseEntity
@@ -340,8 +343,7 @@ public class WaiterController {
   // === NEW CRUD Endpoints for Waiters ===
 
   /**
-   * Creates a new waiter.
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Creates a new waiter. Requires ROLE_MANAGER (as configured in WebSecurityConfig).
    *
    * @param waiter Contains the details (e.g., name) for the new waiter.
    * @return ResponseEntity containing the created waiter and HTTP status 201, or an error.
@@ -369,8 +371,8 @@ public class WaiterController {
   }
 
   /**
-   * Updates an existing waiter's details (e.g., name).
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Updates an existing waiter's details (e.g., name). Requires ROLE_MANAGER (as configured in
+   * WebSecurityConfig).
    *
    * @param id The ID of the waiter to update.
    * @param waiterDetails Contains the updated details (e.g., name).
@@ -392,13 +394,12 @@ public class WaiterController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("Error updating waiter: " + e.getMessage());
       }
-    }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("Waiter with ID " + id + " not found."));
+    }).orElse(
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body("Waiter with ID " + id + " not found."));
   }
 
   /**
-   * Deletes a waiter.
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Deletes a waiter. Requires ROLE_MANAGER (as configured in WebSecurityConfig).
    *
    * @param id The ID of the waiter to delete.
    * @return ResponseEntity with no content (204) or an error status.
@@ -415,8 +416,8 @@ public class WaiterController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("Error deleting waiter: " + e.getMessage());
       }
-    }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("Waiter with ID " + id + " not found."));
+    }).orElse(
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body("Waiter with ID " + id + " not found."));
   }
 
   /**
@@ -440,9 +441,8 @@ public class WaiterController {
     List<TableAssignment> assignments = waiter.getAssignments();
 
     // Find the specific TableAssignment object to remove
-    Optional<TableAssignment> assignmentToRemove = assignments.stream()
-        .filter(ta -> ta.getTableNumber() == tableNumber)
-        .findFirst();
+    Optional<TableAssignment> assignmentToRemove =
+        assignments.stream().filter(ta -> ta.getTableNumber() == tableNumber).findFirst();
 
     if (assignmentToRemove.isPresent()) {
       // Remove the object directly from the list
@@ -456,6 +456,44 @@ public class WaiterController {
     }
   }
 
-  // === END NEW CRUD Endpoints ===
+  /**
+   * Cancels an order if it is able to.
+   *
+   * @param orderId The ID of the order to cancel.
+   * @return ResponseEntity with success or failure message.
+   */
+  @PostMapping("/orders/{orderId}/cancel")
+  public ResponseEntity<String> cancelOrder(@PathVariable int orderId) {
+    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+    if (optionalOrder.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("Order with ID " + orderId + " not found.");
+    }
+
+    Order order = optionalOrder.get();
+
+    if (order.getStatus() == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order status is invalid.");
+    }
+
+    if (order.getStatus() == OrderStatus.CANCELLED) {
+      return ResponseEntity.ok("Order " + order.getOrderNumber() + " has already been cancelled.");
+    }
+
+    if (order.getStatus() == OrderStatus.DELIVERED) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot cancel order "
+          + order.getOrderNumber() + " has already been delivered so cant be cancelled.");
+    }
+
+    order.setStatus(OrderStatus.CANCELLED);
+    orderRepository.save(order);
+
+    return ResponseEntity
+        .ok("Order " + order.getOrderNumber() + " has been successfully cancelled.");
+  }
+
+
 }
+
 
