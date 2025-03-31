@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
+import uk.ac.rhul.cs2810.model.PayRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
 
 /**
@@ -176,4 +177,39 @@ public class OrderController {
     }
   }
 
+  /**
+   * Processes a payment request for a given order. Validates card details and updates the order
+   * status to PAID if valid.
+   *
+   * @param request The PayRequest containing order number and full card details
+   * @return A ResponseEntity with a success or error message
+   */
+  @PostMapping("/pay")
+  public ResponseEntity<String> payForOrder(@RequestBody PayRequest request) {
+    Optional<Order> optionalOrder = orderRepository.findByOrderNumber(request.getOrderNumber());
+
+    if (optionalOrder.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found.");
+    }
+
+    // Validate card fields
+    if (!request.getCardNumber().matches("\\d{16}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid card number.");
+    }
+    if (!request.getExpiryDate().matches("(0[1-9]|1[0-2])/\\d{2}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid expiry date format.");
+    }
+    if (request.getCardHolderName() == null || request.getCardHolderName().isBlank()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cardholder name required.");
+    }
+    if (!request.getCvv().matches("\\d{3}")) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid CVV.");
+    }
+
+    Order order = optionalOrder.get();
+    order.setStatus(OrderStatus.PAID);
+    orderRepository.save(order);
+
+    return ResponseEntity.ok("Payment successful. Order marked as PAID.");
+  }
 }

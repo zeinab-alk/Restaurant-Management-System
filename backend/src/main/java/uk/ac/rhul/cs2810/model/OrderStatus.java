@@ -1,9 +1,10 @@
 package uk.ac.rhul.cs2810.model;
 
+// @formatter:off
+
 /**
  * Enumeration representing the various states an order can be in during its lifecycle.
- *
- * <p>The possible states are:
+ * <p>The possible states are:</p>
  * <ul>
  *   <li>PENDING - Order has been placed but not yet processed</li>
  *   <li>IN_PROGRESS - Order is being prepared in the kitchen</li>
@@ -12,8 +13,11 @@ package uk.ac.rhul.cs2810.model;
  *   <li>DELIVERED - Order has been delivered to the customer</li>
  *   <li>PROCESSING - Order is being processed by the system</li>
  *   <li>CANCELLED - Order has been cancelled</li>
+ *   <li>PAID - Order has been paid</li>
  * </ul>
  */
+
+// @formatter:on
 public enum OrderStatus {
-  PENDING, IN_PROGRESS, READY_FOR_DELIVERY, COMPLETED, DELIVERED, PROCESSING, CANCELLED;
+  PENDING, IN_PROGRESS, READY_FOR_DELIVERY, COMPLETED, DELIVERED, PROCESSING, CANCELLED, PAID;
 }
