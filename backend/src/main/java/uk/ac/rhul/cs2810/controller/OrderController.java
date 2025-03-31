@@ -161,6 +161,21 @@ public class OrderController {
     return ResponseEntity.ok(order);
   }
 
+  /**
+   * Retrieves an order by its order number including its menu items.
+   *
+   * @param orderNumber The order number to search for.
+   * @return ResponseEntity containing the order if found, or 404 if not.
+   */
+  @GetMapping("/number/{orderNumber}")
+  public ResponseEntity<Order> getOrderByOrderNumber(@PathVariable int orderNumber) {
+    Optional<Order> optionalOrder = orderRepository.findByOrderNumberWithMenuItems(orderNumber);
+    if (optionalOrder.isPresent()) {
+      return ResponseEntity.ok(optionalOrder.get());
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
 
   /**
    * Processes a payment request for a given order. Validates card details and updates the order
