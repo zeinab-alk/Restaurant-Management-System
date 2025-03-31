@@ -67,9 +67,7 @@ public class Waiter {
   public Waiter() {}
 
   /**
-   * <p>
-   * Waiter constructor.
-   * </p>
+   * <p> Waiter constructor. </p>
    *
    * @param id the waiter ID.
    * @param name the waiter name.
@@ -396,9 +394,8 @@ public class Waiter {
     if (assignedTables == null) {
       return new ArrayList<>();
     }
-    return assignedTables.stream()
-                         .map(TableAssignment::getTableNumber)
-                         .collect(Collectors.toList());
+    return assignedTables.stream().map(TableAssignment::getTableNumber)
+        .collect(Collectors.toList());
   }
 
   /**
@@ -454,8 +451,8 @@ public class Waiter {
   }
 
   /**
-   * RENAMED and potentially less useful now, consider removing later.
-   * This setter might still cause issues if used improperly as it replaces the whole list.
+   * RENAMED and potentially less useful now, consider removing later. This setter might still cause
+   * issues if used improperly as it replaces the whole list.
    *
    * @param tableNumbers A list of table numbers to assign.
    */

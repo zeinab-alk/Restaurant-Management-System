@@ -256,9 +256,8 @@ public class WaiterController {
           // Use getAssignedTableNumbers() for the check
           && otherWaiter.getAssignedTableNumbers().contains(tableNumber)) {
         // Table already assigned to another waiter
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body("Table " + tableNumber + " is already assigned to waiter "
-                + otherWaiter.getId() + ".");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            "Table " + tableNumber + " is already assigned to waiter " + otherWaiter.getId() + ".");
       }
     }
 
@@ -275,8 +274,8 @@ public class WaiterController {
     waiterRepository.save(targetWaiter);
 
     // Use waiter's name in the response message to match test expectation
-    return ResponseEntity.ok("Table " + tableNumber + " assigned to waiter "
-        + targetWaiter.getName());
+    return ResponseEntity
+        .ok("Table " + tableNumber + " assigned to waiter " + targetWaiter.getName());
   }
 
   /**
@@ -344,8 +343,7 @@ public class WaiterController {
   // === NEW CRUD Endpoints for Waiters ===
 
   /**
-   * Creates a new waiter.
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Creates a new waiter. Requires ROLE_MANAGER (as configured in WebSecurityConfig).
    *
    * @param waiter Contains the details (e.g., name) for the new waiter.
    * @return ResponseEntity containing the created waiter and HTTP status 201, or an error.
@@ -373,8 +371,8 @@ public class WaiterController {
   }
 
   /**
-   * Updates an existing waiter's details (e.g., name).
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Updates an existing waiter's details (e.g., name). Requires ROLE_MANAGER (as configured in
+   * WebSecurityConfig).
    *
    * @param id The ID of the waiter to update.
    * @param waiterDetails Contains the updated details (e.g., name).
@@ -396,13 +394,12 @@ public class WaiterController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("Error updating waiter: " + e.getMessage());
       }
-    }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("Waiter with ID " + id + " not found."));
+    }).orElse(
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body("Waiter with ID " + id + " not found."));
   }
 
   /**
-   * Deletes a waiter.
-   * Requires ROLE_MANAGER (as configured in WebSecurityConfig).
+   * Deletes a waiter. Requires ROLE_MANAGER (as configured in WebSecurityConfig).
    *
    * @param id The ID of the waiter to delete.
    * @return ResponseEntity with no content (204) or an error status.
@@ -419,8 +416,8 @@ public class WaiterController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("Error deleting waiter: " + e.getMessage());
       }
-    }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("Waiter with ID " + id + " not found."));
+    }).orElse(
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body("Waiter with ID " + id + " not found."));
   }
 
   /**
@@ -444,9 +441,8 @@ public class WaiterController {
     List<TableAssignment> assignments = waiter.getAssignments();
 
     // Find the specific TableAssignment object to remove
-    Optional<TableAssignment> assignmentToRemove = assignments.stream()
-        .filter(ta -> ta.getTableNumber() == tableNumber)
-        .findFirst();
+    Optional<TableAssignment> assignmentToRemove =
+        assignments.stream().filter(ta -> ta.getTableNumber() == tableNumber).findFirst();
 
     if (assignmentToRemove.isPresent()) {
       // Remove the object directly from the list
@@ -499,4 +495,5 @@ public class WaiterController {
 
 
 }
+
 

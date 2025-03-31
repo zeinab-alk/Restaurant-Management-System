@@ -84,7 +84,7 @@ function Menu({ isEmbedded = false }) {
   const [maxCaloriesValue, setMaxCaloriesValue] = useState(2000);
   const [sortBy, setSortBy] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
-
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [popoverImage, setPopoverImage] = useState(null);
 
@@ -99,6 +99,14 @@ function Menu({ isEmbedded = false }) {
   };
 
   const open = Boolean(anchorEl);
+
+  const [orderNumber, setOrderNumber] = useState(null); 
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [cardHolderName, setCardHolderName] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentError, setPaymentError] = useState(false);
 
   const PriceSlider = styled(Slider)({
     color: theme.palette.primary.main,
@@ -176,9 +184,10 @@ function Menu({ isEmbedded = false }) {
     };
 
     try {
-      await axios.post(`${API_ENDPOINT}/api/orders`, orderData);
-      setOrderSuccess(true);
-      setCart([]);
+      const response = await axios.post(`${API_ENDPOINT}/api/orders`, orderData); 
+     setOrderSuccess(true);
+     setOrderNumber(response.data.orderNumber); 
+     setCart([]);
     } catch (error) {
       console.error("Error placing order:", error);
       alert("Failed to place order.");
@@ -213,6 +222,26 @@ function Menu({ isEmbedded = false }) {
     setOpenDialog(false);
     setTableNumber("");
   };
+
+  const handlePayment = async () => {
+    try {
+      const response = await axios.post(`${API_ENDPOINT}/api/orders/pay`, {
+        orderNumber,
+        cardNumber: cardNumber.replace(/\s/g, ""), 
+        expiryDate,
+        cardHolderName,
+        cvv
+      });
+  
+      setPaymentMessage(response.data);
+      setPaymentError(false);
+    } catch (err) {
+      console.error("Payment error:", err);
+      setPaymentMessage(err.response?.data || "Error processing payment.");
+      setPaymentError(true);
+    }
+  };
+  
 
   const filteredMenuItems = menuItems
     .filter(item => {
@@ -714,91 +743,141 @@ function Menu({ isEmbedded = false }) {
       )}
 
       {!isEmbedded && (
-        <Paper elevation={3} sx={{ 
-          p: 3, 
-          mb: 3, 
-          borderRadius: 1,
-          boxShadow: 2
-        }}>
-          <Typography variant="h5" component="h2" 
-            sx={{ color: 'primary.main', mb: 2 }}
-          >
-            Your Order
-          </Typography>
-          
-          {cart.length === 0 ? (
-            <Typography variant="body1" color="text.secondary">No items in cart</Typography>
-          ) : (
-            <Box>
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
-                Items: {cart.length}
-              </Typography>
+        <>
+          <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 1, boxShadow: 2 }}>
+            <Typography variant="h5" component="h2" sx={{ color: 'primary.main', mb: 2 }}>
+              Your Order
+            </Typography>
+      
+            {cart.length === 0 ? (
+              <Typography variant="body1" color="text.secondary">No items in cart</Typography>
+            ) : (
+              <>
+                <Stack spacing={2} sx={{ mb: 3 }}>
+                  {cart.map((item, index) => (
+                    <Paper key={index} sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 1 }}>
+                      <Box>
+                        <Typography variant="body1">{item.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">£{item.price.toFixed(2)}</Typography>
+                      </Box>
+                      <Button 
+                        variant="outlined" 
+                        color="error" 
+                        size="small" 
+                        onClick={() => removeFromCart(index)}
+                        startIcon={<span role="img" aria-label="remove">🗑️</span>}
+                      >
+                        Remove
+                      </Button>
+                    </Paper>
+                  ))}
+                </Stack>
               
-              <Stack spacing={2} sx={{ mb: 3 }}>
-                {cart.map((item, index) => (
-                  <Paper key={index} sx={{ 
-                    p: 2, 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    boxShadow: 1
-                  }}>
-                    <Box>
-                      <Typography variant="body1">{item.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">£{item.price.toFixed(2)}</Typography>
-                    </Box>
-                    <Button 
-                      variant="outlined" 
-                      color="error" 
-                      size="small" 
-                      onClick={() => removeFromCart(index)}
-                      startIcon={<span role="img" aria-label="remove">🗑️</span>}>
-                      Remove
-                    </Button>
-                  </Paper>
-                ))}
-              </Stack>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">
-                  Total: £{cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  color="success" 
-                  size="large"
-                  onClick={placeOrder}
-                  startIcon={<span role="img" aria-label="order">✅</span>}>
-                  Place Order
-                </Button>
-              </Box>
-            </Box>
-          )}
-          
+      
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6">
+                    Total: £{cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="success" 
+                    size="large"
+                    onClick={placeOrder}
+                    startIcon={<span role="img" aria-label="order">✅</span>}
+                  >
+                    Place Order
+                  </Button>
+                </Box>
+              </>
+            )}
+          </Paper>
+      
           {orderSuccess && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              Order placed successfully! A waiter will be with you shortly.
-            </Alert>
+            <>
+              <Alert severity="success" sx={{ mt: 2 }}>
+                Order placed successfully! A waiter will be with you shortly.
+              </Alert>
+      
+              <Paper elevation={3} sx={{ mt: 4, p: 3, borderRadius: 1 }}>
+                <Typography variant="h5" gutterBottom>Pay Your Bill</Typography>
+      
+                <Stack spacing={2}>
+                  <TextField
+                    label="Card Number"
+                    type="tel"
+                    value={cardNumber}
+                    inputProps={{ maxLength: 19, inputMode: 'numeric' }}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+                      const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
+                      setCardNumber(spaced);
+                    }}
+                    required
+                  />
+                  <TextField
+                    label="Expiry Date (MM/YY)"
+                    type="tel"
+                    value={expiryDate}
+                    inputProps={{ maxLength: 5, inputMode: 'numeric' }}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      if (value.length >= 3) {
+                        value = value.slice(0, 2) + "/" + value.slice(2);
+                      }
+                      setExpiryDate(value);
+                    }}
+                    required
+                  />
+                  <TextField
+                    label="CVV"
+                    type="password"
+                    inputProps={{ maxLength: 3 }}
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    required
+                  />
+                  <TextField
+                    label="Cardholder Name"
+                    type="text"
+                    value={cardHolderName}
+                    onChange={(e) => setCardHolderName(e.target.value)}
+                    required
+                  />
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handlePayment}
+                  >
+                    Pay Now
+                  </Button>
+      
+                  {paymentMessage && (
+                    <Alert severity={paymentError ? "error" : "success"}>
+                      {paymentMessage}
+                    </Alert>
+                  )}
+                </Stack>
+              </Paper>
+            </>
           )}
-        </Paper>
+        </>
       )}
-
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Request Waiter</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Which table are you at?"
-            type="number"
-            fullWidth
-            value={tableNumber}
-            onChange={(e) => setTableNumber(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={submitWaiterRequest} color="primary">OK</Button>
-        </DialogActions>
-      </Dialog>
+          <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+            <DialogTitle>Request Waiter</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Which table are you at?"
+                type="number"
+                fullWidth
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+              <Button onClick={submitWaiterRequest} color="primary">OK</Button>
+            </DialogActions>
+          </Dialog>
 
       <Popover
         id="mouse-over-popover"
@@ -819,18 +898,18 @@ function Menu({ isEmbedded = false }) {
         disableRestoreFocus
       >
         {popoverImage && (
-           <Box
-             component="img"
-             src={popoverImage}
-             alt="Preview"
-             sx={{
-               width: '20vw',
-               height: 'auto',
-               objectFit: 'contain',
-               p: 1, 
-               backgroundColor: 'background.paper',
-               boxShadow: 3
-             }}
+          <Box
+            component="img"
+            src={popoverImage}
+            alt="Preview"
+            sx={{
+              width: '20vw',
+              height: 'auto',
+              objectFit: 'contain',
+              p: 1, 
+              backgroundColor: 'background.paper',
+              boxShadow: 3
+            }}
           />
         )}
       </Popover>
@@ -839,23 +918,3 @@ function Menu({ isEmbedded = false }) {
 }
 
 export default Menu;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
