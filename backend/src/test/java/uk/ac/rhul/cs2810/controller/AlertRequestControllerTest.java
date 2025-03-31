@@ -14,8 +14,8 @@ import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,6 +25,9 @@ import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.AlertRequestRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
+/**
+ * Tests the alert request controller class.
+ */
 @WebMvcTest(AlertRequestController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disables security filters for testing.
 public class AlertRequestControllerTest {
