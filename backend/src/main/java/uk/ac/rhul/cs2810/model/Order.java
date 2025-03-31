@@ -47,11 +47,8 @@ public class Order {
   private Customer customer;
 
   @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "order_menu_item",
-      joinColumns = @JoinColumn(name = "order_id"),
-      inverseJoinColumns = @JoinColumn(name = "item_id")
-  )
+  @JoinTable(name = "order_menu_item", joinColumns = @JoinColumn(name = "order_id"),
+      inverseJoinColumns = @JoinColumn(name = "item_id"))
   private List<MenuItem> menuItems;
 
   private String orderTime;
