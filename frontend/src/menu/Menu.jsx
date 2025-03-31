@@ -33,7 +33,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CardMedia,
+  Popover
 } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -83,6 +85,21 @@ function Menu({ isEmbedded = false }) {
   const [sortBy, setSortBy] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
   
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverImage, setPopoverImage] = useState(null);
+
+  const handlePopoverOpen = (event, imageUrl) => {
+    setAnchorEl(event.currentTarget);
+    setPopoverImage(imageUrl);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+    setPopoverImage(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   const [orderNumber, setOrderNumber] = useState(null); 
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -322,34 +339,22 @@ function Menu({ isEmbedded = false }) {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
       {!isEmbedded && (
         <>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2,
-            mb: 4
-          }}>
-            <Button 
-              component={RouterLink} 
-              to="/" 
-              variant="contained" 
-              color="success" 
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}>
+              Menu
+            </Typography>
+            <Button
+              component={RouterLink}
+              to="/"
+              variant="contained"
+              color="success"
               startIcon={<span role="img" aria-label="home">🏠</span>}
               sx={{ fontWeight: 'medium' }}
             >
               Back to Home
-            </Button>
-
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={callWaiter}
-              startIcon={<span role="img" aria-label="waiter">👨‍🍳</span>}
-              sx={{ fontWeight: 'medium' }}
-            >
-              Request Waiter
             </Button>
           </Box>
 
@@ -627,102 +632,116 @@ function Menu({ isEmbedded = false }) {
           No items match your filters
         </Typography>
       ) : (
-        <>
-        <TableContainer component={Paper} elevation={3}>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Name
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Price
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Calories
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Dietary Info
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Allergens
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Popularity
-                </TableCell>
-                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>
-                  Order
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredMenuItems.map((item) => (
-                <TableRow 
-                  key={item.itemId}
-                  sx={{ 
-                    opacity: item.available ? 1 : 0.5,
-                    backgroundColor: theme => 
-                      item.available 
-                        ? theme.palette.mode === 'dark' 
-                          ? 'rgba(255, 255, 255, 0.02)' 
-                          : 'rgba(0, 0, 0, 0.02)'
-                        : 'transparent',
-                    '&:hover': {
-                      backgroundColor: theme => 
-                        item.available 
-                          ? theme.palette.action.hover
-                          : 'transparent'
-                    }
-                  }}
-                >
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>£{item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.caloricInfo} kcal</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.dietaryRestrictions.map((restriction, index) => (
-                        <Tooltip key={index} title={restriction} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>
-                            {dietarySymbols[restriction]}
-                          </span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5}>
-                      {item.allergenInformation.map((allergen, index) => (
-                        <Tooltip key={index} title={allergen} arrow>
-                          <span style={{ fontSize: '1.2rem' }}>
-                            {allergenSymbols[allergen]}
-                          </span>
-                        </Tooltip>
-                      ))}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={item.available ? "Available" : "Unavailable"} 
-                      color={item.available ? "success" : "error"} 
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {item.available && (
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={() => addToCart(item)}>
+        <Paper sx={{ overflow: 'hidden', boxShadow: 2, borderRadius: 1, mb: 4 }}>
+          <TableContainer sx={{ maxHeight: '70vh' }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', width: '70px' }}>Image</TableCell>
+                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Name</TableCell>
+                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', display: { xs: 'none', md: 'table-cell' } }}>Info</TableCell>
+                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Price</TableCell>
+                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredMenuItems.map((item) => (
+                  <TableRow
+                    key={item.itemId}
+                    hover
+                    sx={{
+                      '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
+                      opacity: item.available ? 1 : 0.6,
+                      position: 'relative'
+                    }}
+                  >
+                    <TableCell sx={{ padding: '8px', verticalAlign: 'middle' }}>
+                      <CardMedia
+                        component="img"
+                        aria-owns={open ? 'mouse-over-popover' : undefined}
+                        aria-haspopup="true"
+                        onMouseEnter={(e) => handlePopoverOpen(e, item.imageUrl)}
+                        onMouseLeave={handlePopoverClose}
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                          display: 'block',
+                          border: '1px solid #eee',
+                          cursor: 'pointer'
+                        }}
+                        image={item.imageUrl || 'https://via.placeholder.com/50'}
+                        alt={item.name}
+                        onError={(e) => { 
+                          e.target.src = 'https://via.placeholder.com/50'; 
+                          e.target.onerror = null;
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell component="th" scope="row" sx={{ verticalAlign: 'middle' }}>
+                      <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'medium' }}>
+                        {item.name}
+                      </Typography>
+                      {!item.available && (
+                        <Chip label="Unavailable" color="error" size="small" variant="outlined" sx={{ mt: 0.5 }} />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, verticalAlign: 'middle' }}>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                        {item.dietaryRestrictions?.map((restriction, index) => (
+                          <Tooltip key={`diet-${index}`} title={restriction} arrow>
+                            <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block' }}>
+                              {dietarySymbols[restriction]}
+                            </span>
+                          </Tooltip>
+                        ))}
+                        {item.allergenInformation?.map((allergen, index) => (
+                          <Tooltip key={`allergen-${index}`} title={`${allergen} (Allergen)`} arrow>
+                             <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block', color: theme.palette.warning.dark }}>
+                              {allergenSymbols[allergen]}
+                            </span>
+                          </Tooltip>
+                        ))}
+                      </Stack>
+                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        {item.caloricInfo} kcal
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 'medium', verticalAlign: 'middle' }}>
+                      £{item.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => addToCart(item)}
+                        disabled={!item.available}
+                      >
                         Add to Order
                       </Button>
+                    </TableCell>
+                    {!item.available && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1,
+                        pointerEvents: 'none'
+                      }} />
                     )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+
       {!isEmbedded && (
         <>
           <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 1, boxShadow: 2 }}>
@@ -859,8 +878,41 @@ function Menu({ isEmbedded = false }) {
               <Button onClick={submitWaiterRequest} color="primary">OK</Button>
             </DialogActions>
           </Dialog>
-        </>
-      )}
+
+      <Popover
+        id="mouse-over-popover"
+        sx={{
+          pointerEvents: 'none',
+        }}
+        open={open}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+      >
+        {popoverImage && (
+          <Box
+            component="img"
+            src={popoverImage}
+            alt="Preview"
+            sx={{
+              width: '20vw',
+              height: 'auto',
+              objectFit: 'contain',
+              p: 1, 
+              backgroundColor: 'background.paper',
+              boxShadow: 3
+            }}
+          />
+        )}
+      </Popover>
     </Container>
   );
 }

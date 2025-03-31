@@ -32,7 +32,8 @@ const EditMenuItem = () => {
     dietaryRestrictions: [],
     allergenInformation: [],
     popularity: 0,
-    available: true
+    available: true,
+    imageUrl: ''
   });
   
   const [loading, setLoading] = useState(true);
@@ -64,7 +65,7 @@ const EditMenuItem = () => {
     const fetchMenuItem = async () => {
       try {
         const response = await axios.get(`${API_ENDPOINT}/api/menuItems/${id}`);
-        setMenuItem(response.data);
+        setMenuItem({ ...response.data, imageUrl: response.data.imageUrl || "" });
         setLoading(false);
       } catch (error) {
         setError(`Failed to load menu item: ${error.message}`);
@@ -82,7 +83,8 @@ const EditMenuItem = () => {
         ...menuItem,
         price: parseFloat(menuItem.price),
         caloricInfo: parseInt(menuItem.caloricInfo),
-        popularity: parseInt(menuItem.popularity || '0')
+        popularity: parseInt(menuItem.popularity || '0'),
+        imageUrl: menuItem.imageUrl
       };
       
       await axios.put(`${API_ENDPOINT}/api/menuItems/${id}`, formattedMenuItem);
@@ -224,6 +226,18 @@ const EditMenuItem = () => {
                 onChange={(e) => setMenuItem({...menuItem, caloricInfo: e.target.value})}
                 required
                 fullWidth
+              />
+            </Grid>
+
+            {/* Image URL Input */}
+            <Grid item xs={12}>
+              <TextField
+                label="Image URL"
+                value={menuItem.imageUrl}
+                onChange={(e) => setMenuItem({...menuItem, imageUrl: e.target.value})}
+                fullWidth
+                placeholder="Enter URL for the menu item image"
+                helperText="Provide a direct link to the image (e.g., https://example.com/image.jpg)"
               />
             </Grid>
 

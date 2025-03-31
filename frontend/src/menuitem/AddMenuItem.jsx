@@ -28,7 +28,8 @@ const AddMenuItem = () => {
     dietaryRestrictions: [],
     allergenInformation: [],
     popularity: 0,
-    available: true
+    available: true,
+    imageUrl: ''
   });
   
   const [success, setSuccess] = useState(false);
@@ -74,7 +75,8 @@ const AddMenuItem = () => {
         dietaryRestrictions: [],
         allergenInformation: [],
         popularity: 0,
-        available: true
+        available: true,
+        imageUrl: ''
       });
     } catch (error) {
       const errorMessage = error.response?.data || 'Error adding menu item';
@@ -195,6 +197,18 @@ const AddMenuItem = () => {
               onChange={(e) => setMenuItem({...menuItem, caloricInfo: e.target.value})}
               required
               fullWidth
+            />
+          </Grid>
+
+          {/* Image URL Input */}
+          <Grid item xs={12}>
+            <TextField
+              label="Image URL"
+              value={menuItem.imageUrl}
+              onChange={(e) => setMenuItem({...menuItem, imageUrl: e.target.value})}
+              fullWidth
+              placeholder="Enter URL for the menu item image"
+              helperText="Provide a direct link to the image (e.g., https://example.com/image.jpg)"
             />
           </Grid>
 

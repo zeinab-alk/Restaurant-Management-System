@@ -49,7 +49,7 @@ function App({ children }) {
           }),
     },
     typography: {
-      fontFamily: `'Roboto', sans-serif`,
+      fontFamily: `'Quicksand', 'Cinzel Decorative', cursive`,
       h1: {
         fontFamily: `'Cinzel Decorative', cursive`,
       },
