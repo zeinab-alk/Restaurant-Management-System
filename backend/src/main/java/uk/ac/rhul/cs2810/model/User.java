@@ -19,8 +19,7 @@ public class User {
   @GeneratedValue
   private Long id;
   
-  private String username;
-  private String password;
+  private String pin; // 8-digit PIN
   
   @Enumerated(EnumType.STRING)
   private UserRole role;
@@ -29,20 +28,12 @@ public class User {
     return id;
   }
   
-  public String getUsername() {
-    return username;
+  public String getPin() {
+    return pin;
   }
   
-  public void setUsername(String username) {
-    this.username = username;
-  }
-  
-  public String getPassword() {
-    return password;
-  }
-  
-  public void setPassword(String password) {
-    this.password = password;
+  public void setPin(String pin) {
+    this.pin = pin;
   }
   
   public UserRole getRole() {
