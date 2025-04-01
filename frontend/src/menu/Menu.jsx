@@ -744,14 +744,14 @@ function Menu({ isEmbedded = false }) {
         <Typography variant="h6" sx={{ fontFamily: 'Raleway', color: '#2e2e2e', fontWeight: 'bold' }}>
           {item.name}
         </Typography>
-        <Typography variant="body2" sx={{ mb: 1 }}>
+        <Typography variant="body2" sx={{ mb: 1, color: 'black' }}>
           {item.caloricInfo} kcal • £{item.price.toFixed(2)}
         </Typography>
         <Stack direction="row" spacing={0.5} sx={{ mb: 1 }} flexWrap="wrap">
-          {item.dietaryRestrictions?.map((d, i) => (
-            <Tooltip title={d} key={i}>
-              <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[d]}</span>
-            </Tooltip>
+        {item.dietaryRestrictions?.map((d, i) => (
+  <Tooltip title={d} key={i}>
+    <span style={{ fontSize: '1.2rem', color: 'black' }}>{dietarySymbols[d]}</span>
+  </Tooltip>
           ))}
           {item.allergenInformation?.map((a, i) => (
             <Tooltip title={`${a} (Allergen)`} key={i}>
@@ -844,12 +844,13 @@ function Menu({ isEmbedded = false }) {
     mt: 5,
     px: { xs: 2, sm: 4 },
     py: 4,
-    borderRadius: 3,
+    borderRadius: 3, 
     background: 'linear-gradient(to right, #fff3e0, #ffe0b2)',
-    boxShadow: 6
+    boxShadow: 6,
   }}
 >
-  <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3 }}>
+
+  <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3 , color:'black' }}>
     💳 Pay Your Bill
   </Typography>
 
@@ -860,7 +861,21 @@ function Menu({ isEmbedded = false }) {
         label="Card Number"
         type="tel"
         value={cardNumber}
-        inputProps={{ maxLength: 19, inputMode: 'numeric' }}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
         onChange={(e) => {
           const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
           const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
@@ -874,7 +889,21 @@ function Menu({ isEmbedded = false }) {
         label="Expiry (MM/YY)"
         type="tel"
         value={expiryDate}
-        inputProps={{ maxLength: 5, inputMode: 'numeric' }}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
         onChange={(e) => {
           let value = e.target.value.replace(/\D/g, "").slice(0, 4);
           if (value.length >= 3) {
@@ -890,7 +919,21 @@ function Menu({ isEmbedded = false }) {
         label="CVV"
         type="password"
         value={cvv}
-        inputProps={{ maxLength: 3 }}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
         onChange={(e) => setCvv(e.target.value)}
       />
     </Grid>
@@ -899,6 +942,22 @@ function Menu({ isEmbedded = false }) {
         fullWidth
         label="Cardholder Name"
         value={cardHolderName}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
+
         onChange={(e) => setCardHolderName(e.target.value)}
       />
     </Grid>
