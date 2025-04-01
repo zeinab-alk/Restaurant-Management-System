@@ -466,7 +466,7 @@ function Menu({ isEmbedded = false }) {
     sx={{
       fontWeight: 'bold',
       fontFamily: 'cursive',
-      color: 'orange',
+      color: 'black',
       textShadow: '1px 1px 2px #00000033',
       fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
       display: 'flex',
