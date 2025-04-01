@@ -397,44 +397,64 @@ function Menu({ isEmbedded = false }) {
     <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
       {!isEmbedded && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}>
-              Menu
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={callWaiter}
-                startIcon={<span role="img" aria-label="waiter">👋</span>}
-                sx={{ fontWeight: 'medium' }}
-              >
-                Request Waiter
-              </Button>
-              <Button
-                component={RouterLink}
-                to="/"
-                variant="contained"
-                color="success"
-                startIcon={<span role="img" aria-label="home">🏠</span>}
-                sx={{ fontWeight: 'medium' }}
-              >
-                Back to Home
-              </Button>
-            </Box>
-          </Box>
+          <Box
+  sx={{
+    mb: 4,
+    px: 2,
+    py: 3,
+    borderRadius: 3,
+    background: 'linear-gradient(to right, #fff3e0, #ffe0b2)',
+    boxShadow: 3,
+    display: 'flex',
+    flexDirection: { xs: 'column', sm: 'row' },
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 2
+  }}
+>
+  <Typography
+    variant="h3"
+    component="h1"
+    gutterBottom
+    sx={{
+      fontWeight: 'bold',
+      fontFamily: 'cursive',
+      color: 'orange',
+      textShadow: '1px 1px 2px #00000033',
+      fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1
+    }}
+  >
+    <span role="img" aria-label="taco">🌮</span>
+    Oaxaca Menu
+    <span role="img" aria-label="margarita">🍹</span>
+  </Typography>
 
-          <Box sx={{ mb: 4 }}>
-            {waiterSuccess && (
-              <Alert 
-                severity="success" 
-                sx={{ mb: 2 }}
-              >
-                {waiterSuccess}
-              </Alert>
-            )}
-            {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
-          </Box>
+  <Box sx={{ display: 'flex', gap: 2 }}>
+    <Button
+      variant="contained"
+      color="warning"
+      onClick={callWaiter}
+      startIcon={<span role="img" aria-label="waiter">🧑‍🍳</span>}
+      sx={{ fontWeight: 'bold', borderRadius: 2, px: 3 }}
+    >
+      Request Waiter
+    </Button>
+    <Button
+      component={RouterLink}
+      to="/"
+      variant="contained"
+      color="success"
+      startIcon={<span role="img" aria-label="home">🏡</span>}
+      sx={{ fontWeight: 'bold', borderRadius: 2, px: 3 }}
+    >
+      Back to Home
+    </Button>
+  </Box>
+</Box>
+
         </>
       )}
 
