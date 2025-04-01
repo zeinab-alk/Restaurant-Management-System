@@ -705,114 +705,61 @@ function Menu({ isEmbedded = false }) {
           No items match your filters
         </Typography>
       ) : (
-        <Paper sx={{ overflow: 'hidden', boxShadow: 2, borderRadius: 1, mb: 4 }}>
-          <TableContainer sx={{ maxHeight: '70vh' }}>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', width: '70px' }}>Image</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', display: { xs: 'none', md: 'table-cell' } }}>Info</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Price</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredMenuItems.map((item) => (
-                  <TableRow
-                    key={item.itemId}
-                    hover
-                    sx={{
-                      '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
-                      opacity: item.available ? 1 : 0.6,
-                      position: 'relative'
-                    }}
-                  >
-                    <TableCell sx={{ padding: '8px', verticalAlign: 'middle' }}>
-                      <CardMedia
-                        component="img"
-                        aria-owns={open ? 'mouse-over-popover' : undefined}
-                        aria-haspopup="true"
-                        onMouseEnter={(e) => handlePopoverOpen(e, item.imageUrl)}
-                        onMouseLeave={handlePopoverClose}
-                        sx={{
-                          width: 50,
-                          height: 50,
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                          display: 'block',
-                          border: '1px solid #eee',
-                          cursor: 'pointer'
-                        }}
-                        image={item.imageUrl || 'https://via.placeholder.com/50'}
-                        alt={item.name}
-                        onError={(e) => { 
-                          e.target.src = 'https://via.placeholder.com/50'; 
-                          e.target.onerror = null;
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell component="th" scope="row" sx={{ verticalAlign: 'middle' }}>
-                      <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'medium' }}>
-                        {item.name}
-                      </Typography>
-                      {!item.available && (
-                        <Chip label="Unavailable" color="error" size="small" variant="outlined" sx={{ mt: 0.5 }} />
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, verticalAlign: 'middle' }}>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                        {item.dietaryRestrictions?.map((restriction, index) => (
-                          <Tooltip key={`diet-${index}`} title={restriction} arrow>
-                            <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block' }}>
-                              {dietarySymbols[restriction]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                        {item.allergenInformation?.map((allergen, index) => (
-                          <Tooltip key={`allergen-${index}`} title={`${allergen} (Allergen)`} arrow>
-                             <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block', color: theme.palette.warning.dark }}>
-                              {allergenSymbols[allergen]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                      </Stack>
-                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                        {item.caloricInfo} kcal
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 'medium', verticalAlign: 'middle' }}>
-                      £{item.price.toFixed(2)}
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => addToCart(item)}
-                        disabled={!item.available}
-                      >
-                        Add to Order
-                      </Button>
-                    </TableCell>
-                    {!item.available && (
-                      <Box sx={{
-                        position: 'absolute',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1,
-                        pointerEvents: 'none'
-                      }} />
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+        <Grid container spacing={4} sx={{ mb: 4 }}>
+  {filteredMenuItems.map(item => (
+    <Grid item xs={12} sm={6} md={4} key={item.itemId}>
+      <Paper elevation={3} sx={{
+        p: 2,
+        borderRadius: 3,
+        backgroundColor: '#faf3e0',
+        '&:hover': { boxShadow: 6 }
+      }}>
+        <Box sx={{ height: 180, overflow: 'hidden', borderRadius: 2, mb: 2 }}>
+          <img 
+            src={item.imageUrl || 'https://via.placeholder.com/150'} 
+            alt={item.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </Box>
+        <Typography variant="h6" sx={{ fontFamily: 'Raleway', color: '#2e2e2e', fontWeight: 'bold' }}>
+          {item.name}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          {item.caloricInfo} kcal • £{item.price.toFixed(2)}
+        </Typography>
+        <Stack direction="row" spacing={0.5} sx={{ mb: 1 }} flexWrap="wrap">
+          {item.dietaryRestrictions?.map((d, i) => (
+            <Tooltip title={d} key={i}>
+              <span style={{ fontSize: '1.2rem' }}>{dietarySymbols[d]}</span>
+            </Tooltip>
+          ))}
+          {item.allergenInformation?.map((a, i) => (
+            <Tooltip title={`${a} (Allergen)`} key={i}>
+              <span style={{ fontSize: '1.2rem', color: theme.palette.warning.main }}>
+                {allergenSymbols[a]}
+              </span>
+            </Tooltip>
+          ))}
+        </Stack>
+        <Button 
+          fullWidth 
+          variant="contained" 
+          disabled={!item.available}
+          sx={{
+            bgcolor: item.available ? '#d72638' : 'grey.400',
+            color: 'white',
+            mt: 1,
+            fontWeight: 600,
+            '&:hover': { bgcolor: '#b71c1c' }
+          }}
+          onClick={() => addToCart(item)}
+        >
+          {item.available ? 'Add to Order' : 'Unavailable'}
+        </Button>
+      </Paper>
+    </Grid>
+  ))}
+</Grid>
       )}
 
       {!isEmbedded && (
