@@ -157,8 +157,8 @@ function Home() {
               🧍‍♂️Track Order
             </Button>
 
-            {/* Waiter Access button - only visible to WAITER role */}
-            {userRole === "WAITER" && (
+            {/* Waiter Access button - visible to WAITER and ADMIN roles */}
+            {(userRole === "WAITER" || userRole === "ADMIN") && (
               <Button
                 component={RouterLink}
                 to="/waiter"
@@ -182,8 +182,8 @@ function Home() {
               </Button>
             )}
 
-            {/* Kitchen Access button - only visible to KITCHEN_STAFF role */}
-            {userRole === "KITCHEN_STAFF" && (
+            {/* Kitchen Access button - visible to KITCHEN_STAFF and ADMIN roles */}
+            {(userRole === "KITCHEN_STAFF" || userRole === "ADMIN") && (
               <Button
                 component={RouterLink}
                 to="/kitchen"
