@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 /**
  * This represents a user who is associated with Oaxaca restaurant.
@@ -19,8 +21,9 @@ public class User {
   
   private String username;
   private String password;
-  private UserRole role;
   
+  @Enumerated(EnumType.STRING)
+  private UserRole role;
   
   public Long getId() {
     return id;
@@ -49,5 +52,4 @@ public class User {
   public void setRole(UserRole role) {
     this.role = role;
   }
-
 }
