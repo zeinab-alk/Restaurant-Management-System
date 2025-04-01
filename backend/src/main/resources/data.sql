@@ -61,3 +61,9 @@ VALUES ('Lana Shaheen', 'Lana@gmail.com', 'Available', false);
 INSERT INTO waiter_tables (waiter_id, table_number) VALUES (1, 5);
 INSERT INTO waiter_tables (waiter_id, table_number) VALUES (2, 6);
 INSERT INTO waiter_tables (waiter_id, table_number) VALUES (3, 7);
+
+-- Initialize users with PINs
+INSERT INTO users (pin, role) VALUES
+('12345001', 'WAITER'),
+('98765001', 'KITCHEN_STAFF'),
+('12341234', 'ADMIN');

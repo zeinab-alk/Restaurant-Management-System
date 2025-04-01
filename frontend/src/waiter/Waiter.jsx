@@ -71,7 +71,8 @@ const WaiterPage = () => {
     'COMPLETED',
     'DELIVERED',
     'PROCESSING',
-    'CANCELLED'
+    'CANCELLED',
+    'PAID'
   ];
   // Define available alert types
   const alertTypes = [
@@ -256,18 +257,14 @@ const WaiterPage = () => {
   }, [fetchAlerts]);
   
 
-  // Enhanced status update handler
+  // Enhanced status update handler with better error handling
   const updateOrderStatus = (orderId, newStatus) => {
     console.log(`Attempting to update order ${orderId} to status: ${newStatus}`);
 
-    // Format the payload exactly as expected by the backend
     const payload = {
-      status: newStatus.trim().toUpperCase() // Ensure it matches the Java enum format
+      status: newStatus.trim().toUpperCase()
     };
 
-    console.log('Sending payload:', payload);
-
-    // Add explicit headers and prevent browsers from caching
     axios.post(`${API_ENDPOINT}/api/waiters/orders/${orderId}/update-status`, payload, {
       headers: {
         'Content-Type': 'application/json',
@@ -283,7 +280,9 @@ const WaiterPage = () => {
       })
       .catch((error) => {
         console.error('Status update error:', error);
-        setError(`Failed to update order status: ${error.message}`);
+        // Show more specific error message from backend
+        const errorMessage = error.response?.data || error.message;
+        setError(`Failed to update order status: ${errorMessage}`);
       });
   };
 
@@ -602,6 +601,13 @@ const WaiterPage = () => {
       setError(`Error: ${errorMsg}`);
     }
   };
+
+  // Add WebSocket or polling for real-time updates
+  useEffect(() => {
+    // Poll for orders more frequently to ensure quick updates
+    const orderUpdateInterval = setInterval(fetchOrders, 1000); // Poll every second
+    return () => clearInterval(orderUpdateInterval);
+  }, [fetchOrders]);
 
   return (
     <Box
@@ -1109,7 +1115,7 @@ const WaiterPage = () => {
                                 Update Status
                               </MenuItem>
                               {orderStatuses
-                                .filter(status => status !== order.status) // Don't show current status
+                                .filter(status => status !== order.status) // Only filter out current status
                                 .map(status => (
                                   <MenuItem key={status} value={status}>
                                     {status.replace(/_/g, ' ')}
