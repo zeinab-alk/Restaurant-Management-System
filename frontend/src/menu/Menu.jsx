@@ -818,66 +818,91 @@ function Menu({ isEmbedded = false }) {
                 Order placed successfully! A waiter will be with you shortly.
               </Alert>
       
-              <Paper elevation={3} sx={{ mt: 4, p: 3, borderRadius: 1 }}>
-                <Typography variant="h5" gutterBottom>Pay Your Bill</Typography>
-      
-                <Stack spacing={2}>
-                  <TextField
-                    label="Card Number"
-                    type="tel"
-                    value={cardNumber}
-                    inputProps={{ maxLength: 19, inputMode: 'numeric' }}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
-                      const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
-                      setCardNumber(spaced);
-                    }}
-                    required
-                  />
-                  <TextField
-                    label="Expiry Date (MM/YY)"
-                    type="tel"
-                    value={expiryDate}
-                    inputProps={{ maxLength: 5, inputMode: 'numeric' }}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, "").slice(0, 4);
-                      if (value.length >= 3) {
-                        value = value.slice(0, 2) + "/" + value.slice(2);
-                      }
-                      setExpiryDate(value);
-                    }}
-                    required
-                  />
-                  <TextField
-                    label="CVV"
-                    type="password"
-                    inputProps={{ maxLength: 3 }}
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value)}
-                    required
-                  />
-                  <TextField
-                    label="Cardholder Name"
-                    type="text"
-                    value={cardHolderName}
-                    onChange={(e) => setCardHolderName(e.target.value)}
-                    required
-                  />
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={handlePayment}
-                  >
-                    Pay Now
-                  </Button>
-      
-                  {paymentMessage && (
-                    <Alert severity={paymentError ? "error" : "success"}>
-                      {paymentMessage}
-                    </Alert>
-                  )}
-                </Stack>
-              </Paper>
+              <Paper
+  elevation={4}
+  sx={{
+    mt: 5,
+    px: { xs: 2, sm: 4 },
+    py: 4,
+    borderRadius: 3,
+    background: 'linear-gradient(to right, #fff3e0, #ffe0b2)',
+    boxShadow: 6
+  }}
+>
+  <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3 }}>
+    💳 Pay Your Bill
+  </Typography>
+
+  <Grid container spacing={2}>
+    <Grid item xs={12} sm={6}>
+      <TextField
+        fullWidth
+        label="Card Number"
+        type="tel"
+        value={cardNumber}
+        inputProps={{ maxLength: 19, inputMode: 'numeric' }}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+          const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
+          setCardNumber(spaced);
+        }}
+      />
+    </Grid>
+    <Grid item xs={6} sm={3}>
+      <TextField
+        fullWidth
+        label="Expiry (MM/YY)"
+        type="tel"
+        value={expiryDate}
+        inputProps={{ maxLength: 5, inputMode: 'numeric' }}
+        onChange={(e) => {
+          let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+          if (value.length >= 3) {
+            value = value.slice(0, 2) + "/" + value.slice(2);
+          }
+          setExpiryDate(value);
+        }}
+      />
+    </Grid>
+    <Grid item xs={6} sm={3}>
+      <TextField
+        fullWidth
+        label="CVV"
+        type="password"
+        value={cvv}
+        inputProps={{ maxLength: 3 }}
+        onChange={(e) => setCvv(e.target.value)}
+      />
+    </Grid>
+    <Grid item xs={12}>
+      <TextField
+        fullWidth
+        label="Cardholder Name"
+        value={cardHolderName}
+        onChange={(e) => setCardHolderName(e.target.value)}
+      />
+    </Grid>
+    <Grid item xs={12} sx={{ textAlign: 'center', mt: 2 }}>
+      <Button
+        variant="contained"
+        size="large"
+        color="success"
+        onClick={handlePayment}
+        sx={{ borderRadius: 2, px: 5, py: 1.5 }}
+      >
+        💰 Pay Now
+      </Button>
+    </Grid>
+    {paymentMessage && (
+      <Grid item xs={12}>
+        <Alert severity={paymentError ? "error" : "success"} sx={{ mt: 2 }}>
+          {paymentMessage}
+        </Alert>
+      </Grid>
+    )}
+  </Grid>
+</Paper>
+
             </>
           )}
         </>
