@@ -44,10 +44,12 @@ import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-hot-toast';
+import Fab from '@mui/material/Fab';
 
-const useContainerWidth = () => {
+  const useContainerWidth = () => {
   const containerRef = useRef(null);
   const [width, setWidth] = useState(0);
+ 
 
   useEffect(() => {
     const updateWidth = () => {
@@ -110,6 +112,7 @@ function Menu({ isEmbedded = false }) {
   const [cardHolderName, setCardHolderName] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentError, setPaymentError] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const PriceSlider = styled(Slider)({
     color: theme.palette.primary.main,
@@ -392,74 +395,123 @@ function Menu({ isEmbedded = false }) {
       </div>
     );
   };
+  
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
+    <>
+      <Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'flex-end',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1100,
+    padding: 2,
+  }}
+>
+  <Box
+    sx={{
+      background: 'linear-gradient(to right, #d48856, #f2b67b)',
+      borderRadius: 5,
+      px: 2,
+      py: 1,
+      boxShadow: 3,
+    }}
+  >
+    <Button
+      component={RouterLink}
+      to="/"
+      variant="contained"
+      color="success"
+      startIcon={<span role="img" aria-label="home">🏡</span>}
+      sx={{
+        borderRadius: 4,
+        fontWeight: 'bold',
+        px: 3,
+        backgroundColor: '#81c784',
+        '&:hover': {
+          backgroundColor: '#66bb6a',
+        },
+      }}
+    >
+      BACK TO HOME
+    </Button>
+  </Box>
+</Box>
+
+  
+      <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
       {!isEmbedded && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}>
-              Menu
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={callWaiter}
-                startIcon={<span role="img" aria-label="waiter">👋</span>}
-                sx={{ fontWeight: 'medium' }}
-              >
-                Request Waiter
-              </Button>
-              <Button
-                component={RouterLink}
-                to="/"
-                variant="contained"
-                color="success"
-                startIcon={<span role="img" aria-label="home">🏠</span>}
-                sx={{ fontWeight: 'medium' }}
-              >
-                Back to Home
-              </Button>
-            </Box>
-          </Box>
+          <Box
+  sx={{
+    mb: 4,
+    px: 2,
+    py: 3,
+    borderRadius: 3,
+    background: 'linear-gradient(to right, #fff3e0, #ffe0b2)',
+    boxShadow: 3,
+    display: 'flex',
+    flexDirection: { xs: 'column', sm: 'row' },
+    alignItems: 'center',
+    justifyContent: 'center', 
+    gap: 2,
+    position: 'relative',
+  }}
+>
+  <Typography
+    variant="h3"
+    component="h1"
+    gutterBottom
+    sx={{
+      fontWeight: 'bold',
+      fontFamily: 'cursive',
+      color: 'black',
+      textShadow: '1px 1px 2px #00000033',
+      fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1,
+      textAlign: 'center'
+    }}
+  >
+    🍸 Our Menu 🌯
+  </Typography>
 
-          <Box sx={{ mb: 4 }}>
-            {waiterSuccess && (
-              <Alert 
-                severity="success" 
-                sx={{ mb: 2 }}
-              >
-                {waiterSuccess}
-              </Alert>
-            )}
-            {waiterError && <Alert severity="error" sx={{ mb: 2 }}>{waiterError}</Alert>}
-          </Box>
+</Box>
+
         </>
       )}
 
-      {!isEmbedded && (
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom 
-          align="center" 
-          sx={{ 
-            mb: 4,
-            fontWeight: 'bold',
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            color: 'primary.main'
-          }}
-        >
-          Our Menu
-        </Typography>
-      )}
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!error && menuItems.length < 1 && (
         <Alert severity="warning" sx={{ mb: 2 }}>No menu items available</Alert>
       )}
 
+<Button
+  variant="contained"
+  onClick={() => setShowFilters(prev => !prev)}
+  sx={{
+    mb: 2,
+    fontWeight: 'bold',
+    bgcolor: '#212121',
+    color: 'white',
+    '&:hover': {
+      bgcolor: '#424242'
+    },
+    px: 3,
+    py: 1,
+    borderRadius: 3,
+    textTransform: 'none',
+    fontSize: '1rem'
+  }}
+>
+  ☰ FILTERS
+</Button>
+ 
+{showFilters && (
+  <>
       {!isEmbedded && (
         <Box sx={{ 
           mb: 3, 
@@ -697,122 +749,72 @@ function Menu({ isEmbedded = false }) {
               limitTags={2}
             />
           </Box>
-        </Box>
+          </Box>
       )}
+    </>
+)}
+
 
       {filteredMenuItems.length === 0 ? (
         <Typography variant="h6" align="center" sx={{ mt: 4 }}>
           No items match your filters
         </Typography>
       ) : (
-        <Paper sx={{ overflow: 'hidden', boxShadow: 2, borderRadius: 1, mb: 4 }}>
-          <TableContainer sx={{ maxHeight: '70vh' }}>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', width: '70px' }}>Image</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', display: { xs: 'none', md: 'table-cell' } }}>Info</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Price</TableCell>
-                  <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredMenuItems.map((item) => (
-                  <TableRow
-                    key={item.itemId}
-                    hover
-                    sx={{
-                      '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
-                      opacity: item.available ? 1 : 0.6,
-                      position: 'relative'
-                    }}
-                  >
-                    <TableCell sx={{ padding: '8px', verticalAlign: 'middle' }}>
-                      <CardMedia
-                        component="img"
-                        aria-owns={open ? 'mouse-over-popover' : undefined}
-                        aria-haspopup="true"
-                        onMouseEnter={(e) => handlePopoverOpen(e, item.imageUrl)}
-                        onMouseLeave={handlePopoverClose}
-                        sx={{
-                          width: 50,
-                          height: 50,
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                          display: 'block',
-                          border: '1px solid #eee',
-                          cursor: 'pointer'
-                        }}
-                        image={item.imageUrl || 'https://via.placeholder.com/50'}
-                        alt={item.name}
-                        onError={(e) => { 
-                          e.target.src = 'https://via.placeholder.com/50'; 
-                          e.target.onerror = null;
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell component="th" scope="row" sx={{ verticalAlign: 'middle' }}>
-                      <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'medium' }}>
-                        {item.name}
-                      </Typography>
-                      {!item.available && (
-                        <Chip label="Unavailable" color="error" size="small" variant="outlined" sx={{ mt: 0.5 }} />
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, verticalAlign: 'middle' }}>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                        {item.dietaryRestrictions?.map((restriction, index) => (
-                          <Tooltip key={`diet-${index}`} title={restriction} arrow>
-                            <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block' }}>
-                              {dietarySymbols[restriction]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                        {item.allergenInformation?.map((allergen, index) => (
-                          <Tooltip key={`allergen-${index}`} title={`${allergen} (Allergen)`} arrow>
-                             <span style={{ fontSize: '1.2rem', margin: '2px', display: 'inline-block', color: theme.palette.warning.dark }}>
-                              {allergenSymbols[allergen]}
-                            </span>
-                          </Tooltip>
-                        ))}
-                      </Stack>
-                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                        {item.caloricInfo} kcal
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 'medium', verticalAlign: 'middle' }}>
-                      £{item.price.toFixed(2)}
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => addToCart(item)}
-                        disabled={!item.available}
-                      >
-                        Add to Order
-                      </Button>
-                    </TableCell>
-                    {!item.available && (
-                      <Box sx={{
-                        position: 'absolute',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1,
-                        pointerEvents: 'none'
-                      }} />
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+        <Grid container spacing={4} sx={{ mb: 4 }}>
+  {filteredMenuItems.map(item => (
+    <Grid item xs={12} sm={6} md={4} key={item.itemId}>
+      <Paper elevation={3} sx={{
+        p: 2,
+        borderRadius: 3,
+        backgroundColor: '#faf3e0',
+        '&:hover': { boxShadow: 6 }
+      }}>
+        <Box sx={{ height: 180, overflow: 'hidden', borderRadius: 2, mb: 2 }}>
+          <img 
+            src={item.imageUrl || 'https://via.placeholder.com/150'} 
+            alt={item.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </Box>
+        <Typography variant="h6" sx={{ fontFamily: 'Raleway', color: '#2e2e2e', fontWeight: 'bold' }}>
+          {item.name}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1, color: 'black' }}>
+          {item.caloricInfo} kcal • £{item.price.toFixed(2)}
+        </Typography>
+        <Stack direction="row" spacing={0.5} sx={{ mb: 1 }} flexWrap="wrap">
+        {item.dietaryRestrictions?.map((d, i) => (
+  <Tooltip title={d} key={i}>
+    <span style={{ fontSize: '1.2rem', color: 'black' }}>{dietarySymbols[d]}</span>
+  </Tooltip>
+          ))}
+          {item.allergenInformation?.map((a, i) => (
+            <Tooltip title={`${a} (Allergen)`} key={i}>
+              <span style={{ fontSize: '1.2rem', color: theme.palette.warning.main }}>
+                {allergenSymbols[a]}
+              </span>
+            </Tooltip>
+          ))}
+        </Stack>
+        <Button 
+          fullWidth 
+          variant="contained" 
+          disabled={!item.available}
+          sx={{
+            bgcolor: item.available ? '#d72638' : 'grey.400',
+            color: 'white',
+            mt: 1,
+            fontWeight: 600,
+            '&:hover': { bgcolor: '#b71c1c' }
+          }}
+          onClick={() => addToCart(item)}
+        >
+          {item.available ? 'Add to Order' : 'Unavailable'}
+        </Button>
+      </Paper>
+    </Grid>
+  ))}
+</Grid>
       )}
 
       {!isEmbedded && (
@@ -871,66 +873,150 @@ function Menu({ isEmbedded = false }) {
                 Order placed successfully! A waiter will be with you shortly.
               </Alert>
       
-              <Paper elevation={3} sx={{ mt: 4, p: 3, borderRadius: 1 }}>
-                <Typography variant="h5" gutterBottom>Pay Your Bill</Typography>
-      
-                <Stack spacing={2}>
-                  <TextField
-                    label="Card Number"
-                    type="tel"
-                    value={cardNumber}
-                    inputProps={{ maxLength: 19, inputMode: 'numeric' }}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
-                      const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
-                      setCardNumber(spaced);
-                    }}
-                    required
-                  />
-                  <TextField
-                    label="Expiry Date (MM/YY)"
-                    type="tel"
-                    value={expiryDate}
-                    inputProps={{ maxLength: 5, inputMode: 'numeric' }}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, "").slice(0, 4);
-                      if (value.length >= 3) {
-                        value = value.slice(0, 2) + "/" + value.slice(2);
-                      }
-                      setExpiryDate(value);
-                    }}
-                    required
-                  />
-                  <TextField
-                    label="CVV"
-                    type="password"
-                    inputProps={{ maxLength: 3 }}
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value)}
-                    required
-                  />
-                  <TextField
-                    label="Cardholder Name"
-                    type="text"
-                    value={cardHolderName}
-                    onChange={(e) => setCardHolderName(e.target.value)}
-                    required
-                  />
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={handlePayment}
-                  >
-                    Pay Now
-                  </Button>
-      
-                  {paymentMessage && (
-                    <Alert severity={paymentError ? "error" : "success"}>
-                      {paymentMessage}
-                    </Alert>
-                  )}
-                </Stack>
-              </Paper>
+              <Paper
+  elevation={4}
+  sx={{
+    mt: 5,
+    px: { xs: 2, sm: 4 },
+    py: 4,
+    borderRadius: 3, 
+    background: 'linear-gradient(to right, #fff3e0, #ffe0b2)',
+    boxShadow: 6,
+  }}
+>
+
+  <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3 , color:'black' }}>
+    💳 Pay Your Bill
+  </Typography>
+
+  <Grid container spacing={2}>
+    <Grid item xs={12} sm={6}>
+      <TextField
+        fullWidth
+        label="Card Number"
+        type="tel"
+        value={cardNumber}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+          const spaced = raw.replace(/(.{4})/g, "$1 ").trim();
+          setCardNumber(spaced);
+        }}
+      />
+    </Grid>
+    <Grid item xs={6} sm={3}>
+      <TextField
+        fullWidth
+        label="Expiry (MM/YY)"
+        type="tel"
+        value={expiryDate}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
+        onChange={(e) => {
+          let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+          if (value.length >= 3) {
+            value = value.slice(0, 2) + "/" + value.slice(2);
+          }
+          setExpiryDate(value);
+        }}
+      />
+    </Grid>
+    <Grid item xs={6} sm={3}>
+      <TextField
+        fullWidth
+        label="CVV"
+        type="password"
+        value={cvv}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
+        onChange={(e) => setCvv(e.target.value)}
+      />
+    </Grid>
+    <Grid item xs={12}>
+      <TextField
+        fullWidth
+        label="Cardholder Name"
+        value={cardHolderName}
+        InputLabelProps={{ style: { color: 'black' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'black',
+            },
+            '&:hover fieldset': {
+              borderColor: 'black',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'black',
+            },
+          },
+          input: { color: 'black' }
+        }}
+
+        onChange={(e) => setCardHolderName(e.target.value)}
+      />
+    </Grid>
+    <Grid item xs={12} sx={{ textAlign: 'center', mt: 2 }}>
+      <Button
+        variant="contained"
+        size="large"
+        color="success"
+        onClick={handlePayment}
+        sx={{ borderRadius: 2, px: 5, py: 1.5 }}
+      >
+        💰 Pay Now
+      </Button>
+    </Grid>
+    {paymentMessage && (
+      <Grid item xs={12}>
+        <Alert severity={paymentError ? "error" : "success"} sx={{ mt: 2 }}>
+          {paymentMessage}
+        </Alert>
+      </Grid>
+    )}
+  </Grid>
+</Paper>
+
             </>
           )}
         </>
@@ -986,7 +1072,60 @@ function Menu({ isEmbedded = false }) {
           />
         )}
       </Popover>
+
+      <Box
+  sx={{
+    position: 'fixed',
+    bottom: 24,
+    right: 24,
+    zIndex: 1300,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 1,
+  }}
+>
+  <Fab
+    onClick={callWaiter}
+    sx={{
+      width: 72,
+      height: 72,
+      fontSize: '1.9rem',
+      fontWeight: 'bold',
+      background: 'linear-gradient(to right, #ff7043, #ffb74d)', // warm Mexican orange
+      color: 'white',
+      boxShadow: 6,
+      '&:hover': {
+        background: 'linear-gradient(to right, #f4511e, #ffa726)',
+      },
+    }}
+  >
+    🧑‍🍳
+  </Fab>
+  <Typography 
+    variant="caption" 
+    sx={{ 
+      color: 'white', 
+      fontWeight: 'bold', 
+      backgroundColor: '#f4511e', 
+      px: 1.8, 
+      py: 0.6, 
+      borderRadius: 2, 
+      fontSize: '0.75rem', 
+      boxShadow: 2,
+      textAlign: 'center'
+    }}
+  >
+    Request Waiter
+  </Typography>
+</Box>
+
+
+
+
     </Container>
-  );
+    </>
+);
+
 }
 export default Menu;
