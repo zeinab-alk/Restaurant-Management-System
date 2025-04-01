@@ -231,12 +231,40 @@ public class Order {
    * @param newStatus The new status to set.
    */
   public void updateStatus(OrderStatus newStatus) {
-    // Prevent skipping key order statuses
-    if (this.status == OrderStatus.PENDING && newStatus == OrderStatus.DELIVERED) {
-      throw new InvalidOrderStateException("Order cannot skip directly from PENDING to DELIVERED.");
+    // Validate status transitions
+    if (this.status == null) {
+      // Allow any status if current status is null (new order)
+      logger.info("Order {} status set to {} (initial status).", this.orderNumber, newStatus);
+      this.status = newStatus;
+    } else {
+      // Define valid transitions
+      boolean isValidTransition = switch (this.status) {
+        case PENDING -> newStatus == OrderStatus.IN_PROGRESS || 
+                        newStatus == OrderStatus.CANCELLED;
+        case IN_PROGRESS -> newStatus == OrderStatus.READY_FOR_DELIVERY || 
+                           newStatus == OrderStatus.CANCELLED;
+        case READY_FOR_DELIVERY -> newStatus == OrderStatus.DELIVERED || 
+                                 newStatus == OrderStatus.CANCELLED;
+        case DELIVERED -> newStatus == OrderStatus.COMPLETED || 
+                         newStatus == OrderStatus.PAID;
+        case COMPLETED -> newStatus == OrderStatus.PAID;
+        case CANCELLED -> false; // Cannot change from cancelled
+        case PAID -> false; // Cannot change from paid
+        case PROCESSING -> newStatus == OrderStatus.IN_PROGRESS || 
+                          newStatus == OrderStatus.CANCELLED;
+      };
+
+      if (!isValidTransition) {
+        throw new InvalidOrderStateException(
+            String.format("Invalid status transition from %s to %s for order %d",
+                this.status, newStatus, this.orderNumber));
+      }
+
+      logger.info("Order {} status changed from {} to {}", 
+          this.orderNumber, this.status, newStatus);
+      this.status = newStatus;
     }
-    logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
-    this.status = newStatus;
+
     this.orderUpdatedTime = LocalDateTime.now();
 
     // If order is now in progress, calculate estimated completion time
