@@ -767,54 +767,70 @@ function Menu({ isEmbedded = false }) {
         p: 2,
         borderRadius: 3,
         backgroundColor: '#faf3e0',
-        '&:hover': { boxShadow: 6 }
+        '&:hover': { boxShadow: 6 },
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <Box sx={{ height: 180, overflow: 'hidden', borderRadius: 2, mb: 2 }}>
+        <Box sx={{ 
+          height: 180, 
+          overflow: 'hidden', 
+          borderRadius: 2, 
+          mb: 2,
+          flexShrink: 0
+        }}>
           <img 
             src={item.imageUrl || 'https://via.placeholder.com/150'} 
             alt={item.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </Box>
-        <Typography variant="h6" sx={{ fontFamily: 'Raleway', color: '#2e2e2e', fontWeight: 'bold' }}>
-          {item.name}
-        </Typography>
-        <Typography variant="body2" sx={{ mb: 1, color: 'black' }}>
-          {item.caloricInfo} kcal • £{item.price.toFixed(2)}
-        </Typography>
-        <Stack direction="row" spacing={0.5} sx={{ mb: 1 }} flexWrap="wrap">
-        {item.dietaryRestrictions?.map((d, i) => (
-  <Tooltip title={d} key={i}>
-    <span style={{ fontSize: '1.2rem', color: 'black' }}>{dietarySymbols[d]}</span>
-  </Tooltip>
-          ))}
-          {item.allergenInformation?.map((a, i) => (
-            <Tooltip title={`${a} (Allergen)`} key={i}>
-              <span style={{ fontSize: '1.2rem', color: theme.palette.warning.main }}>
-                {allergenSymbols[a]}
-              </span>
-            </Tooltip>
-          ))}
-        </Stack>
-        <Button 
-          fullWidth 
-          variant="contained" 
-          disabled={!item.available}
-          sx={{
-            bgcolor: item.available ? '#d72638' : 'grey.400',
-            color: 'white',
-            mt: 1,
-            fontWeight: 600,
-            '&:hover': { bgcolor: '#b71c1c' }
-          }}
-          onClick={() => addToCart(item)}
-        >
-          {item.available ? 'Add to Order' : 'Unavailable'}
-        </Button>
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="h6" sx={{ 
+            fontFamily: 'Raleway', 
+            color: '#2e2e2e', 
+            fontWeight: 'bold',
+            mb: 1
+          }}>
+            {item.name}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 1, color: 'black' }}>
+            {item.caloricInfo} kcal • £{item.price.toFixed(2)}
+          </Typography>
+          <Stack direction="row" spacing={0.5} sx={{ mb: 1 }} flexWrap="wrap">
+            {item.dietaryRestrictions?.map((d, i) => (
+              <Tooltip title={d} key={i}>
+                <span style={{ fontSize: '1.2rem', color: 'black' }}>{dietarySymbols[d]}</span>
+              </Tooltip>
+            ))}
+            {item.allergenInformation?.map((a, i) => (
+              <Tooltip title={`${a} (Allergen)`} key={i}>
+                <span style={{ fontSize: '1.2rem', color: theme.palette.warning.main }}>
+                  {allergenSymbols[a]}
+                </span>
+              </Tooltip>
+            ))}
+          </Stack>
+          <Button 
+            fullWidth 
+            variant="contained" 
+            disabled={!item.available}
+            sx={{
+              bgcolor: item.available ? '#d72638' : 'grey.400',
+              color: 'white',
+              mt: 'auto',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#b71c1c' }
+            }}
+            onClick={() => addToCart(item)}
+          >
+            {item.available ? 'Add to Order' : 'Unavailable'}
+          </Button>
+        </Box>
       </Paper>
     </Grid>
   ))}
-</Grid>
+      </Grid>
       )}
 
       {!isEmbedded && (
