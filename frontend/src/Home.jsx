@@ -1,137 +1,174 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { Button, Stack, Box, Typography, Container } from "@mui/material";
+import { motion } from "framer-motion";
 
 function Home() {
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "80vh",
-          textAlign: "center",
-          px: 2,
-        }}
+          sx={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "url('/img_1.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              '&::before': {
+                  content: '""',
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.6)", //for some reason using american speeling "color" darkens the page which i think better suits theme
+                  zIndex: 1,
+              },
+          }}
       >
-        <Typography
-          variant="h2"
-          component="h1"
-          gutterBottom
-          sx={{
-            mb: 4,
-            fontWeight: "bold",
-            fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
-            color: "primary.main",
-          }}
-        >
-          OAXACA Restaurant
-        </Typography>
-
-        <Typography
-          variant="h5"
-          color="text.secondary"
-          sx={{
-            mb: 6,
-            maxWidth: "800px",
-            fontSize: { xs: "1rem", sm: "1.25rem" },
-          }}
-        >
-          Welcome to our restaurant management system. Please select an option below to get started.
-        </Typography>
-
-        {/* Button Row */}
-        <Stack
-          spacing={3}
-          direction={{ xs: "column", sm: "row" }}
-          sx={{
-            width: "100%",
-            maxWidth: "600px",
-            justifyContent: "center",
-            px: 2,
-          }}
-        >
-          <Button
-            component={RouterLink}
-            to="/menu"
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<span role="img" aria-label="menu">🍽️</span>}
-            sx={{
-              py: 2,
-              px: 4,
-              fontSize: { xs: "1rem", sm: "1.2rem" },
-              borderRadius: "8px",
-              fontWeight: "medium",
-              width: "100%",
-            }}
+          <motion.div
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              transition={{duration: 1}}
           >
-            View Menu
-          </Button>
-          <Button
-            component={RouterLink}
-            to="/waiter"
-            variant="contained"
-            color="secondary"
-            size="large"
-            startIcon={<span role="img" aria-label="waiter">👨‍🍳</span>}
-            sx={{
-              py: 2,
-              px: 4,
-              fontSize: { xs: "1rem", sm: "1.2rem" },
-              borderRadius: "8px",
-              fontWeight: "medium",
-              width: "100%",
-            }}
-          >
-            Waiter Access
-          </Button>
-          <Button
-            component={RouterLink}
-            to="/kitchen"
-            variant="contained"
-            color="success"
-            size="large"
-            startIcon={<span role="img" aria-label="kitchen">🍳</span>}
-            sx={{
-              py: 2,
-              px: 4,
-              fontSize: { xs: "1rem", sm: "1.2rem" },
-              borderRadius: "8px",
-              fontWeight: "medium",
-              width: "100%",
-            }}
-          >
-            Kitchen Access
-          </Button>
-        </Stack>
+              <Container
+                  maxWidth="md"
+                  sx={{
+                      position: "relative",
+                      zIndex: 2,
+                      px: 2,
+                      py: {xs: 6, md: 10},
+                  }}
+              >
 
-        {/* Customer Page Button */}
-        <Button
-          component={RouterLink}
-          to="/customer"
-          variant="contained"
-          color="info"
-          fullWidth
-          size="large"
-          startIcon={<span role="img" aria-label="customer">🧍‍♂️</span>}
-          sx={{
-            mt: 4,
-            py: 2,
-            fontWeight: "medium",
-            fontSize: "1.1rem",
-            borderRadius: 2,
-            width: { xs: "100%", sm: "300px" },
-          }}
-        >
-          Customer Page
-        </Button>
+                  <Typography
+                      variant="h2"
+                      component="h1"
+                      gutterBottom
+                      sx={{
+                          fontFamily: "'Playfair Display', serif",
+                          fontWeight: "700",
+                          fontSize: {xs: "2.5rem", sm: "3.5rem", md: "4.5rem"},
+                          mb: 3,
+                          color: "#fff",
+                      }}
+                  >
+                      OAXACA Restaurant
+                  </Typography>
+
+                  <Typography
+                      variant="h6"
+                      sx={{
+                          fontFamily: "'Quicksand', sans-serif",
+                          mb: 5,
+                          maxWidth: "600px",
+                          mx: "auto",
+                          color: "#f0e8dc",
+                      }}
+                  >
+                      Discover delicious meals, manage orders, and streamline your experience.
+                  </Typography>
+
+                  {/* Button Row */}
+                  <Stack
+                      direction={{xs: "column", sm: "row"}}
+                      spacing={3}
+                      justifyContent="center"
+                      sx={{mb: 3}}
+                  >
+                      <Button
+                          component={RouterLink}
+                          to="/menu"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                              fontFamily: "'Playfair Display', sans-serif",
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: "600",
+                              backgroundColor: "#81c784", // green
+                              color: "#fff",
+                              '&:hover': {
+                                  backgroundColor: "#66bb6a", // darker green on hover
+                              },
+                              borderRadius: "12px",
+                              textTransform: "uppercase",
+                          }}
+                      >
+                          🍽️ View Menu
+                      </Button>
+                      {/* Customer Page Button */}
+                      <Button
+                          component={RouterLink}
+                          to="/customer"
+                          variant="contained"
+                          color="info"
+                          size="large"
+                          sx={{
+                              fontFamily: "'Playfair Display', sans-serif",
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: "600",
+                              backgroundColor: "#81c784", // green
+                              color: "#fff",
+                              '&:hover': {
+                                  backgroundColor: "#66bb6a",
+                              },
+                              borderRadius: "12px",
+                              textTransform: "uppercase",
+                              alignSelf: "center",
+                          }}
+                      >
+                          🧍‍♂️Track Order
+                      </Button>
+                      <Button
+                          component={RouterLink}
+                          to="/waiter"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                              fontFamily: "'Quicksand', sans-serif",
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: "600",
+                              backgroundColor: "#d18b47",
+                              color: "#fff",
+                              '&:hover': {
+                                  backgroundColor: "#b37034",
+                              },
+                              borderRadius: "12px",
+                              textTransform: "uppercase",
+                          }}
+                      >
+                          👨‍🍳 Waiter Access
+                      </Button>
+                      <Button
+                          component={RouterLink}
+                          to="/kitchen"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                              fontFamily: "'Quicksand', sans-serif",
+                              px: 1,
+                              py: 0.8,
+                              fontWeight: "600",
+                              backgroundColor: "#d18b47",
+                              color: "#fff",
+                              '&:hover': {
+                                  backgroundColor: "#b37034",
+                              },
+                              borderRadius: "12px",
+                              textTransform: "uppercase",
+                          }}
+                      >
+                          🍳 Kitchen Access
+                      </Button>
+
+                  </Stack>
+              </Container>
+          </motion.div>
       </Box>
-    </Container>
-  );
+);
 }
 
 export default Home;
