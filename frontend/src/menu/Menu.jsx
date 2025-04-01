@@ -44,6 +44,7 @@ import { API_ENDPOINT } from "../config";
 import { allergenSymbols, dietarySymbols } from '../utils/foodInfoSymbols';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-hot-toast';
+import Fab from '@mui/material/Fab';
 
 const useContainerWidth = () => {
   const containerRef = useRef(null);
@@ -408,8 +409,9 @@ function Menu({ isEmbedded = false }) {
     display: 'flex',
     flexDirection: { xs: 'column', sm: 'row' },
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 2
+    justifyContent: 'center', // ← this centers the content horizontally
+    gap: 2,
+    position: 'relative',
   }}
 >
   <Typography
@@ -424,56 +426,35 @@ function Menu({ isEmbedded = false }) {
       fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
       display: 'flex',
       alignItems: 'center',
-      gap: 1
+      gap: 1,
+      textAlign: 'center'
     }}
   >
-    <span role="img" aria-label="taco">🌮</span>
-    Oaxaca Menu
-    <span role="img" aria-label="margarita">🍹</span>
+    🍸 Our Menu 🌯
   </Typography>
 
-  <Box sx={{ display: 'flex', gap: 2 }}>
-    <Button
-      variant="contained"
-      color="warning"
-      onClick={callWaiter}
-      startIcon={<span role="img" aria-label="waiter">🧑‍🍳</span>}
-      sx={{ fontWeight: 'bold', borderRadius: 2, px: 3 }}
-    >
-      Request Waiter
-    </Button>
-    <Button
-      component={RouterLink}
-      to="/"
-      variant="contained"
-      color="success"
-      startIcon={<span role="img" aria-label="home">🏡</span>}
-      sx={{ fontWeight: 'bold', borderRadius: 2, px: 3 }}
-    >
-      Back to Home
-    </Button>
-  </Box>
+  <Button
+    component={RouterLink}
+    to="/"
+    variant="contained"
+    color="success"
+    startIcon={<span role="img" aria-label="home">🏡</span>}
+    sx={{
+      position: 'absolute',
+      right: 16,
+      top: 16,
+      borderRadius: 2,
+      px: 3,
+      fontWeight: 'bold'
+    }}
+  >
+    BACK TO HOME
+  </Button>
 </Box>
 
         </>
       )}
 
-      {!isEmbedded && (
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          gutterBottom 
-          align="center" 
-          sx={{ 
-            mb: 4,
-            fontWeight: 'bold',
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            color: 'primary.main'
-          }}
-        >
-          Our Menu
-        </Typography>
-      )}
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!error && menuItems.length < 1 && (
@@ -1037,6 +1018,57 @@ function Menu({ isEmbedded = false }) {
           />
         )}
       </Popover>
+
+      <Box
+  sx={{
+    position: 'fixed',
+    bottom: 24,
+    right: 24,
+    zIndex: 1300,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 1,
+  }}
+>
+  <Fab
+    onClick={callWaiter}
+    sx={{
+      width: 72,
+      height: 72,
+      fontSize: '1.9rem',
+      fontWeight: 'bold',
+      background: 'linear-gradient(to right, #ff7043, #ffb74d)', // warm Mexican orange
+      color: 'white',
+      boxShadow: 6,
+      '&:hover': {
+        background: 'linear-gradient(to right, #f4511e, #ffa726)',
+      },
+    }}
+  >
+    🧑‍🍳
+  </Fab>
+  <Typography 
+    variant="caption" 
+    sx={{ 
+      color: 'white', 
+      fontWeight: 'bold', 
+      backgroundColor: '#f4511e', 
+      px: 1.8, 
+      py: 0.6, 
+      borderRadius: 2, 
+      fontSize: '0.75rem', 
+      boxShadow: 2,
+      textAlign: 'center'
+    }}
+  >
+    Request Waiter
+  </Typography>
+</Box>
+
+
+
+
     </Container>
   );
 }
