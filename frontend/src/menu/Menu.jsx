@@ -46,9 +46,10 @@ import { styled } from '@mui/material/styles';
 import { toast } from 'react-hot-toast';
 import Fab from '@mui/material/Fab';
 
-const useContainerWidth = () => {
+  const useContainerWidth = () => {
   const containerRef = useRef(null);
   const [width, setWidth] = useState(0);
+ 
 
   useEffect(() => {
     const updateWidth = () => {
@@ -111,6 +112,7 @@ function Menu({ isEmbedded = false }) {
   const [cardHolderName, setCardHolderName] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentError, setPaymentError] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const PriceSlider = styled(Slider)({
     color: theme.palette.primary.main,
@@ -393,9 +395,52 @@ function Menu({ isEmbedded = false }) {
       </div>
     );
   };
+  
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
+    <>
+      <Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'flex-end',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1100,
+    padding: 2,
+  }}
+>
+  <Box
+    sx={{
+      background: 'linear-gradient(to right, #d48856, #f2b67b)',
+      borderRadius: 5,
+      px: 2,
+      py: 1,
+      boxShadow: 3,
+    }}
+  >
+    <Button
+      component={RouterLink}
+      to="/"
+      variant="contained"
+      color="success"
+      startIcon={<span role="img" aria-label="home">🏡</span>}
+      sx={{
+        borderRadius: 4,
+        fontWeight: 'bold',
+        px: 3,
+        backgroundColor: '#81c784',
+        '&:hover': {
+          backgroundColor: '#66bb6a',
+        },
+      }}
+    >
+      BACK TO HOME
+    </Button>
+  </Box>
+</Box>
+
+  
+      <Container maxWidth="xl" sx={{ py: 3, position: 'relative' }} ref={containerRef}>
       {!isEmbedded && (
         <>
           <Box
@@ -409,7 +454,7 @@ function Menu({ isEmbedded = false }) {
     display: 'flex',
     flexDirection: { xs: 'column', sm: 'row' },
     alignItems: 'center',
-    justifyContent: 'center', // ← this centers the content horizontally
+    justifyContent: 'center', 
     gap: 2,
     position: 'relative',
   }}
@@ -433,23 +478,6 @@ function Menu({ isEmbedded = false }) {
     🍸 Our Menu 🌯
   </Typography>
 
-  <Button
-    component={RouterLink}
-    to="/"
-    variant="contained"
-    color="success"
-    startIcon={<span role="img" aria-label="home">🏡</span>}
-    sx={{
-      position: 'absolute',
-      right: 16,
-      top: 16,
-      borderRadius: 2,
-      px: 3,
-      fontWeight: 'bold'
-    }}
-  >
-    BACK TO HOME
-  </Button>
 </Box>
 
         </>
@@ -461,6 +489,29 @@ function Menu({ isEmbedded = false }) {
         <Alert severity="warning" sx={{ mb: 2 }}>No menu items available</Alert>
       )}
 
+<Button
+  variant="contained"
+  onClick={() => setShowFilters(prev => !prev)}
+  sx={{
+    mb: 2,
+    fontWeight: 'bold',
+    bgcolor: '#212121',
+    color: 'white',
+    '&:hover': {
+      bgcolor: '#424242'
+    },
+    px: 3,
+    py: 1,
+    borderRadius: 3,
+    textTransform: 'none',
+    fontSize: '1rem'
+  }}
+>
+  ☰ FILTERS
+</Button>
+ 
+{showFilters && (
+  <>
       {!isEmbedded && (
         <Box sx={{ 
           mb: 3, 
@@ -698,8 +749,11 @@ function Menu({ isEmbedded = false }) {
               limitTags={2}
             />
           </Box>
-        </Box>
+          </Box>
       )}
+    </>
+)}
+
 
       {filteredMenuItems.length === 0 ? (
         <Typography variant="h6" align="center" sx={{ mt: 4 }}>
@@ -1070,6 +1124,8 @@ function Menu({ isEmbedded = false }) {
 
 
     </Container>
-  );
+    </>
+);
+
 }
 export default Menu;
