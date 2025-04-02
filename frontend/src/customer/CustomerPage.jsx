@@ -6,19 +6,46 @@ import { Link as RouterLink } from 'react-router-dom';
 
 function CustomerPage() {
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-start' }}>
-        <Button
-          component={RouterLink}
-          to="/"
-          variant="contained"
-          color="primary"
-          startIcon={<span role="img" aria-label="home">🏠</span>}
-          sx={{ fontWeight: 'medium' }}
-        >
-          Back to Home
-        </Button>
-      </Box>
+    <Container maxWidth="md" sx={{ py: 6 }}>
+        <Box sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            mb: 3
+        }}>
+            <Box sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 1,
+                borderRadius: '999px',
+                backgroundColor: '#f1a165', // peach/orange outer pill
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.3)',
+            }}>
+                <Button
+                    component={RouterLink}
+                    to="/"
+                    startIcon={<span role="img" aria-label="home">🏠</span>}
+                    sx={{
+                        px: 4,
+                        py: 1.2,
+                        fontWeight: 'bold',
+                        fontSize: '1rem',
+                        fontFamily: "'Quicksand', sans-serif",
+                        backgroundColor: '#87c87b', // green inner button
+                        color: '#2c1e0f',
+                        borderRadius: '999px',
+                        textTransform: 'none',
+                        boxShadow: 'none',
+                        '&:hover': {
+                            backgroundColor: '#7fc572',
+                            boxShadow: 'none',
+                        },
+                    }}
+                >
+                    Back to Home
+                </Button>
+            </Box>
+        </Box>
 
       <Typography
         variant="h4"
