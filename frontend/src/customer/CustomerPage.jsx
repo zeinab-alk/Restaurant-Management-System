@@ -8,6 +8,22 @@ import { useTheme } from "@mui/material/styles";
 function CustomerPage() {
     const theme = useTheme();
   return (
+      <Box
+          sx={(theme) => ({
+              minHeight: "100vh",
+              backgroundColor: theme.palette.background.paper,
+              backgroundImage: theme.palette.mode === 'light'
+                  ? 'linear-gradient(135deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+                  'linear-gradient(225deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+                  'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%),' +
+                  `linear-gradient(315deg, rgba(0,0,0,0.05) 25%, ${theme.palette.background.paper} 25%)`
+                  : 'linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+                  'linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+                  'linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),' +
+                  `linear-gradient(315deg, rgba(255,255,255,0.05) 25%, ${theme.palette.background.paper} 25%)`,
+              backgroundSize: "40px 40px",
+          })}
+      >
     <Container maxWidth="md" sx={{ py: 6 }}>
         <Box sx={{
             display: 'flex',
@@ -89,6 +105,7 @@ function CustomerPage() {
             <OrderTracking />
         </Box>
     </Container>
+      </Box>
   );
 }
 
