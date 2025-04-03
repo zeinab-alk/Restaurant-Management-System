@@ -56,8 +56,9 @@ const OrderTracking = () => {
   };
 
   return (
-    <div className="bg-[#3b2f2f] text-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto mt-8 animate-fade-in">
+    <div className="bg-[#3b2f2f] p-8 rounded-xl shadow-2xl max-w-4xl mx-auto mt-8 animate-fade-in">
       <div className="mb-8 text-center">
+        <div style={{ color: "#1a1a1a" }}>
         <input
           type="number"
           placeholder="Enter your Order Number"
@@ -73,8 +74,8 @@ const OrderTracking = () => {
         </button>
       </div>
 
-      {searching && <p className="text-center text-yellow-300 animate-pulse">Loading...</p>}
-      {error && <p className="text-red-400 text-center mb-4 animate-shake">{error}</p>}
+      {searching && <p className="text-center animate-pulse" style={{ color: "#1a1a1a" }}>Loading...</p>}
+      {error && <p className="text-center mb-4 animate-shake"style={{ color: "#1a1a1a" }}>{error}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {trackedOrders.map((order) => {
@@ -85,16 +86,17 @@ const OrderTracking = () => {
               key={order.orderNumber}
               className="bg-[#4d3a3a] p-6 rounded-lg shadow-lg text-center border border-yellow-400 transform hover:scale-105 transition duration-300 animate-slide-up"
             >
-              <h3 className="text-xl font-bold text-yellow-300 mb-2 tracking-wide">
+              <h3 className="text-xl font-bold mb-2 tracking-wide"style={{ color: "#1a1a1a" }}>
                 Order #{order.orderNumber}
               </h3>
-              <p className="text-lg font-medium text-white mb-1">
+              <p className="text-lg font-medium mb-1" style={{ color: "#1a1a1a" }}>
                 Status: <span className={`italic font-semibold ${getStatusColor(order.status)}`}>{order.status.replace(/_/g, ' ')}</span>
               </p>
-              <p className="text-sm text-gray-300 italic">Placed: {placed.toLocaleTimeString()}</p>
+              <p className="text-sm italic" style={{ color: "#1a1a1a" }}>Placed: {placed.toLocaleTimeString()}</p>
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );
