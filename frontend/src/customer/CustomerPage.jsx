@@ -27,9 +27,23 @@ function CustomerPage() {
     <Container maxWidth="md" sx={{ py: 6 }}>
         <Box sx={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             mb: 4
         }}>
+            <Typography
+                variant="h5"
+                sx={{
+                    fontWeight: "bold",
+                    fontFamily: "'Quicksand', sans-serif",
+                    color: "#f1a165",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1
+                }}
+            >
+                📢 You can track your orders here
+            </Typography>
             <Box sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
