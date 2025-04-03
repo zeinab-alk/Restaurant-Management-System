@@ -3,14 +3,16 @@ import { API_ENDPOINT } from "../config";
 import { Container, Typography, Paper, Box, Button } from "@mui/material";
 import OrderTracking from "../ordertracking/OrderTracking.jsx";
 import { Link as RouterLink } from 'react-router-dom';
+import { useTheme } from "@mui/material/styles";
 
 function CustomerPage() {
+    const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
         <Box sx={{
             display: 'flex',
             justifyContent: 'flex-end',
-            mb: 3
+            mb: 4
         }}>
             <Box sx={{
                 display: 'inline-flex',
@@ -48,21 +50,44 @@ function CustomerPage() {
         </Box>
 
       <Typography
-        variant="h4"
+        variant="h3"
         align="center"
-        sx={{ fontWeight: 'bold', mb: 3 }}
+        sx={{
+            fontWeight: 'bold',
+            fontFamily: "'Playfair Display, serif",
+            color: theme.palette.mode === 'light' ? '#111' : '#fff',
+            mb: 4,
+            textShadow: theme.palette.mode === 'dark' ? '1px 1px #000' : 'none',
+        }}
       >
         Customer Dashboard
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Track Your Order
-        </Typography>
+        <Box
+            sx={{
+                background: 'linear-gradient(to right, #fff3dc, #ffecc7)',
+                borderRadius: '48px',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                px: { xs: 3, md: 6 },
+                py: { xs: 4, md: 5 },
+                textAlign: 'center',
+                mt: 4,
+            }}
+        >
+            <Typography
+                variant="h6"
+                sx={{
+                    fontWeight: 'bold',
+                    fontFamily: "'Quicksand', sans-serif",
+                    mb: 2,
+                    color: '#1a1a1a',
+                }}
+            >
+                📦 Track Your Order
+            </Typography>
 
-        {/* Embed the OrderTracking component */}
-        <OrderTracking />
-      </Paper>
+            <OrderTracking />
+        </Box>
     </Container>
   );
 }
