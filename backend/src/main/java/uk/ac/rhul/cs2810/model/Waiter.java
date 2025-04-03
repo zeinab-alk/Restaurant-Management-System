@@ -204,9 +204,7 @@ public class Waiter {
   }
 
   /**
-   * <<<<<<< HEAD Gets a list of tables assigned to this waiter that have been delivered but remain
-   * unpaid. ======= Gets a list of tables assigned to this waiter that have been delivered but
-   * remain unpaid. >>>>>>> origin/main
+   * Gets a list of tables assigned to this waiter that have been delivered but remain unpaid.
    *
    * @param allOrders the list of all orders
    * @return a list of unpaid table numbers
