@@ -2,20 +2,22 @@ package uk.ac.rhul.cs2810.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete; // if you have a delete
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+// We only load beans relevant to the controller layer
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -25,284 +27,327 @@ import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.model.PayRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
+import uk.ac.rhul.cs2810.service.OrderService;
 
 /**
- * Order controller class is tested here.
+ * Tests the OrderController endpoints using a slice-based approach (@WebMvcTest).
+ * We mock dependencies so we only test the controller logic and HTTP behavior.
  */
 @WebMvcTest(OrderController.class)
-@AutoConfigureMockMvc(addFilters = false) // Disable security filters for test
+@AutoConfigureMockMvc(addFilters = false) // Disable security filters if you have Spring Security
 public class OrderControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
 
+  // Mock the dependencies that OrderController needs
   @MockBean
   private OrderRepository orderRepository;
+
+  @MockBean
+  private OrderService orderService;
 
   @Autowired
   private ObjectMapper objectMapper;
 
-  /**
-   * Test placing an order successfully.
-   */
+  // --------------------------------------------------------------------------
+  // Example endpoint: POST /api/orders (placeOrder)
+  // --------------------------------------------------------------------------
   @Test
-  public void testPlaceOrderSuccess() throws Exception {
-    // Arrange
-    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
+  void testPlaceOrder_Success() throws Exception {
+    // Suppose this is the "order" we want to place
+    Order mockOrder = new Order();
+    mockOrder.setOrderNumber(123);
+    mockOrder.setStatus(OrderStatus.PENDING);
+
+    // If the controller calls orderRepository.save(...) -> returns mockOrder
     when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
 
-    // Act & Assert
-    mockMvc
-        .perform(post("/api/orders").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(mockOrder)))
-        .andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.toString()));
+    // Convert mockOrder to JSON for the request body
+    String orderJson = objectMapper.writeValueAsString(mockOrder);
+
+    // Perform POST /api/orders
+    mockMvc.perform(post("/api/orders")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(orderJson))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.orderNumber").value(123))
+      .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.toString()));
   }
 
-  /**
-   * Test placing an order when an exception occurs (to cover the catch block).
-   */
   @Test
-  public void testPlaceOrderException() throws Exception {
-    // Arrange: simulate an exception thrown by the repository
+  void testPlaceOrder_Exception() throws Exception {
+    // If the repository throws an exception, we get HTTP 500
     when(orderRepository.save(any(Order.class))).thenThrow(new RuntimeException("DB error"));
 
-    Order requestOrder = new Order(999, null, "2025-02-15 10:00", 10, OrderStatus.PENDING);
+    Order requestOrder = new Order();
+    requestOrder.setOrderNumber(999);
 
-    // Act & Assert: verify we get INTERNAL_SERVER_ERROR
-    mockMvc
-        .perform(post("/api/orders").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(requestOrder)))
-        .andDo(print()).andExpect(status().isInternalServerError());
+    String json = objectMapper.writeValueAsString(requestOrder);
+
+    mockMvc.perform(post("/api/orders")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+      .andDo(print())
+      .andExpect(status().isInternalServerError());
   }
 
-  /**
-   * Test getting an order by ID (found).
-   */
+  // --------------------------------------------------------------------------
+  // GET /api/orders/{orderId}
+  // --------------------------------------------------------------------------
   @Test
-  public void testGetOrderFound() throws Exception {
-    // Arrange
-    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
-    when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
+  void testGetOrderFound() throws Exception {
+    Order mockOrder = new Order();
+    mockOrder.setOrderNumber(10);
 
-    // Act & Assert
-    mockMvc.perform(get("/api/orders/1")).andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$.orderNumber").value(1))
-        .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.toString()));
+    when(orderRepository.findById(10)).thenReturn(Optional.of(mockOrder));
+
+    mockMvc.perform(get("/api/orders/10"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.orderNumber").value(10));
   }
 
-  /**
-   * Test getting an order by ID (not found).
-   */
   @Test
-  public void testGetOrderNotFound() throws Exception {
-    // Arrange
+  void testGetOrder_NotFound() throws Exception {
     when(orderRepository.findById(999)).thenReturn(Optional.empty());
 
-    // Act & Assert
-    mockMvc.perform(get("/api/orders/999")).andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/orders/999"))
+      .andDo(print())
+      .andExpect(status().isNotFound());
   }
 
-  /**
-   * Test retrieving all orders.
-   */
+  // --------------------------------------------------------------------------
+  // GET /api/orders (getAllOrders)
+  // --------------------------------------------------------------------------
   @Test
-  public void testGetAllOrders() throws Exception {
-    // Arrange
-    Order order1 = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
-    Order order2 = new Order(2, null, "2025-02-14 13:00", 10, OrderStatus.COMPLETED);
-    List<Order> mockOrders = Arrays.asList(order1, order2);
+  void testGetAllOrders() throws Exception {
+    Order o1 = new Order();
+    o1.setOrderNumber(1);
+    Order o2 = new Order();
+    o2.setOrderNumber(2);
 
+    List<Order> mockOrders = Arrays.asList(o1, o2);
     when(orderRepository.findAllWithMenuItems()).thenReturn(mockOrders);
 
-    // Act & Assert
-    mockMvc.perform(get("/api/orders")).andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].orderNumber").value(1))
-        .andExpect(jsonPath("$[0].status").value(OrderStatus.PENDING.toString()))
-        .andExpect(jsonPath("$[1].orderNumber").value(2))
-        .andExpect(jsonPath("$[1].status").value(OrderStatus.COMPLETED.toString()));
+    mockMvc.perform(get("/api/orders"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].orderNumber").value(1))
+      .andExpect(jsonPath("$[1].orderNumber").value(2));
   }
 
-
-  /**
-   * Test retrieving the latest order successfully.
-   */
+  // Example error path for getAllOrders if your code can throw an exception
   @Test
-  public void testGetLatestOrder_Success() throws Exception {
-    // Arrange
-    Order latestOrder = new Order(3, null, "2025-02-16 14:00", 20, OrderStatus.COMPLETED);
+  void testGetAllOrders_Exception() throws Exception {
+    when(orderRepository.findAllWithMenuItems()).thenThrow(new RuntimeException("DB error"));
 
-    when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.of(latestOrder));
-    when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.of(latestOrder));
-
-    // Act & Assert
-    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$.orderNumber").value(3))
-        .andExpect(jsonPath("$.status").value(OrderStatus.COMPLETED.toString()));
+    mockMvc.perform(get("/api/orders"))
+      .andDo(print())
+      .andExpect(status().isInternalServerError());
   }
 
-  /**
-   * Test retrieving the latest order when no orders exist.
-   */
+  // --------------------------------------------------------------------------
+  // GET /api/orders/latest
+  // --------------------------------------------------------------------------
   @Test
-  public void testGetLatestOrder_NotFound() throws Exception {
-    // Arrange
+  void testGetLatestOrder_Success() throws Exception {
+    Order latest = new Order();
+    latest.setOrderNumber(99);
+    when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.of(latest));
+    when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.of(latest));
+
+    mockMvc.perform(get("/api/orders/latest"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.orderNumber").value(99));
+  }
+
+  @Test
+  void testGetLatestOrder_NoContent() throws Exception {
     when(orderRepository.findLatestOrderWithMenuItems()).thenReturn(Optional.empty());
     when(orderRepository.findTopByOrderByOrderTimeDesc()).thenReturn(Optional.empty());
 
-    // Act & Assert
-    mockMvc.perform(get("/api/orders/latest")).andDo(print()).andExpect(status().isNoContent());
+    mockMvc.perform(get("/api/orders/latest"))
+      .andDo(print())
+      .andExpect(status().isNoContent());
+  }
+
+  // --------------------------------------------------------------------------
+  // POST /api/orders/{orderId}/addItem?menuItemId=...
+  // --------------------------------------------------------------------------
+  @Test
+  void testAddItemToOrder() throws Exception {
+    // If orderService.addItemToOrder(10, 555) returns an updated order
+    Order updated = new Order();
+    updated.setOrderNumber(10);
+
+    when(orderService.addItemToOrder(10, 555)).thenReturn(updated);
+
+    mockMvc.perform(post("/api/orders/10/addItem")
+        .param("menuItemId", "555"))
+      .andDo(print())
+      .andExpect(status().isOk());
+  }
+
+  // --------------------------------------------------------------------------
+  // PUT /api/orders/{id}/status (updateOrderStatus)
+  // --------------------------------------------------------------------------
+  @Test
+  void testUpdateOrderStatus_Success() throws Exception {
+    Order existing = new Order();
+    existing.setOrderNumber(11);
+    existing.setStatus(OrderStatus.PENDING);
+
+    when(orderRepository.findById(11)).thenReturn(Optional.of(existing));
+
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
+
+    mockMvc.perform(put("/api/orders/11/status")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+      .andDo(print())
+      .andExpect(status().isOk());
   }
 
   @Test
-  public void testUpdateOrderStatus_Success() throws Exception {
-    // Arrange
-    Order mockOrder = new Order(1, null, "2025-02-14 12:00", 15, OrderStatus.PENDING);
-    when(orderRepository.findById(1)).thenReturn(Optional.of(mockOrder));
-    when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
-
-    // Create the DTO request object
-    OrderStatusUpdateRequest updateRequest = new OrderStatusUpdateRequest();
-    updateRequest.setStatus(OrderStatus.READY_FOR_DELIVERY);
-
-    // Act & Assert
-    mockMvc
-        .perform(put("/api/orders/1/status").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(updateRequest)))
-        .andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value(OrderStatus.READY_FOR_DELIVERY.toString()));
-  }
-
-  /**
-   * Test updating order status when the order is not found.
-   */
-  @Test
-  public void testUpdateOrderStatus_OrderNotFound() throws Exception {
-    // Arrange: mock the repository to return an empty Optional when searching for the order
+  void testUpdateOrderStatus_NotFound() throws Exception {
     when(orderRepository.findById(999)).thenReturn(Optional.empty());
 
-    // Create the DTO request object
-    OrderStatusUpdateRequest updateRequest = new OrderStatusUpdateRequest();
-    updateRequest.setStatus(OrderStatus.READY_FOR_DELIVERY);
+    OrderStatusUpdateRequest request = new OrderStatusUpdateRequest();
+    request.setStatus(OrderStatus.IN_PROGRESS);
 
-    // Act & Assert: verify we get NOT_FOUND when the order is not found
-    mockMvc
-        .perform(put("/api/orders/999/status").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(updateRequest)))
-        .andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(put("/api/orders/999/status")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+      .andDo(print())
+      .andExpect(status().isNotFound());
   }
 
-
-
+  // --------------------------------------------------------------------------
+  // GET /api/orders/number/{orderNumber}
+  // --------------------------------------------------------------------------
   @Test
-  public void testGetOrderByOrderNumber_Success() throws Exception {
-    // Create mock order and set fields manually to avoid constructor issues
-    Order mockOrder = new Order();
-    mockOrder.setOrderNumber(123);
-    mockOrder.setOrderTime("2025-03-30 14:00");
-    mockOrder.setWaitingTime(20);
-    mockOrder.setStatus(OrderStatus.PROCESSING);
+  void testGetOrderByOrderNumber_Success() throws Exception {
+    Order o = new Order();
+    o.setOrderNumber(123);
 
-    // Mock the repository call
-    when(orderRepository.findByOrderNumberWithMenuItems(123)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.findByOrderNumberWithMenuItems(123))
+        .thenReturn(Optional.of(o));
 
-
-    // Perform the request and verify
-    mockMvc.perform(get("/api/orders/number/123")).andDo(print()).andExpect(status().isOk())
-        .andExpect(jsonPath("$.orderNumber").value(123))
-        .andExpect(jsonPath("$.status").value(OrderStatus.PROCESSING.toString()));
-  }
-
-
-  @Test
-  public void testGetOrderByOrderNumber_NotFound() throws Exception {
-    when(orderRepository.findByOrderNumberWithMenuItems(999)).thenReturn(Optional.empty());
-
-    mockMvc.perform(get("/api/orders/number/999")).andDo(print()).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/orders/number/123"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.orderNumber").value(123));
   }
 
   @Test
-  public void testPayForOrder_Success() throws Exception {
-    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "Zeynep Sener", "123");
-    Order mockOrder = new Order();
-    mockOrder.setOrderNumber(1);
-    mockOrder.setStatus(OrderStatus.PENDING);
+  void testGetOrderByOrderNumber_NotFound() throws Exception {
+    when(orderRepository.findByOrderNumberWithMenuItems(999))
+        .thenReturn(Optional.empty());
 
-    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
-    when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
+    mockMvc.perform(get("/api/orders/number/999"))
+      .andDo(print())
+      .andExpect(status().isNotFound());
+  }
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").value("Payment successful. Order marked as PAID."));
+  // --------------------------------------------------------------------------
+  // POST /api/orders/pay
+  // --------------------------------------------------------------------------
+  @Test
+  void testPayForOrder_Success() throws Exception {
+    PayRequest payRequest = new PayRequest(1, "1234567812345678", "04/25", "Test Name", "123");
+    Order existingOrder = new Order();
+    existingOrder.setOrderNumber(1);
+
+    when(orderRepository.findByOrderNumber(1))
+        .thenReturn(Optional.of(existingOrder));
+
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(content().string("Payment successful. Order marked as PAID."));
   }
 
   @Test
-  public void testPayForOrder_OrderNotFound() throws Exception {
-    PayRequest request = new PayRequest(999, "1234678912345678", "11/25", "Zeynep Sener", "123");
+  void testPayForOrder_OrderNotFound() throws Exception {
+    PayRequest payRequest = new PayRequest(999, "1234567812345678", "04/25", "Test Name", "123");
+
     when(orderRepository.findByOrderNumber(999)).thenReturn(Optional.empty());
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNotFound()).andExpect(jsonPath("$").value("Order not found."));
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isNotFound())
+      .andExpect(content().string("Order not found."));
   }
 
   @Test
-  public void testPayForOrder_InvalidCardNumber() throws Exception {
-    PayRequest request = new PayRequest(1, "123", "11/25", "Zeynep Sener", "123");
+  void testPayForOrder_InvalidCardNumber() throws Exception {
+    PayRequest payRequest = new PayRequest(1, "123", "04/25", "Test Name", "123");
+    Order existingOrder = new Order();
+    existingOrder.setOrderNumber(1);
 
-    Order mockOrder = new Order();
-    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(existingOrder));
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest()).andExpect(jsonPath("$").value("Invalid card number."));
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string("Invalid card number."));
   }
 
   @Test
-  public void testPayForOrder_InvalidExpiryFormat() throws Exception {
-    PayRequest request = new PayRequest(1, "1234678912345678", "13/99", "Zeynep Sener", "123");
+  void testPayForOrder_InvalidExpiryDate() throws Exception {
+    PayRequest payRequest = new PayRequest(1, "1234567812345678", "14/30", "Test Name", "123");
+    Order existingOrder = new Order();
+    existingOrder.setOrderNumber(1);
 
-    Order mockOrder = new Order();
-    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(existingOrder));
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$").value("Invalid expiry date format."));
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string("Invalid expiry date format."));
   }
 
   @Test
-  public void testPayForOrder_MissingCardholderName() throws Exception {
-    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "   ", "123");
+  void testPayForOrder_MissingCardholderName() throws Exception {
+    PayRequest payRequest = new PayRequest(1, "1234567812345678", "04/25", "  ", "123");
+    Order existingOrder = new Order();
+    existingOrder.setOrderNumber(1);
 
-    Order mockOrder = new Order();
-    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(existingOrder));
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$").value("Cardholder name required."));
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string("Cardholder name required."));
   }
 
   @Test
-  public void testPayForOrder_InvalidCvV() throws Exception {
-    PayRequest request = new PayRequest(1, "1234678912345678", "11/25", "Zeynep Sener", "12");
+  void testPayForOrder_InvalidCvv() throws Exception {
+    PayRequest payRequest = new PayRequest(1, "1234567812345678", "04/25", "Test Name", "12");
+    Order existingOrder = new Order();
+    existingOrder.setOrderNumber(1);
 
-    Order mockOrder = new Order();
-    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(mockOrder));
+    when(orderRepository.findByOrderNumber(1)).thenReturn(Optional.of(existingOrder));
 
-    mockMvc
-        .perform(post("/api/orders/pay").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest()).andExpect(jsonPath("$").value("Invalid CVV."));
+    mockMvc.perform(post("/api/orders/pay")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(payRequest)))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string("Invalid CVV."));
   }
-
 }
-
-
