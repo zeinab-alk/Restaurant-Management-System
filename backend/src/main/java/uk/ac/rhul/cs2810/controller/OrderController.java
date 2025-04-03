@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,15 +15,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.model.OrderStatus;
 import uk.ac.rhul.cs2810.model.OrderStatusUpdateRequest;
 import uk.ac.rhul.cs2810.model.PayRequest;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
+import uk.ac.rhul.cs2810.service.OrderService;
 
 /**
- * Controller for handling orders.
+ * Combined REST Controller for order operations.
+ * Exposes endpoints for placing orders, retrieving orders, modifying orders (e.g. adding items),
+ * updating order status, and processing payments.
  */
 @RestController
 @RequestMapping("/api/orders")
@@ -30,16 +35,38 @@ import uk.ac.rhul.cs2810.repository.OrderRepository;
 public class OrderController {
 
   private final OrderRepository orderRepository;
+  private final OrderService orderService;
   private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
-  public OrderController(OrderRepository orderRepository) {
+  /**
+   * Constructs the OrderController with required dependencies.
+   *
+   * @param orderRepository the repository for Order entities.
+   * @param orderService the service handling business logic for orders.
+   */
+  @Autowired
+  public OrderController(OrderRepository orderRepository, OrderService orderService) {
     this.orderRepository = orderRepository;
+    this.orderService = orderService;
+  }
+
+  /**
+   * Adds a menu item to an existing order.
+   *
+   * @param orderId the ID of the order to update.
+   * @param menuItemId the ID of the menu item to add.
+   * @return the updated order.
+   */
+  @PostMapping("/{orderId}/addItem")
+  public Order addItemToOrder(@PathVariable Integer orderId,
+                              @RequestParam Integer menuItemId) {
+    return orderService.addItemToOrder(orderId, menuItemId);
   }
 
   /**
    * Places a new order.
    *
-   * @param order The order to be placed.
+   * @param order the order to be placed.
    * @return ResponseEntity with the saved order or an error message.
    */
   @PostMapping
@@ -55,7 +82,7 @@ public class OrderController {
   /**
    * Retrieves an order by its ID.
    *
-   * @param orderId The ID of the order.
+   * @param orderId the ID of the order.
    * @return ResponseEntity with the order if found, otherwise a 404 error.
    */
   @GetMapping("/{orderId}")
@@ -92,7 +119,7 @@ public class OrderController {
   /**
    * Retrieves the most recent order.
    *
-   * @return ResponseEntity containing the latest Order if found, or a 204 No Content response
+   * @return ResponseEntity containing the latest order if found, or a 204 No Content response.
    */
   @GetMapping("/latest")
   public ResponseEntity<Order> getLatestOrder() {
@@ -112,7 +139,6 @@ public class OrderController {
         Order order = latestOrder.get();
         logger.info("Latest Order Found: {}", order.getOrderNumber());
 
-        // Only log detailed info at debug level to reduce console spam
         if (logger.isDebugEnabled()) {
           logger.debug("Menu Items in Order: {}", order.getMenuItems());
         }
@@ -120,11 +146,8 @@ public class OrderController {
         long endTime = System.currentTimeMillis();
         logger.info("Latest order fetched in {} ms", (endTime - startTime));
 
-        // Add cache control headers to reduce load on frequent polling
-        return ResponseEntity.ok().header("Cache-Control", "max-age=1") // Cache for 1 second
-            .body(order);
+        return ResponseEntity.ok().header("Cache-Control", "max-age=1").body(order);
       } else {
-        // Return an empty response with 204 No Content instead of 404
         logger.info("No orders found in the system");
         return ResponseEntity.noContent().build();
       }
@@ -137,8 +160,8 @@ public class OrderController {
   /**
    * Updates the status of an existing order.
    *
-   * @param id The ID of the order to update.
-   * @param request The request body containing the new order status.
+   * @param id the ID of the order to update.
+   * @param request the request body containing the new order status.
    * @return ResponseEntity with the updated order.
    */
   @PutMapping("/{id}/status")
@@ -151,7 +174,6 @@ public class OrderController {
 
     Order order = optionalOrder.get();
     order.setStatus(request.getStatus());
-    // @PreUpdate in Order entity will automatically update orderUpdatedTime
     if (request.getStatus() == OrderStatus.IN_PROGRESS) {
       order.setEstimatedCompletionTime(LocalDateTime.now().plusMinutes(order.getWaitingTime()));
     }
@@ -163,35 +185,30 @@ public class OrderController {
   /**
    * Retrieves an order by its order number including its menu items.
    *
-   * @param orderNumber The order number to search for.
-   * @return ResponseEntity containing the order if found, or 404 if not.
+   * @param orderNumber the order number to search for.
+   * @return ResponseEntity containing the order if found, or a 404 error.
    */
   @GetMapping("/number/{orderNumber}")
   public ResponseEntity<Order> getOrderByOrderNumber(@PathVariable int orderNumber) {
     Optional<Order> optionalOrder = orderRepository.findByOrderNumberWithMenuItems(orderNumber);
-    if (optionalOrder.isPresent()) {
-      return ResponseEntity.ok(optionalOrder.get());
-    } else {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
+    return optionalOrder.map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
   }
 
   /**
-   * Processes a payment request for a given order. Validates card details and updates the order
-   * status to PAID if valid.
+   * Processes a payment request for a given order.
+   * Validates card details and updates the order status to PAID if valid.
    *
-   * @param request The PayRequest containing order number and full card details
-   * @return A ResponseEntity with a success or error message
+   * @param request the PayRequest containing order number and card details.
+   * @return ResponseEntity with a success or error message.
    */
   @PostMapping("/pay")
   public ResponseEntity<String> payForOrder(@RequestBody PayRequest request) {
     Optional<Order> optionalOrder = orderRepository.findByOrderNumber(request.getOrderNumber());
-
     if (optionalOrder.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found.");
     }
 
-    // Validate card fields
     if (!request.getCardNumber().matches("\\d{16}")) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid card number.");
     }
