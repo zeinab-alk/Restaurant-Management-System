@@ -1,11 +1,11 @@
 package uk.ac.rhul.cs2810.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import uk.ac.rhul.cs2810.model.MenuItem;
 import uk.ac.rhul.cs2810.model.Order;
 import uk.ac.rhul.cs2810.repository.MenuItemRepository;
 import uk.ac.rhul.cs2810.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service layer for order management.
@@ -30,9 +30,9 @@ public class OrderService {
    */
   public Order addItemToOrder(Integer orderId, Integer menuItemId) {
     Order order = orderRepository.findById(orderId)
-      .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        .orElseThrow(() -> new IllegalArgumentException("Order not found"));
     MenuItem menuItem = menuItemRepository.findById(menuItemId)
-      .orElseThrow(() -> new IllegalArgumentException("Menu item not found"));
+        .orElseThrow(() -> new IllegalArgumentException("Menu item not found"));
     // Use the correct method from Order: addItem
     order.addItem(menuItem);
     return orderRepository.save(order);
