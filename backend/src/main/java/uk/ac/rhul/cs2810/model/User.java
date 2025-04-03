@@ -1,6 +1,8 @@
 package uk.ac.rhul.cs2810.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -17,29 +19,21 @@ public class User {
   @GeneratedValue
   private Long id;
   
-  private String username;
-  private String password;
-  private UserRole role;
+  private String pin; // 8-digit PIN
   
+  @Enumerated(EnumType.STRING)
+  private UserRole role;
   
   public Long getId() {
     return id;
   }
   
-  public String getUsername() {
-    return username;
+  public String getPin() {
+    return pin;
   }
   
-  public void setUsername(String username) {
-    this.username = username;
-  }
-  
-  public String getPassword() {
-    return password;
-  }
-  
-  public void setPassword(String password) {
-    this.password = password;
+  public void setPin(String pin) {
+    this.pin = pin;
   }
   
   public UserRole getRole() {
@@ -49,5 +43,4 @@ public class User {
   public void setRole(UserRole role) {
     this.role = role;
   }
-
 }

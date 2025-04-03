@@ -9,11 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import uk.ac.rhul.cs2810.model.HelpRequest;
 import uk.ac.rhul.cs2810.model.Waiter;
 import uk.ac.rhul.cs2810.repository.HelpRequestRepository;
 import uk.ac.rhul.cs2810.repository.WaiterRepository;
 
+/**
+ * This tells us that the tests are run via springboot.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 public class HelpRequestControllerTest {
@@ -49,6 +49,9 @@ public class HelpRequestControllerTest {
   private Waiter testWaiter;
   private HelpRequest testHelpRequest;
   
+  /**
+   * This will always run first before the tests.
+   */
   @BeforeEach
   public void setup() {
     testWaiter = new Waiter();

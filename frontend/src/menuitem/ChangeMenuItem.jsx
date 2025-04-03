@@ -22,7 +22,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem as MuiMenuItem
+  MenuItem as MuiMenuItem,
+  Popover
 } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import axios from "axios";
@@ -37,6 +38,8 @@ const ChangeMenuItem = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewAsCustomer, setViewAsCustomer] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverImage, setPopoverImage] = useState(null);
 
   useEffect(() => {
     axios
@@ -92,6 +95,18 @@ const ChangeMenuItem = () => {
     return <Menu isEmbedded={true} />;
   };
 
+  const handlePopoverOpen = (event, imageUrl) => {
+    setAnchorEl(event.currentTarget);
+    setPopoverImage(imageUrl);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+    setPopoverImage(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   // Admin view with table layout
   const renderAdminView = () => {
     return (
@@ -118,6 +133,11 @@ const ChangeMenuItem = () => {
                   fontWeight: 'bold',
                   whiteSpace: 'nowrap'
                 }}>Price</TableCell>
+                <TableCell sx={{ 
+                  color: 'primary.contrastText',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap'
+                }}>Image</TableCell>
                 <TableCell sx={{ 
                   color: 'primary.contrastText',
                   fontWeight: 'bold',
@@ -152,6 +172,45 @@ const ChangeMenuItem = () => {
                     <Typography variant="subtitle1">{item.name}</Typography>
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>£{item.price.toFixed(2)}</TableCell>
+                  <TableCell sx={{ padding: '8px' }}>
+                    {item.imageUrl ? (
+                      <Box
+                        component="img"
+                        src={item.imageUrl}
+                        alt={item.name}
+                        aria-owns={open ? 'mouse-over-popover' : undefined}
+                        aria-haspopup="true"
+                        onMouseEnter={(e) => handlePopoverOpen(e, item.imageUrl)}
+                        onMouseLeave={handlePopoverClose}
+                        sx={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          objectFit: 'cover', 
+                          borderRadius: '4px', 
+                          display: 'block',
+                          cursor: 'pointer'
+                        }}
+                        onError={(e) => { 
+                          e.target.src = 'https://via.placeholder.com/50'; 
+                          e.target.onerror = null;
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        component="img"
+                        src={'https://via.placeholder.com/50'}
+                        alt="Placeholder"
+                        sx={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          objectFit: 'cover', 
+                          borderRadius: '4px', 
+                          display: 'block',
+                          opacity: 0.5
+                        }}
+                      />
+                    )}
+                  </TableCell>
                   <TableCell sx={{ 
                     whiteSpace: 'nowrap',
                     display: { xs: 'none', sm: 'table-cell' }
@@ -212,6 +271,40 @@ const ChangeMenuItem = () => {
             </TableBody>
           </Table>
         </Box>
+        <Popover
+          id="mouse-over-popover"
+          sx={{
+            pointerEvents: 'none',
+          }}
+          open={open}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          onClose={handlePopoverClose}
+          disableRestoreFocus
+        >
+          {popoverImage && (
+             <Box
+               component="img"
+               src={popoverImage}
+               alt="Preview"
+               sx={{
+                 width: '20vw',
+                 height: 'auto',
+                 objectFit: 'contain', 
+                 p: 1,
+                 backgroundColor: 'background.paper',
+                 boxShadow: 3
+               }}
+            />
+          )}
+        </Popover>
       </Paper>
     );
   };

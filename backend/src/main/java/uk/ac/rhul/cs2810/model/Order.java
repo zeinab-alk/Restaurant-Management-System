@@ -231,11 +231,47 @@ public class Order {
    * @param newStatus The new status to set.
    */
   public void updateStatus(OrderStatus newStatus) {
-    // Prevent skipping key order statuses
-    if (this.status == OrderStatus.PENDING && newStatus == OrderStatus.DELIVERED) {
-      throw new InvalidOrderStateException("Order cannot skip directly from PENDING to DELIVERED.");
+    // Validate status transitions
+    if (this.status == null) {
+      // Allow any status if current status is null (new order)
+      logger.info("Order {} status set to {} (initial status).", this.orderNumber, newStatus);
+      this.status = newStatus;
+      this.orderUpdatedTime = LocalDateTime.now();
+      return;
     }
-    logger.info("Order {} status changed from {} to {}", this.orderNumber, this.status, newStatus);
+
+    // Define valid transitions
+    boolean isValidTransition = switch (this.status) {
+      case PENDING -> newStatus == OrderStatus.IN_PROGRESS 
+                     || newStatus == OrderStatus.CANCELLED 
+                     || newStatus == OrderStatus.COMPLETED;  // Allow direct completion
+      case IN_PROGRESS -> newStatus == OrderStatus.READY_FOR_DELIVERY 
+                         || newStatus == OrderStatus.CANCELLED 
+                         || newStatus == OrderStatus.COMPLETED;  // Allow direct completion
+      case READY_FOR_DELIVERY -> newStatus == OrderStatus.DELIVERED 
+                                || newStatus == OrderStatus.CANCELLED 
+                                || newStatus == OrderStatus.COMPLETED;  // Allow direct completion
+      case DELIVERED -> newStatus == OrderStatus.COMPLETED 
+                       || newStatus == OrderStatus.PAID;
+      case COMPLETED -> newStatus == OrderStatus.PAID;
+      case PAID -> false; // Terminal state
+      case CANCELLED -> false; // Terminal state
+      case PROCESSING -> newStatus == OrderStatus.READY_FOR_DELIVERY 
+                        || newStatus == OrderStatus.CANCELLED 
+                        || newStatus == OrderStatus.COMPLETED;  // Allow direct completion
+    };
+
+    if (!isValidTransition) {
+      String errorMessage = String.format(
+          "Order cannot skip directly from %s to %s.", 
+          this.status, 
+          newStatus
+      );
+      logger.error(errorMessage);
+      throw new InvalidOrderStateException(errorMessage);
+    }
+
+    logger.info("Order {} status changed from {} to {}.", this.orderNumber, this.status, newStatus);
     this.status = newStatus;
     this.orderUpdatedTime = LocalDateTime.now();
 

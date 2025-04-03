@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * Pay request testing area.
+ */
 public class PayRequestTest {
 
   @Test

@@ -6,10 +6,16 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import "./App.css";
 import { Container } from "@mui/material";
+import { useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import Login from './auth/Login';
 
 export const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
 
-function App({ children }) {
+function AppContent({ children }) {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+  const { userRole } = useAuth();
   const [mode, setMode] = React.useState(() => {
     return localStorage.getItem('colorMode') || 'light';
   });
@@ -49,7 +55,7 @@ function App({ children }) {
           }),
     },
     typography: {
-      fontFamily: `'Roboto', sans-serif`,
+      fontFamily: `'Quicksand', 'Cinzel Decorative', cursive`,
       h1: {
         fontFamily: `'Cinzel Decorative', cursive`,
       },
@@ -59,54 +65,69 @@ function App({ children }) {
     }
   }), [mode]);
 
+  // Show login page for staff routes if not logged in
+  if (location.pathname.startsWith('/waiter') || location.pathname.startsWith('/kitchen')) {
+    if (!userRole) {
+      return <Login />;
+    }
+  }
+
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box
-          sx={{
-            minHeight: '100vh',
-            pb: 4,
-            background: mode === 'light'
-            ? 'linear-gradient(to bottom, #fff9e3, #ffecb3)'
-            : 'linear-gradient(to bottom, #3e2723, #4e342e)',
-            
-          }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            position: 'relative',
-            p: 3,
-            width: '100%'
-          }}>
-            <Typography 
-              variant="h1" 
-              component="h1" 
-               sx={{
-                color: mode === 'light' ? theme.palette.primary.main : theme.palette.primary.contrastText,
-                textAlign: 'center',
-                fontSize: { xs: '2.8rem', sm: '3.8rem', md: '5rem' },
-                textShadow: '2px 2px #ffcc80',
-                letterSpacing: '0.1em',
-                userSelect: 'none',
+        <>
+          {isHomePage ? (
+            <>
+              {children}
+            </>
+          ) : (
+            <Box
+              sx={{
+                minHeight: '100vh',
+                pb: 4,
+                background: mode === 'light'
+                  ? 'linear-gradient(to bottom, #fff9e3, #ffecb3)'
+                  : 'linear-gradient(to bottom, #3e2723, #4e342e)',
               }}
             >
-              🌮 OAXACA 🍹
-            </Typography>
-            <IconButton 
-              onClick={colorMode.toggleColorMode} 
-              color="inherit"
-              sx={{ position: 'absolute', right: 16 }}
-            >
-              {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
-          </Box>
-          {children}
-        </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  p: 3,
+                  width: '100%',
+                }}
+              >
+                <IconButton
+                  onClick={colorMode.toggleColorMode}
+                  color="inherit"
+                  sx={{ position: 'absolute', right: 16, top: 16 }}
+                >
+                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                </IconButton>
+                <Typography variant="h4" component="h1" sx={{ textAlign: 'center' }}>
+                  Oaxaca Restaurant
+                </Typography>
+              </Box>
+              <Container maxWidth="lg">
+                {children}
+              </Container>
+            </Box>
+          )}
+        </>
       </ThemeProvider>
     </ColorModeContext.Provider>
+  );
+}
+
+function App({ children }) {
+  return (
+    <AuthProvider>
+      <AppContent>{children}</AppContent>
+    </AuthProvider>
   );
 }
 

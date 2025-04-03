@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs2810.model;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 
 class AlertRequestTest {

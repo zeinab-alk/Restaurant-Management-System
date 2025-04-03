@@ -1,12 +1,12 @@
 package uk.ac.rhul.cs2810.repository;
 
 import java.util.Optional;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import uk.ac.rhul.cs2810.model.User;
 
 /**
- * A repository that manages User instances.
+ * Repository interface for User entities.
  */
-public interface UserRepository extends CrudRepository<User, Long> {
-  Optional<User> findByUsername(String username);
+public interface UserRepository extends JpaRepository<User, Long> {
+  Optional<User> findByPin(String pin);
 }

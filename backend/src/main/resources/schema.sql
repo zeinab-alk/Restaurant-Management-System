@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS customer, "order", waiters, kitchen_staff, payment, menu_item, menu CASCADE;
+DROP TABLE IF EXISTS customer, "order", waiters, kitchen_staff, payment, menu_item, menu, users CASCADE;
 
 -- 1) MENU TABLE
 CREATE TABLE menu (
@@ -66,6 +66,14 @@ CREATE TABLE "order" (
   PRIMARY KEY (order_id),
   FOREIGN KEY (customer_id) REFERENCES customer(customer_id),
   FOREIGN KEY (waiter_id) REFERENCES waiters(waiter_id)
+);
+
+-- 8) USERS TABLE
+CREATE TABLE users (
+  id SERIAL NOT NULL,
+  pin VARCHAR(8) NOT NULL,
+  role VARCHAR(20) NOT NULL,
+  PRIMARY KEY (id)
 );
 
 -- 7) PAYMENT
